@@ -1,0 +1,59 @@
+---
+import { SITE } from '../data/site';
+interface Props {
+  light?: boolean;
+}
+const { light = false } = Astro.props;
+---
+
+<a href="/" class:list={['logo', { light }]} aria-label={`${SITE.brand} — на главную`}>
+  <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
+    <rect x="1" y="1" width="38" height="38" rx="11" fill="currentColor" />
+    <path d="M10 28V17l10-7 10 7v11" fill="none" stroke="var(--logo-bg)" stroke-width="2.4" stroke-linejoin="round" />
+    <path d="M16 28v-7h8v7" fill="none" stroke="#b6774b" stroke-width="2.4" stroke-linejoin="round" />
+  </svg>
+  <span class="logo-text">
+    <span class="logo-name">{SITE.brand}</span>
+    <span class="logo-sub">ремонт · интерьер · производство</span>
+  </span>
+</a>
+
+<style>
+  .logo {
+    --logo-bg: var(--paper);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    flex: none;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .logo.light {
+    --logo-bg: var(--graphite);
+    color: var(--paper);
+  }
+
+  .logo svg {
+    flex: none;
+  }
+
+  .logo-text {
+    display: grid;
+    line-height: 1.1;
+  }
+
+  .logo-name {
+    white-space: nowrap;
+    font-family: var(--font-serif);
+    font-size: 1.22rem;
+    letter-spacing: -0.01em;
+  }
+
+  .logo-sub {
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+</style>

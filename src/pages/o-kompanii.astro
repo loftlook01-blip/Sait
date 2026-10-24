@@ -1,0 +1,117 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import Trust from '../components/Trust.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import Art from '../components/Art.astro';
+import { SITE } from '../data/site';
+import { breadcrumbs } from '../lib/schema';
+
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'О компании', url: '/o-kompanii/' },
+];
+const values = [
+  { t: 'Делаем как для себя', d: 'Мы живём в этом же городе и ходим по тем же улицам. Репутация для нас — не маркетинг, а то, с чем жить дальше.' },
+  { t: 'Говорим как есть', d: 'Если идея не сработает в вашей квартире — скажем об этом до начала работ, а не после.' },
+  { t: 'Отвечаем за результат', d: 'Один договор, одна команда и один ответственный человек. Без «это не мы, это электрик».' },
+  { t: 'Производство — наша сила', d: 'Столяры и сварщики работают в одной команде с прорабами и дизайнерами. Поэтому сложное у нас получается.' },
+];
+---
+
+<Base
+  title="О компании — ремонт и производство в Архангельске"
+  description={`${SITE.brand} — ремонт под ключ, дизайн интерьера и собственное производство в Архангельске. Наши принципы, гарантии и команда.`}
+  schema={[breadcrumbs(crumbs)]}
+>
+  <PageHero
+    title="Мы строим <em>репутацию</em> с первого объекта"
+    eyebrow="О компании"
+    lead={`${SITE.brand} — команда мастеров, дизайнеров и производственников из Архангельска. Мы объединили ремонт, проектирование и собственный цех, чтобы отвечать за весь результат целиком.`}
+    crumbs={crumbs}
+    art="workshop-metal"
+  />
+
+  <section class="section section--tight">
+    <div class="container story">
+      <div class="media sq"><Art variant="blueprint" /></div>
+      <div class="prose">
+        <p class="eyebrow">Наша история</p>
+        <h2 class="h-section">Почему мы начали</h2>
+        <p>Рынок ремонта в регионе устроен так: заказчик ищет отдельно дизайнера, бригаду, мебельщика и сварщика — а потом сам координирует их и разбирается, кто виноват в ошибке. Мы решили сделать по-другому.</p>
+        <p>Мы собрали под одной крышей всё, что нужно для ремонта высокого уровня: проектирование, отделочные бригады, столярное и сварочное производство с порошковой покраской. Это позволяет нам отвечать за результат целиком и делать интерьеры, которые обычно доступны только в столицах.</p>
+        {/* TODO: добавьте историю основателя, опыт мастеров и фото команды — это сильно повышает доверие */}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Ценности</p>
+        <h2 class="h-section">Во что мы верим</h2>
+      </div>
+      <div class="values">
+        {values.map((v, i) => (
+          <div class="card reveal">
+            <span class="n">0{i + 1}</span>
+            <h3 class="h-card">{v.t}</h3>
+            <p class="muted">{v.d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--dark">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Гарантии</p>
+        <h2 class="h-section">Наши обязательства</h2>
+      </div>
+      <Trust />
+    </div>
+  </section>
+
+  <CtaBlock source="О компании" />
+</Base>
+
+<style>
+  .story {
+    display: grid;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+  }
+
+  @media (min-width: 1000px) {
+    .story {
+      grid-template-columns: 1fr 1.1fr;
+    }
+  }
+
+  .sq {
+    aspect-ratio: 1;
+  }
+
+  .prose h2 {
+    margin-top: 12px;
+  }
+
+  .values {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+
+  .n {
+    display: block;
+    font-family: var(--font-serif);
+    font-size: 2.4rem;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+
+  .values p {
+    margin: 10px 0 0;
+  }
+</style>

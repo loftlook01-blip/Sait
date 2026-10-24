@@ -1,0 +1,119 @@
+---
+import LeadForm from './LeadForm.astro';
+import Art from './Art.astro';
+import { SITE } from '../data/site';
+import type { City } from '../data/cities';
+
+interface Props {
+  city?: City;
+  title?: string;
+  text?: string;
+  source?: string;
+}
+const {
+  city,
+  title = 'Обсудим ваш ремонт?',
+  text = 'Оставьте контакты — перезвоним за 15 минут, ответим на вопросы и запишем на бесплатный замер. Никакого навязчивого «дожима».',
+  source = 'CTA-блок',
+} = Astro.props;
+---
+
+<section class="cta-wrap">
+  <div class="container">
+    <div class="cta">
+      <div class="cta-art" aria-hidden="true"><Art variant="blueprint" /></div>
+      <div class="cta-copy">
+        <p class="eyebrow">Бесплатный замер{city ? ` ${city.in}` : ''}</p>
+        <h2 class="h-section">{title}</h2>
+        <p class="lead">{text}</p>
+        <ul class="perks">
+          <li>Выезд инженера — 0 ₽</li>
+          <li>Предварительная смета за 1–2 дня</li>
+          <li>Консультация по дизайну и материалам</li>
+        </ul>
+      </div>
+      <div class="cta-form">
+        <LeadForm source={source} dark withMessage button="Записаться на замер" />
+        <p class="alt">
+          Удобнее в мессенджере? <a href={SITE.telegram} target="_blank" rel="noopener">Telegram</a> · <a href={SITE.whatsapp} target="_blank" rel="noopener">WhatsApp</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-wrap {
+    padding-block: clamp(48px, 7vw, 100px);
+  }
+
+  .cta {
+    position: relative;
+    display: grid;
+    gap: clamp(28px, 4vw, 56px);
+    padding: clamp(28px, 5vw, 72px);
+    border-radius: calc(var(--radius) + 10px);
+    background: var(--graphite);
+    color: var(--paper);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  @media (min-width: 1000px) {
+    .cta {
+      grid-template-columns: 1.1fr 1fr;
+      align-items: center;
+    }
+  }
+
+  .cta-art {
+    position: absolute;
+    inset: 0;
+    opacity: 0.22;
+    z-index: -1;
+    mask-image: linear-gradient(100deg, transparent 30%, #000);
+  }
+
+  .cta-copy {
+    display: grid;
+    gap: 18px;
+  }
+
+  .eyebrow {
+    color: var(--accent);
+  }
+
+  .lead {
+    color: var(--muted-dark);
+  }
+
+  .perks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .perks li {
+    padding: 8px 14px;
+    border: 1px solid var(--line-dark);
+    border-radius: 999px;
+    font-size: 0.86rem;
+  }
+
+  .cta-form {
+    padding: clamp(20px, 3vw, 32px);
+    border-radius: var(--radius);
+    background: rgb(255 255 255 / 0.04);
+    border: 1px solid var(--line-dark);
+    backdrop-filter: blur(8px);
+  }
+
+  .alt {
+    margin: 14px 0 0;
+    font-size: 0.86rem;
+    color: var(--muted-dark);
+  }
+</style>

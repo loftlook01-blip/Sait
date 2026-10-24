@@ -1,0 +1,257 @@
+---
+/**
+ * Форма заявки. Отправляет JSON на SITE.forms.endpoint (по умолчанию PHP-обработчик → Telegram + почта).
+ * Если сервер недоступен — показывает человеку прямые контакты, заявка не «теряется молча».
+ */
+import { SITE } from '../data/site';
+
+interface Props {
+  source?: string;
+  title?: string;
+  button?: string;
+  withMessage?: boolean;
+  dark?: boolean;
+  compact?: boolean;
+}
+const { source = 'Форма на сайте', button = 'Получить консультацию', withMessage = false, dark = false, compact = false } = Astro.props;
+---
+
+<form class:list={['lead-form', { dark, compact }]} action={SITE.forms.endpoint} method="post" data-lead-form novalidate>
+  <input type="hidden" name="source" value={source} data-source />
+  <input type="hidden" name="extra" value="" data-extra />
+  <div class="hp" aria-hidden="true">
+    <label>Не заполняйте <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+  </div>
+
+  <div class="fields">
+    <label class="field">
+      <span>Ваше имя</span>
+      <input type="text" name="name" autocomplete="name" placeholder="Как к вам обращаться" required maxlength="80" />
+    </label>
+    <label class="field">
+      <span>Телефон</span>
+      <input type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+7 (___) ___-__-__" required data-phone />
+    </label>
+    {
+      withMessage && (
+        <label class="field field--wide">
+          <span>Задача (необязательно)</span>
+          <textarea name="message" rows="3" maxlength="2000" placeholder="Например: новостройка 54 м², нужен дизайн-проект и ремонт к лету" />
+        </label>
+      )
+    }
+  </div>
+
+  <label class="consent">
+    <input type="checkbox" name="consent" required checked />
+    <span>Соглашаюсь на обработку персональных данных согласно <a href="/politika-konfidencialnosti/" target="_blank">политике конфиденциальности</a></span>
+  </label>
+
+  <button type="submit" class="btn btn--accent submit">
+    <span class="label">{button}</span>
+    <span class="arrow" aria-hidden="true">→</span>
+  </button>
+
+  <p class="status" role="status" aria-live="polite"></p>
+</form>
+
+<script>
+  import { SITE } from '../data/site';
+
+  // Маска телефона без зависимостей
+  const formatPhone = (v: string) => {
+    let d = v.replace(/\D/g, '');
+    if (d.startsWith('8')) d = '7' + d.slice(1);
+    if (!d.startsWith('7')) d = '7' + d;
+    d = d.slice(0, 11);
+    const p = [d.slice(1, 4), d.slice(4, 7), d.slice(7, 9), d.slice(9, 11)];
+    let out = '+7';
+    if (p[0]) out += ` (${p[0]}`;
+    if (p[0].length === 3) out += ')';
+    if (p[1]) out += ` ${p[1]}`;
+    if (p[2]) out += `-${p[2]}`;
+    if (p[3]) out += `-${p[3]}`;
+    return out;
+  };
+
+  document.addEventListener('input', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.matches?.('[data-phone]')) t.value = t.value ? formatPhone(t.value) : '';
+  });
+
+  document.addEventListener('submit', async (e) => {
+    const form = e.target as HTMLFormElement;
+    if (!form.matches('[data-lead-form]')) return;
+    e.preventDefault();
+
+    const status = form.querySelector('.status') as HTMLElement;
+    const btn = form.querySelector('.submit') as HTMLButtonElement;
+    const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+    const digits = (data.phone || '').replace(/\D/g, '');
+
+    form.classList.remove('has-error');
+    if (!data.name?.trim() || digits.length < 11) {
+      form.classList.add('has-error');
+      status.textContent = 'Пожалуйста, укажите имя и номер телефона полностью.';
+      return;
+    }
+    if (!data.consent) {
+      status.textContent = 'Нужно согласие на обработку персональных данных.';
+      return;
+    }
+
+    btn.disabled = true;
+    status.textContent = 'Отправляем…';
+    data.page = location.href;
+
+    try {
+      const res = await fetch(SITE.forms.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(data),
+      });
+      // Успех — только если обработчик явно ответил { ok: true } (защита от хостинга, отдающего PHP как текст)
+      const json = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+      if (!res.ok || !json?.ok) throw new Error(String(res.status));
+      form.classList.add('is-sent');
+      form.innerHTML = `<div class="thanks"><p class="thanks-title">Спасибо, ${data.name.replace(/[<>&"]/g, '')}!</p><p>Мы перезвоним в течение 15 минут в рабочее время (${SITE.hours.label}).</p></div>`;
+      // Цель в Яндекс Метрике
+      const w = window as unknown as { ym?: (...a: unknown[]) => void; __ym?: string };
+      if (w.ym && w.__ym) w.ym(w.__ym, 'reachGoal', 'lead');
+    } catch {
+      btn.disabled = false;
+      status.innerHTML = `Не удалось отправить заявку. Позвоните нам: <a href="tel:${SITE.phoneHref}">${SITE.phone}</a> или напишите в <a href="${SITE.telegram}" target="_blank" rel="noopener">Telegram</a>.`;
+    }
+  });
+</script>
+
+<style>
+  .lead-form {
+    display: grid;
+    gap: 16px;
+  }
+
+  .fields {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  }
+
+  .compact .fields {
+    grid-template-columns: 1fr;
+  }
+
+  .field {
+    display: grid;
+    gap: 6px;
+  }
+
+  .field--wide {
+    grid-column: 1 / -1;
+  }
+
+  .field span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  input[type='text'],
+  input[type='tel'],
+  textarea {
+    width: 100%;
+    min-height: 54px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--ink);
+    font: 500 1rem var(--font-sans);
+    transition: border-color 0.2s;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 96px;
+  }
+
+  input:focus,
+  textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  .has-error input:invalid {
+    border-color: #c0392b;
+  }
+
+  .dark .field span {
+    color: var(--muted-dark);
+  }
+
+  .dark input[type='text'],
+  .dark input[type='tel'],
+  .dark textarea {
+    background: rgb(255 255 255 / 0.06);
+    border-color: var(--line-dark);
+    color: var(--paper);
+  }
+
+  .consent {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .dark .consent {
+    color: var(--muted-dark);
+  }
+
+  .consent input {
+    margin-top: 2px;
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  .submit {
+    width: 100%;
+  }
+
+  .submit:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .status {
+    margin: 0;
+    font-size: 0.9rem;
+    min-height: 0;
+  }
+
+  .status:empty {
+    display: none;
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .lead-form :global(.thanks) {
+    padding: 24px;
+    border-radius: 18px;
+    background: var(--accent-soft);
+    color: var(--ink);
+  }
+
+  .lead-form :global(.thanks-title) {
+    font-family: var(--font-serif);
+    font-size: 1.7rem;
+    margin-bottom: 0.3em;
+  }
+</style>

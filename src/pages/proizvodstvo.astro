@@ -1,0 +1,171 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import ProductionBlock from '../components/ProductionBlock.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import Icon from '../components/Icon.astro';
+import Faq from '../components/Faq.astro';
+import { SITE, fmt } from '../data/site';
+import { breadcrumbs, faq } from '../lib/schema';
+
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Производство', url: '/proizvodstvo/' },
+];
+const benefits = [
+  { icon: 'ruler', t: 'Точно по размерам', d: 'Изготавливаем по замерам с объекта и подгоняем по месту. Никаких «почти подошло».' },
+  { icon: 'clock', t: 'Быстрее в 2–3 раза', d: 'Не ждём недели от сторонних фабрик. Изделие делается параллельно с ремонтом.' },
+  { icon: 'wallet', t: 'Без наценки посредника', d: 'Платите за материал и работу мастера, а не за цепочку перепродавцов.' },
+  { icon: 'spark', t: 'Эксклюзивный результат', d: 'Делаем то, чего нет в каталогах: нестандартные формы, сочетания дерева и металла.' },
+];
+const faqs = [
+  { q: 'Можно заказать изделие без ремонта?', a: 'Да. Цех принимает отдельные заказы: распил и кромление, мебель, металлоконструкции и порошковую покраску ваших изделий.' },
+  { q: 'Можно ли посмотреть производство?', a: 'Конечно. Приглашаем заказчиков в цех — покажем оборудование, образцы материалов и покрытий. Договоритесь о визите по телефону.' },
+  { q: 'Какие цвета доступны для порошковой покраски?', a: 'Вся палитра RAL, а также фактуры: матовая, глянцевая, шагрень, муар и металлики.' },
+];
+---
+
+<Base
+  title="Собственное производство: столярный и сварочный цех, порошковая покраска в Архангельске"
+  description="Собственный цех в Архангельске: распил и кромление, корпусная мебель, двери, металлоконструкции, лофт-перегородки, лестницы и порошковая покраска по RAL."
+  schema={[breadcrumbs(crumbs), faq(faqs)]}
+>
+  <PageHero
+    title="Своё производство — <em>наше главное</em> преимущество"
+    eyebrow="Цех в Архангельске"
+    lead="Столярный участок, сварочный цех и камера порошковой покраски. Делаем мебель, двери, панели, перегородки, лестницы и декор — точно под ваш интерьер."
+    crumbs={crumbs}
+    art="workshop-wood"
+  >
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn--accent" data-lead="Заказ в цех">Заказать изделие <span class="arrow">→</span></button>
+      <button class="btn btn--ghost" data-lead="Экскурсия в цех">Записаться на экскурсию</button>
+    </div>
+  </PageHero>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="benefits">
+        {
+          benefits.map((b) => (
+            <div class="card reveal">
+              <span class="ic"><Icon name={b.icon} /></span>
+              <h2 class="h-card">{b.t}</h2>
+              <p class="muted">{b.d}</p>
+            </div>
+          ))
+        }
+        {
+          SITE.workshop.areaM2 > 0 && (
+            <div class="card reveal stat">
+              <b>{fmt.num(SITE.workshop.areaM2)} м²</b>
+              <span class="muted">производственных площадей</span>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--dark">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Участки</p>
+        <h2 class="h-section">Три цеха — один стандарт качества</h2>
+      </div>
+      <ProductionBlock detailed />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container two">
+      <div>
+        <p class="eyebrow">Как это работает</p>
+        <h2 class="h-section">От чертежа дизайнера до&nbsp;монтажа</h2>
+      </div>
+      <ol class="flow">
+        <li><b>Чертёж.</b> Дизайнер и технолог готовят рабочие чертежи с узлами крепления.</li>
+        <li><b>Замер по факту.</b> После черновых работ перемеряем ниши — с точностью до миллиметра.</li>
+        <li><b>Распил и сборка.</b> Раскрой на форматно-раскроечном станке, кромление, присадка, сварка каркасов.</li>
+        <li><b>Покраска.</b> Металл — в порошковой камере, дерево — лаки и масла.</li>
+        <li><b>Монтаж и подгонка.</b> Устанавливаем своими силами и подгоняем по месту.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head"><h2 class="h-section">Вопросы о производстве</h2></div>
+      <Faq items={faqs} />
+    </div>
+  </section>
+
+  <CtaBlock title="Нужно изделие по вашим размерам?" text="Пришлите эскиз или фото-референс — рассчитаем стоимость и сроки изготовления." source="Страница производства" />
+</Base>
+
+<style>
+  .benefits {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+
+  .ic {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 22px;
+    border-radius: 16px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  .benefits p {
+    margin: 10px 0 0;
+  }
+
+  .stat b {
+    display: block;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 3rem;
+  }
+
+  .two {
+    display: grid;
+    gap: 40px;
+  }
+
+  @media (min-width: 1000px) {
+    .two {
+      grid-template-columns: 1fr 1.3fr;
+    }
+  }
+
+  .flow {
+    list-style: none;
+    counter-reset: f;
+    padding: 0;
+    margin: 0;
+    display: grid;
+  }
+
+  .flow li {
+    counter-increment: f;
+    position: relative;
+    padding: 22px 0 22px 64px;
+    border-top: 1px solid var(--line);
+    font-size: 1.05rem;
+  }
+
+  .flow li::before {
+    content: counter(f, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 18px;
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    color: var(--accent);
+  }
+</style>

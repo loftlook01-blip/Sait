@@ -1,0 +1,40 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import ServicesGrid from '../../components/ServicesGrid.astro';
+import Packages from '../../components/Packages.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import { PRIMARY_CITY } from '../../data/cities';
+import { breadcrumbs } from '../../lib/schema';
+
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Услуги', url: '/uslugi/' },
+];
+---
+
+<Base
+  title="Услуги по ремонту и отделке в Архангельске"
+  description="Ремонт квартир под ключ, дизайнерский и капитальный ремонт, отделка новостроек, домов и коммерческих помещений в Архангельске. Дизайн-проект и собственное производство."
+  schema={[breadcrumbs(crumbs)]}
+>
+  <PageHero
+    title="Услуги по ремонту <em>в Архангельске</em>"
+    eyebrow="Полный цикл"
+    lead="Проектируем, ремонтируем и производим. Выберите направление — на странице услуги вы найдёте состав работ, цены и ответы на частые вопросы."
+    crumbs={crumbs}
+  />
+  <section class="section section--tight">
+    <div class="container"><ServicesGrid city={PRIMARY_CITY} /></div>
+  </section>
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Пакеты</p>
+        <h2 class="h-section">Уровни ремонта</h2>
+      </div>
+      <Packages />
+    </div>
+  </section>
+  <CtaBlock source="Страница услуг" />
+</Base>

@@ -1,0 +1,138 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import Calculator from '../components/Calculator.astro';
+import Packages from '../components/Packages.astro';
+import Faq from '../components/Faq.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import { PRICE_TABLE, FAQ } from '../data/content';
+import { fmt } from '../data/site';
+import { breadcrumbs, faq } from '../lib/schema';
+
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Цены', url: '/ceny/' },
+];
+const faqs = FAQ.filter((f) => /стоит|смета|оплата|длится/i.test(f.q));
+---
+
+<Base
+  title="Цены на ремонт квартир в Архангельске 2026 — калькулятор стоимости"
+  description="Стоимость ремонта под ключ в Архангельске от 12 900 ₽/м². Онлайн-калькулятор, прайс на отдельные работы и услуги собственного производства. Смета фиксируется в договоре."
+  schema={[breadcrumbs(crumbs), faq(faqs)]}
+>
+  <PageHero
+    title="Цены на ремонт — <em>без мелкого шрифта</em>"
+    eyebrow="Прайс 2026"
+    lead="Рассчитайте ориентировочную стоимость онлайн. Точная сумма фиксируется в договоре после бесплатного замера и не меняется в процессе работ."
+    crumbs={crumbs}
+  />
+
+  <section class="section section--tight">
+    <div class="container"><Calculator /></div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Пакеты</p>
+        <h2 class="h-section">Ремонт под ключ</h2>
+      </div>
+      <Packages />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head section-head--split">
+        <div>
+          <p class="eyebrow">Прайс-лист</p>
+          <h2 class="h-section">Стоимость отдельных работ</h2>
+        </div>
+        <p class="lead">Базовые расценки на популярные виды работ. Итоговая цена зависит от объёма и сложности — мы всегда показываем её в смете построчно.</p>
+      </div>
+      <div class="price-groups">
+        {
+          PRICE_TABLE.map((g) => (
+            <div class="pg reveal">
+              <h3 class="h-card">{g.group}</h3>
+              <table>
+                <tbody>
+                  {g.rows.map(([name, unit, price]) => (
+                    <tr>
+                      <td>{name}</td>
+                      <td class="u">{unit}</td>
+                      <td class="p">от {fmt.rub(price)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))
+        }
+      </div>
+      <p class="muted note">Цены указаны за работы без учёта материалов и не являются публичной офертой.</p>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head"><h2 class="h-section">Вопросы о стоимости</h2></div>
+      <Faq items={faqs} />
+    </div>
+  </section>
+
+  <CtaBlock title="Получите точную смету" source="Страница цен" />
+</Base>
+
+<style>
+  .price-groups {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
+  }
+
+  .pg {
+    padding: clamp(22px, 3vw, 32px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+
+  .pg h3 {
+    margin-bottom: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  td {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .u {
+    color: var(--muted);
+    padding-inline: 12px;
+    white-space: nowrap;
+  }
+
+  .p {
+    text-align: right;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .note {
+    margin-top: 20px;
+    font-size: 0.86rem;
+  }
+</style>

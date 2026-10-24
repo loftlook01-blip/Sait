@@ -1,0 +1,108 @@
+---
+import Art from './Art.astro';
+import { WORKSHOP } from '../data/content';
+interface Props {
+  detailed?: boolean;
+}
+const { detailed = false } = Astro.props;
+---
+
+<div class:list={['prod', { compact: !detailed }]}>
+  {
+    WORKSHOP.map((w, i) => (
+      <article class:list={['p reveal', { flip: i % 2 === 1 }]} id={w.id}>
+        <div class="p-media media">
+          <Art variant={w.art} />
+          <span class="p-idx">0{i + 1}</span>
+        </div>
+        <div class="p-body">
+          <h3 class="serif">{w.t}</h3>
+          <p class="muted">{w.d}</p>
+          {detailed && (
+            <ul class="tick-list">
+              {w.list.map((l) => <li>{l}</li>)}
+            </ul>
+          )}
+        </div>
+      </article>
+    ))
+  }
+</div>
+
+<style>
+  .prod {
+    display: grid;
+    gap: clamp(20px, 3vw, 28px);
+  }
+
+  .p {
+    display: grid;
+    gap: clamp(20px, 4vw, 56px);
+    align-items: center;
+    padding: clamp(14px, 1.6vw, 18px);
+    border: 1px solid var(--line-dark);
+    border-radius: calc(var(--radius) + 8px);
+    background: rgb(255 255 255 / 0.02);
+  }
+
+  @media (min-width: 900px) {
+    .p {
+      grid-template-columns: 1.1fr 1fr;
+    }
+
+    .flip .p-media {
+      order: 2;
+    }
+  }
+
+  .p-media {
+    aspect-ratio: 16 / 10;
+  }
+
+  @media (min-width: 900px) {
+    .compact {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .compact .p {
+      grid-template-columns: 1fr;
+      align-items: start;
+      align-content: start;
+    }
+
+    .compact .flip .p-media {
+      order: 0;
+    }
+
+    .compact h3 {
+      font-size: clamp(1.5rem, 2.2vw, 2rem);
+    }
+  }
+
+  .p-idx {
+    position: absolute;
+    top: 16px;
+    left: 18px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.4);
+    backdrop-filter: blur(6px);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .p-body {
+    display: grid;
+    gap: 14px;
+    padding: 8px clamp(8px, 2vw, 24px) 16px;
+  }
+
+  h3 {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+  }
+
+  p {
+    margin: 0;
+  }
+</style>

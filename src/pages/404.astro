@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import Art from '../components/Art.astro';
+---
+
+<Base title="Страница не найдена" description="Такой страницы нет. Перейдите на главную или в раздел услуг." noindex>
+  <section class="section">
+    <div class="container nf">
+      <div>
+        <p class="eyebrow">Ошибка 404</p>
+        <h1 class="h-display">Эту стену мы <em>ещё не построили</em></h1>
+        <p class="lead">Страница не найдена. Возможно, она переехала или в адресе опечатка.</p>
+        <div class="ctas">
+          <a class="btn btn--accent" href="/">На главную</a>
+          <a class="btn btn--ghost" href="/uslugi/">Все услуги</a>
+        </div>
+      </div>
+      <div class="media"><Art variant="living" state="before" /></div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf {
+    display: grid;
+    gap: 48px;
+    align-items: center;
+  }
+
+  .nf > div:first-child {
+    display: grid;
+    gap: 22px;
+  }
+
+  @media (min-width: 1000px) {
+    .nf {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .media {
+    aspect-ratio: 4 / 3;
+  }
+
+  .ctas {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+</style>

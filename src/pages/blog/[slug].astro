@@ -1,0 +1,115 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Art from '../../components/Art.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import { ARTICLES, type Article } from '../../data/articles';
+import { article, breadcrumbs } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return ARTICLES.map((a) => ({ params: { slug: a.slug }, props: { a } }));
+}
+const { a } = Astro.props as { a: Article };
+const url = `/blog/${a.slug}/`;
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Журнал', url: '/blog/' },
+  { name: a.title, url },
+];
+const dateFmt = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+const more = ARTICLES.filter((x) => x.slug !== a.slug).slice(0, 2);
+---
+
+<Base title={a.title} description={a.description} schema={[article({ ...a, url }), breadcrumbs(crumbs)]}>
+  <article class="section section--tight">
+    <div class="container narrow">
+      <Breadcrumbs items={crumbs} />
+      <p class="meta"><span class="chip">{a.tag}</span> <time datetime={a.date}>{dateFmt.format(new Date(a.date))}</time> · {a.readMin} мин чтения</p>
+      <h1 class="h-display">{a.title}</h1>
+      <p class="lead">{a.description}</p>
+    </div>
+    <div class="container">
+      <div class="cover media"><Art variant={a.art} eager /></div>
+    </div>
+    <div class="container narrow">
+      <div class="prose" set:html={a.html} />
+      <aside class="box">
+        <p class="h-card">Нужна консультация по вашему объекту?</p>
+        <p class="muted">Инженер приедет на бесплатный замер и ответит на вопросы на месте.</p>
+        <button class="btn btn--accent" data-lead={`Статья: ${a.title}`}>Записаться на замер <span class="arrow">→</span></button>
+      </aside>
+      <nav class="more" aria-label="Читайте также">
+        <p class="eyebrow">Читайте также</p>
+        {more.map((m) => <a href={`/blog/${m.slug}/`} class="h-card">{m.title} →</a>)}
+      </nav>
+    </div>
+  </article>
+  <CtaBlock source="Статья" />
+</Base>
+
+<style>
+  .narrow {
+    max-width: 860px;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.86rem;
+    color: var(--muted);
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    margin: 14px 0 20px;
+  }
+
+  .cover {
+    aspect-ratio: 16 / 7;
+    margin: 40px 0;
+  }
+
+  @media (max-width: 700px) {
+    .cover {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  .prose {
+    font-size: 1.08rem;
+  }
+
+  .prose :global(a) {
+    color: var(--accent-ink);
+  }
+
+  .box {
+    display: grid;
+    gap: 6px;
+    justify-items: start;
+    margin: 48px 0;
+    padding: 32px;
+    border-radius: var(--radius);
+    background: var(--paper-2);
+  }
+
+  .box .btn {
+    margin-top: 10px;
+  }
+
+  .more {
+    display: grid;
+    gap: 14px;
+  }
+
+  .more a {
+    text-decoration: none;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .more a:hover {
+    color: var(--accent);
+  }
+</style>

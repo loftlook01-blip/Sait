@@ -1,0 +1,11 @@
+---
+import CityHome from '../../components/CityHome.astro';
+import { SECONDARY_CITIES, type City } from '../../data/cities';
+
+export function getStaticPaths() {
+  return SECONDARY_CITIES.map((city) => ({ params: { city: city.slug }, props: { city } }));
+}
+const { city } = Astro.props as { city: City };
+---
+
+<CityHome city={city} />

@@ -1,0 +1,107 @@
+---
+import Art from './Art.astro';
+import { PROJECTS } from '../data/content';
+interface Props {
+  limit?: number;
+}
+const { limit } = Astro.props;
+const list = limit ? PROJECTS.slice(0, limit) : PROJECTS;
+---
+
+<div class="projects">
+  {
+    list.map((p, i) => (
+      <a href={`/portfolio/${p.slug}/`} class:list={['pj reveal', { big: i % 4 === 0 || i % 4 === 3 }]}>
+        <div class="pj-media media">
+          <Art variant={p.art} photo={p.photos?.[0]} />
+          {p.concept && <span class="concept">Концепт студии</span>}
+        </div>
+        <div class="pj-info">
+          <div>
+            <h3 class="h-card">{p.title}</h3>
+            <p class="muted">{p.type} · {p.area} м² · {p.district}</p>
+          </div>
+          <span class="days">
+            <b>{p.days}</b> дней
+          </span>
+        </div>
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  .projects {
+    display: grid;
+    gap: clamp(16px, 2vw, 28px);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+  }
+
+  @media (min-width: 1100px) {
+    .projects {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .big {
+      grid-column: span 2;
+    }
+
+    .big .pj-media {
+      aspect-ratio: 16 / 9.4;
+    }
+  }
+
+  .pj {
+    display: grid;
+    gap: 16px;
+    text-decoration: none;
+  }
+
+  .pj-media {
+    aspect-ratio: 4 / 3.4;
+  }
+
+  .pj-media :global(.art) {
+    transition: transform 0.9s var(--ease);
+  }
+
+  .pj:hover .pj-media :global(.art) {
+    transform: scale(1.04);
+  }
+
+  .concept {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgb(251 249 246 / 0.9);
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+
+  .pj-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .pj-info p {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+  }
+
+  .days {
+    white-space: nowrap;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .days b {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 1.6rem;
+    color: var(--ink);
+  }
+</style>

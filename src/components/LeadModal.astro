@@ -1,0 +1,85 @@
+---
+import LeadForm from './LeadForm.astro';
+import { SITE } from '../data/site';
+---
+
+<dialog class="lead-modal" data-lead-modal aria-labelledby="lead-modal-title">
+  <button class="close" data-close aria-label="Закрыть">✕</button>
+  <p class="eyebrow">Ответим за 15 минут</p>
+  <h2 id="lead-modal-title" class="serif">Бесплатный замер и&nbsp;смета</h2>
+  <p class="muted">Инженер приедет с лазерным оборудованием, оценит объект и подготовит предварительный расчёт. Это ни к чему вас не обязывает.</p>
+  <LeadForm source="Модальное окно" button="Записаться на замер" compact withMessage />
+  <p class="alt">
+    Или напишите: <a href={SITE.telegram} target="_blank" rel="noopener">Telegram</a> · <a href={SITE.whatsapp} target="_blank" rel="noopener">WhatsApp</a> · <a href={`tel:${SITE.phoneHref}`}>{SITE.phone}</a>
+  </p>
+</dialog>
+
+<script>
+  const modal = document.querySelector<HTMLDialogElement>('[data-lead-modal]');
+  document.addEventListener('click', (e) => {
+    const trigger = (e.target as HTMLElement).closest<HTMLElement>('[data-lead]');
+    if (trigger && modal) {
+      e.preventDefault();
+      const src = modal.querySelector<HTMLInputElement>('[data-source]');
+      const extra = modal.querySelector<HTMLInputElement>('[data-extra]');
+      if (src) src.value = trigger.dataset.lead || 'Модальное окно';
+      if (extra) extra.value = trigger.dataset.extra || '';
+      modal.showModal();
+      return;
+    }
+    if ((e.target as HTMLElement).closest('[data-close]') || e.target === modal) modal?.close();
+  });
+</script>
+
+<style>
+  .lead-modal {
+    width: min(520px, calc(100vw - 24px));
+    max-height: calc(100dvh - 24px);
+    padding: clamp(24px, 4vw, 40px);
+    border: 0;
+    border-radius: 26px;
+    background: var(--card);
+    color: var(--ink);
+    box-shadow: 0 50px 100px -30px rgb(0 0 0 / 0.5);
+  }
+
+  .lead-modal[open] {
+    animation: pop 0.35s var(--ease);
+  }
+
+  .lead-modal::backdrop {
+    background: rgb(21 19 15 / 0.5);
+    backdrop-filter: blur(6px);
+  }
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+    }
+  }
+
+  h2 {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    margin: 10px 0 12px;
+  }
+
+  .close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: transparent;
+    cursor: pointer;
+    color: var(--ink);
+  }
+
+  .alt {
+    margin: 16px 0 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+</style>

@@ -1,0 +1,142 @@
+---
+import Art from './Art.astro';
+import { SERVICES } from '../data/services';
+import { cityServiceUrl, type City } from '../data/cities';
+import { fmt } from '../data/site';
+
+interface Props {
+  city: City;
+  exclude?: string;
+}
+const { city, exclude } = Astro.props;
+const list = SERVICES.filter((s) => s.slug !== exclude);
+---
+
+<div class="services">
+  {
+    list.map((s, i) => (
+      <a href={cityServiceUrl(city, s.slug)} class:list={['svc', 'reveal', { wide: !exclude && (i === 0 || (i === list.length - 1 && list.length % 3 === 1)) }]}>
+        <div class="svc-media media">
+          <Art variant={s.art} />
+        </div>
+        <div class="svc-body">
+          <div>
+            <h3 class="h-card">{s.name}</h3>
+            <p>{s.lead}</p>
+          </div>
+          <div class="svc-meta">
+            <span class="price">от {fmt.rub(s.priceFrom)}<small>/{s.unit}</small></span>
+            <span class="go" aria-hidden="true">→</span>
+          </div>
+        </div>
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  .services {
+    display: grid;
+    gap: clamp(16px, 2vw, 24px);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  }
+
+  .svc {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    text-decoration: none;
+    transition:
+      transform 0.4s var(--ease),
+      box-shadow 0.4s var(--ease);
+  }
+
+  .svc:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 60px -30px rgb(21 19 15 / 0.35);
+  }
+
+  .svc-media {
+    aspect-ratio: 16 / 10;
+    border-radius: 0;
+  }
+
+  .svc-media :global(.art) {
+    transition: transform 0.8s var(--ease);
+  }
+
+  .svc:hover .svc-media :global(.art) {
+    transform: scale(1.05);
+  }
+
+  .svc-body {
+    display: grid;
+    gap: 16px;
+    align-content: space-between;
+    padding: 24px 26px 26px;
+  }
+
+  .svc-body p {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .svc-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .price {
+    font-weight: 700;
+  }
+
+  .price small {
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .go {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    transition: 0.3s var(--ease);
+  }
+
+  .svc:hover .go {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  @media (min-width: 1100px) {
+    .wide {
+      grid-column: span 2;
+      grid-template-columns: 1.2fr 1fr;
+      grid-template-rows: 1fr;
+    }
+
+    .wide .svc-media {
+      aspect-ratio: auto;
+      height: 100%;
+      min-height: 360px;
+    }
+
+    .wide .svc-body {
+      padding: 36px;
+    }
+
+    .wide .h-card {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: 2.2rem;
+    }
+  }
+</style>

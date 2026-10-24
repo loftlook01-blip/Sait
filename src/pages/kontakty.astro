@@ -1,0 +1,134 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import LeadForm from '../components/LeadForm.astro';
+import { SITE } from '../data/site';
+import { PRIMARY_CITY, ACTIVE_CITIES } from '../data/cities';
+import { breadcrumbs } from '../lib/schema';
+
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Контакты', url: '/kontakty/' },
+];
+const c = PRIMARY_CITY;
+const mapSrc = `https://yandex.ru/map-widget/v1/?ll=${c.lng}%2C${c.lat}&z=12&pt=${c.lng},${c.lat},pm2rdm`;
+---
+
+<Base
+  title="Контакты — ремонт под ключ в Архангельске"
+  description={`Телефон ${SITE.phone}, ${SITE.hours.label}. Офис и производство в Архангельске. Выезд на замер по Архангельску, Северодвинску и Новодвинску бесплатно.`}
+  schema={[breadcrumbs(crumbs)]}
+>
+  <PageHero title="Давайте <em>познакомимся</em>" eyebrow="Контакты" lead="Позвоните, напишите в мессенджер или оставьте заявку — ответим в течение 15 минут в рабочее время." crumbs={crumbs} />
+
+  <section class="section section--tight">
+    <div class="container grid-c">
+      <div class="info">
+        <a class="big" href={`tel:${SITE.phoneHref}`}>{SITE.phone}</a>
+        <a class="mail" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        <dl>
+          <div><dt>Режим работы</dt><dd>{SITE.hours.label}</dd></div>
+          <div><dt>Офис</dt><dd>{c.address}</dd></div>
+          <div><dt>Производство</dt><dd>{SITE.workshop.address}</dd></div>
+          <div><dt>География</dt><dd>{ACTIVE_CITIES.map((x) => x.name).join(', ')}</dd></div>
+          {SITE.inn && <div><dt>Реквизиты</dt><dd>{SITE.legalName}, ИНН {SITE.inn}{SITE.ogrn && `, ОГРН ${SITE.ogrn}`}</dd></div>}
+        </dl>
+        <div class="msg">
+          <a class="btn btn--ghost" href={SITE.telegram} target="_blank" rel="noopener">Telegram</a>
+          <a class="btn btn--ghost" href={SITE.whatsapp} target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn btn--ghost" href={SITE.vk} target="_blank" rel="noopener">ВКонтакте</a>
+        </div>
+      </div>
+      <div class="card">
+        <h2 class="h-card" style="margin-bottom:18px">Напишите нам</h2>
+        <LeadForm source="Страница контактов" withMessage button="Отправить" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="map media">
+        <iframe src={mapSrc} title={`Карта: ${SITE.brand}, ${c.name}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .grid-c {
+    display: grid;
+    gap: clamp(32px, 5vw, 64px);
+    align-items: start;
+  }
+
+  @media (min-width: 1000px) {
+    .grid-c {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .info {
+    display: grid;
+    gap: 14px;
+  }
+
+  .big {
+    font-family: var(--font-serif);
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    text-decoration: none;
+    line-height: 1.1;
+  }
+
+  .mail {
+    font-size: 1.2rem;
+  }
+
+  dl {
+    margin: 18px 0;
+    display: grid;
+    border-top: 1px solid var(--line);
+  }
+
+  dl div {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  dt {
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  @media (max-width: 560px) {
+    dl div {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+
+  .msg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .map {
+    aspect-ratio: 16 / 7;
+    min-height: 360px;
+  }
+
+  .map iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    filter: grayscale(0.6) contrast(1.05);
+  }
+</style>

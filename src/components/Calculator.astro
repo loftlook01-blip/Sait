@@ -1,0 +1,315 @@
+---
+import { PACKAGES } from '../data/content';
+import { fmt } from '../data/site';
+---
+
+<div class="calc" id="calc" data-calc>
+  <form class="calc-form" onsubmit="return false">
+    <fieldset>
+      <legend>1. Тип объекта</legend>
+      <div class="seg">
+        <label><input type="radio" name="type" value="new" checked /><span>Новостройка</span></label>
+        <label><input type="radio" name="type" value="old" /><span>Вторичка</span></label>
+        <label><input type="radio" name="type" value="house" /><span>Частный дом</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>2. Площадь — <output name="areaOut">54</output> м²</legend>
+      <input type="range" name="area" min="15" max="250" step="1" value="54" aria-label="Площадь, м²" />
+      <div class="scale"><span>15</span><span>100</span><span>250 м²</span></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>3. Уровень ремонта</legend>
+      <div class="pk">
+        {
+          PACKAGES.map((p) => (
+            <label>
+              <input type="radio" name="pkg" value={p.id} checked={p.accent} />
+              <span>
+                <b>{p.name}</b>
+                <small>от {fmt.rub(p.price)}/м²</small>
+              </span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>4. Санузлы</legend>
+      <div class="seg">
+        <label><input type="radio" name="baths" value="1" checked /><span>1</span></label>
+        <label><input type="radio" name="baths" value="2" /><span>2</span></label>
+        <label><input type="radio" name="baths" value="3" /><span>3+</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>5. Дополнительно</legend>
+      <div class="opts">
+        <label><input type="checkbox" name="design" checked /><span>Дизайн-проект</span></label>
+        <label><input type="checkbox" name="furniture" /><span>Кухня и шкафы из нашего цеха</span></label>
+        <label><input type="checkbox" name="metal" /><span>Металлоконструкции (перегородки, стеллажи)</span></label>
+        <label><input type="checkbox" name="materials" /><span>Закупка материалов под ключ</span></label>
+      </div>
+    </fieldset>
+  </form>
+
+  <aside class="calc-result" aria-live="polite">
+    <p class="eyebrow">Предварительный расчёт</p>
+    <p class="total"><span data-total>—</span></p>
+    <p class="range muted">Диапазон: <span data-range>—</span></p>
+    <dl>
+      <div><dt>Работы</dt><dd data-works>—</dd></div>
+      <div><dt>Дизайн-проект</dt><dd data-design>—</dd></div>
+      <div><dt>Производство</dt><dd data-prod>—</dd></div>
+      <div><dt>Материалы</dt><dd data-mat>—</dd></div>
+      <div><dt>Срок</dt><dd data-days>—</dd></div>
+    </dl>
+    <button class="btn btn--accent" data-lead="Калькулятор: точная смета" data-calc-cta>Получить точную смету <span class="arrow">→</span></button>
+    <p class="note">Расчёт ориентировочный. Точную стоимость фиксируем в договоре после бесплатного замера.</p>
+  </aside>
+</div>
+
+<script>
+  import { PACKAGES } from '../data/content';
+  import { SITE } from '../data/site';
+
+  const rub = (n: number) => new Intl.NumberFormat('ru-RU').format(Math.round(n / 1000) * 1000) + ' ₽';
+  const TYPE_K: Record<string, number> = { new: 1, old: 1.12, house: 1.08 };
+
+  document.querySelectorAll<HTMLElement>('[data-calc]').forEach((root) => {
+    const form = root.querySelector('form')!;
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+
+    const update = () => {
+      const fd = new FormData(form);
+      const area = Number(fd.get('area'));
+      const type = String(fd.get('type'));
+      const pkg = PACKAGES.find((p) => p.id === fd.get('pkg'))!;
+      const baths = Number(fd.get('baths'));
+      const pkgK = pkg.price / PACKAGES[0].price;
+
+      const works = area * pkg.price * TYPE_K[type] + (baths - 1) * 55000 * pkgK;
+      const design = fd.get('design') ? area * SITE.promises.designFrom * (pkg.id === 'design' ? 2 : 1) : 0;
+      const prod = (fd.get('furniture') ? 180000 + area * 1500 : 0) * pkgK + (fd.get('metal') ? 65000 * pkgK : 0);
+      const mat = fd.get('materials') ? area * pkg.materials : 0;
+      const total = works + design + prod + mat;
+      const days = Math.round(pkg.days * Math.sqrt(area / 50) * (type === 'old' ? 1.1 : 1));
+
+      (form.elements.namedItem('areaOut') as HTMLOutputElement).value = String(area);
+      $('[data-total]').textContent = rub(total);
+      $('[data-range]').textContent = `${rub(total * 0.9)} – ${rub(total * 1.15)}`;
+      $('[data-works]').textContent = rub(works);
+      $('[data-design]').textContent = design ? rub(design) : '—';
+      $('[data-prod]').textContent = prod ? rub(prod) : '—';
+      $('[data-mat]').textContent = mat ? rub(mat) : 'отдельно';
+      $('[data-days]').textContent = `≈ ${days} дней`;
+
+      const typeName = { new: 'новостройка', old: 'вторичка', house: 'дом' }[type];
+      $('[data-calc-cta]').dataset.extra = `${typeName}, ${area} м², «${pkg.name}», санузлов: ${baths}, итого ≈ ${rub(total)}`;
+    };
+
+    form.addEventListener('input', update);
+    update();
+  });
+</script>
+
+<style>
+  .calc {
+    display: grid;
+    gap: clamp(20px, 3vw, 32px);
+    align-items: start;
+  }
+
+  @media (min-width: 1000px) {
+    .calc {
+      grid-template-columns: 1.4fr 1fr;
+    }
+
+    .calc-result {
+      position: sticky;
+      top: calc(var(--header-h) + 20px);
+    }
+  }
+
+  .calc-form {
+    display: grid;
+    gap: 14px;
+  }
+
+  fieldset {
+    margin: 0;
+    padding: 22px 24px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    min-width: 0;
+  }
+
+  legend {
+    float: left;
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 0;
+    font-weight: 700;
+  }
+
+  legend output {
+    color: var(--accent);
+  }
+
+  .seg,
+  .pk,
+  .opts {
+    display: grid;
+    gap: 8px;
+    clear: both;
+  }
+
+  .seg {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  }
+
+  .pk {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .seg label,
+  .pk label,
+  .opts label {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .seg input,
+  .pk input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .seg span,
+  .pk span {
+    display: grid;
+    place-items: center;
+    min-height: 50px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    font-weight: 600;
+    text-align: center;
+    transition: 0.2s;
+  }
+
+  .pk span {
+    place-items: start;
+    text-align: left;
+  }
+
+  .pk small {
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .seg input:checked + span,
+  .pk input:checked + span {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .pk input:checked + span small {
+    color: var(--muted-dark);
+  }
+
+  .seg input:focus-visible + span,
+  .pk input:focus-visible + span {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .opts label {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+
+  .opts input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--accent);
+    flex: none;
+  }
+
+  input[type='range'] {
+    width: 100%;
+    accent-color: var(--accent);
+    clear: both;
+    height: 28px;
+  }
+
+  .scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .calc-result {
+    display: grid;
+    gap: 14px;
+    padding: clamp(24px, 3vw, 36px);
+    border-radius: var(--radius);
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .calc-result .eyebrow {
+    color: var(--accent);
+  }
+
+  .total {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    line-height: 1;
+  }
+
+  .range {
+    margin: 0;
+    color: var(--muted-dark);
+    font-size: 0.9rem;
+  }
+
+  dl {
+    margin: 8px 0;
+    display: grid;
+  }
+
+  dl div {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line-dark);
+  }
+
+  dt {
+    color: var(--muted-dark);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .note {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--muted-dark);
+  }
+</style>

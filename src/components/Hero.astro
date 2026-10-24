@@ -1,0 +1,226 @@
+---
+import Art from './Art.astro';
+import { SITE, guaranteeLabel } from '../data/site';
+import type { City } from '../data/cities';
+
+interface Props {
+  city: City;
+}
+const { city } = Astro.props;
+const { checklistPoints } = SITE.promises;
+---
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="copy">
+      <h1 class="h1">
+        <span class="eyebrow">Ремонт под ключ {city.in}</span>
+        <span class="h-display">Ремонт, который делают <em>мастера</em>, а&nbsp;не&nbsp;посредники</span>
+      </h1>
+      <p class="lead">
+        Дизайн-проект, фиксированная смета и собственный цех: столярное и сварочное производство с порошковой покраской. Мебель, двери и металл делаем сами — точно по размерам вашего объекта.
+      </p>
+      <div class="ctas">
+        <a href="/ceny/#calc" class="btn btn--accent">Рассчитать стоимость <span class="arrow">→</span></a>
+        <button class="btn btn--ghost" data-lead="Бесплатный замер (hero)">Вызвать замерщика бесплатно</button>
+      </div>
+      <ul class="facts" aria-label="Наши обязательства">
+        <li><b>{guaranteeLabel()}</b><span>гарантии по договору</span></li>
+        <li><b>{checklistPoints}+</b><span>пунктов контроля качества</span></li>
+        <li><b>0 ₽</b><span>замер и предварительная смета</span></li>
+      </ul>
+    </div>
+
+    <div class="visual">
+      <div class="frame frame--main media">
+        <Art variant="living" eager />
+      </div>
+      <div class="frame frame--side media">
+        <Art variant="blueprint" />
+      </div>
+      <div class="badge badge--1">
+        <span class="dot"></span>
+        <div><b>Фиксированная смета</b><small>цена не меняется в процессе</small></div>
+      </div>
+      <div class="badge badge--2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 21V10l5 3V10l5 3V6l8 4v11z"></path></svg>
+        <div><b>Собственный цех</b><small>дерево · металл · порошок</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    padding: clamp(28px, 5vw, 64px) 0 clamp(56px, 8vw, 110px);
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: -20% -10% auto auto;
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(closest-side, rgb(182 119 75 / 0.16), transparent);
+    pointer-events: none;
+  }
+
+  .hero-grid {
+    display: grid;
+    gap: clamp(40px, 6vw, 72px);
+    align-items: center;
+  }
+
+  @media (min-width: 1080px) {
+    .hero-grid {
+      grid-template-columns: 1.05fr 1fr;
+    }
+  }
+
+  .copy {
+    display: grid;
+    gap: 26px;
+    animation: rise 0.9s var(--ease) both;
+  }
+
+  .h1 {
+    display: grid;
+    gap: 26px;
+  }
+
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  @media (max-width: 560px) {
+    .ctas .btn {
+      width: 100%;
+      white-space: normal;
+      text-align: center;
+    }
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    list-style: none;
+    padding: 24px 0 0;
+    margin: 6px 0 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .facts li {
+    display: grid;
+    gap: 4px;
+  }
+
+  .facts b {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(1.7rem, 3.2vw, 2.6rem);
+    line-height: 1;
+  }
+
+  .facts span {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.35;
+  }
+
+  .visual {
+    position: relative;
+    aspect-ratio: 1 / 1.02;
+    animation: rise 1.1s 0.1s var(--ease) both;
+  }
+
+  .frame {
+    position: absolute;
+    box-shadow: 0 40px 80px -40px rgb(21 19 15 / 0.45);
+  }
+
+  .frame--main {
+    inset: 0 0 14% 12%;
+    border-radius: 28px;
+  }
+
+  .frame--side {
+    left: 0;
+    bottom: 0;
+    width: 44%;
+    aspect-ratio: 4 / 3;
+    border-radius: 20px;
+    border: 6px solid var(--paper);
+  }
+
+  .badge {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 18px;
+    background: rgb(251 249 246 / 0.92);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 40px -20px rgb(21 19 15 / 0.4);
+    font-size: 0.9rem;
+    line-height: 1.25;
+  }
+
+  .badge div {
+    display: grid;
+  }
+
+  .badge small {
+    color: var(--muted);
+  }
+
+  .badge--1 {
+    top: 8%;
+    left: 2%;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .badge--2 {
+    right: 4%;
+    bottom: 4%;
+    color: var(--ink);
+    animation: float 7s 1s ease-in-out infinite;
+  }
+
+  .badge--2 svg {
+    color: var(--accent);
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3c9a6a;
+    box-shadow: 0 0 0 5px rgb(60 154 106 / 0.18);
+  }
+
+  @media (max-width: 560px) {
+    .badge {
+      padding: 10px 12px;
+      font-size: 0.78rem;
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+
+  @keyframes float {
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+</style>

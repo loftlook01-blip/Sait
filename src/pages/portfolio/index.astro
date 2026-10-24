@@ -1,0 +1,29 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import ProjectsGrid from '../../components/ProjectsGrid.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import { breadcrumbs } from '../../lib/schema';
+
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Проекты', url: '/portfolio/' },
+];
+---
+
+<Base
+  title="Проекты и дизайн интерьеров — портфолио"
+  description="Проекты интерьеров и ремонтов: квартиры, дома, офисы. Решения с мебелью и металлоконструкциями из собственного цеха в Архангельске."
+  schema={[breadcrumbs(crumbs)]}
+>
+  <PageHero
+    title="Проекты, в которых <em>важна каждая деталь</em>"
+    eyebrow="Портфолио"
+    lead="Концепции нашей студии и реализованные объекты. В каждом проекте — решения, которые мы делаем руками: от скрытых дверей до лестниц на металлическом косоуре."
+    crumbs={crumbs}
+  />
+  <section class="section section--tight">
+    <div class="container"><ProjectsGrid /></div>
+  </section>
+  <CtaBlock title="Хотите такой же интерьер?" source="Портфолио" />
+</Base>

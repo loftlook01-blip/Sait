@@ -1,0 +1,62 @@
+---
+import Icon from './Icon.astro';
+import { TRUST } from '../data/content';
+---
+
+<div class="trust">
+  {
+    TRUST.map((t, i) => (
+      <article class="t reveal">
+        <span class="num">{String(i + 1).padStart(2, '0')}</span>
+        <span class="ic"><Icon name={t.icon} /></span>
+        <h3 class="h-card">{t.t}</h3>
+        <p>{t.d}</p>
+      </article>
+    ))
+  }
+</div>
+
+<style>
+  .trust {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    border-top: 1px solid var(--line-dark);
+    border-left: 1px solid var(--line-dark);
+  }
+
+  .t {
+    position: relative;
+    padding: clamp(26px, 3vw, 40px);
+    border-right: 1px solid var(--line-dark);
+    border-bottom: 1px solid var(--line-dark);
+    transition: background 0.4s;
+  }
+
+  .t:hover {
+    background: rgb(255 255 255 / 0.03);
+  }
+
+  .num {
+    position: absolute;
+    top: 24px;
+    right: 26px;
+    font-family: var(--font-serif);
+    color: var(--muted-dark);
+  }
+
+  .ic {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 28px;
+    border-radius: 16px;
+    background: rgb(182 119 75 / 0.14);
+    color: var(--accent);
+  }
+
+  p {
+    margin: 12px 0 0;
+    color: var(--muted-dark);
+  }
+</style>

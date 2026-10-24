@@ -1,0 +1,221 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from './PageHero.astro';
+import ServicesGrid from './ServicesGrid.astro';
+import Process from './Process.astro';
+import Faq from './Faq.astro';
+import CtaBlock from './CtaBlock.astro';
+import Calculator from './Calculator.astro';
+import BeforeAfter from './BeforeAfter.astro';
+import Trust from './Trust.astro';
+import { withCity, type Service } from '../data/services';
+import { ACTIVE_CITIES, cityBase, cityServiceUrl, type City } from '../data/cities';
+import { FAQ } from '../data/content';
+import { fmt, guaranteeLabel } from '../data/site';
+import { breadcrumbs, faq as faqSchema, service as serviceSchema } from '../lib/schema';
+
+interface Props {
+  service: Service;
+  city: City;
+}
+const { service: s, city } = Astro.props;
+const url = cityServiceUrl(city, s.slug);
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  ...(city.primary ? [{ name: 'Услуги', url: '/uslugi/' }] : [{ name: city.name, url: cityBase(city) }]),
+  { name: s.name, url },
+];
+const faqs = [...s.faq, ...FAQ.slice(0, 3)];
+const title = `${s.name} ${city.in} — цена от ${fmt.rub(s.priceFrom)}/${s.unit}`;
+const description = `${s.name} ${city.in}: ${s.lead.replace(/\.$/, '')}. Фиксированная смета, гарантия ${guaranteeLabel()}, собственное производство. Бесплатный замер.`;
+const others = ACTIVE_CITIES.filter((c) => c.slug !== city.slug);
+const isRoomArt = !['blueprint'].includes(s.art);
+---
+
+<Base title={title} description={description} city={city} schema={[serviceSchema(s, city, url), faqSchema(faqs), breadcrumbs(crumbs)]}>
+  <PageHero title={`${s.name} <em>${city.in}</em>`} eyebrow={`от ${fmt.rub(s.priceFrom)} за ${s.unit} · ${s.duration}`} lead={s.lead} crumbs={crumbs} art={s.art}>
+    <div class="hero-ctas">
+      <button class="btn btn--accent" data-lead={`${s.name} — замер`}>Бесплатный замер <span class="arrow">→</span></button>
+      <a class="btn btn--ghost" href="#calc">Рассчитать стоимость</a>
+    </div>
+  </PageHero>
+
+  <section class="section section--tight">
+    <div class="container two">
+      <div class="prose reveal">
+        {s.body.map((p) => <p class="big">{withCity(p, city)}</p>)}
+        <div class="for">
+          <p class="eyebrow">Подходит для</p>
+          <ul>{s.forWhom.map((f) => <li class="chip">{f}</li>)}</ul>
+        </div>
+      </div>
+      <aside class="card includes reveal">
+        <h2 class="h-card">Что входит</h2>
+        <ul class="tick-list">{s.includes.map((i) => <li>{i}</li>)}</ul>
+        <div class="price-line">
+          <span>Стоимость работ</span>
+          <b>от {fmt.rub(s.priceFrom)}/{s.unit}</b>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  {
+    isRoomArt && (
+      <section class="section section--tight">
+        <div class="container ba-row">
+          <div class="reveal">
+            <p class="eyebrow">До и после</p>
+            <h2 class="h-section">Качество начинается с&nbsp;<em>невидимого</em></h2>
+            <p class="lead">Ровные основания, правильная гидроизоляция и аккуратная электрика. Скрытые работы фотографируем до закрытия — архив остаётся у вас.</p>
+          </div>
+          <div class="reveal"><BeforeAfter variant={s.art} /></div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section section--dark">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Гарантии</p>
+        <h2 class="h-section">Почему нам можно <em>доверять</em></h2>
+      </div>
+      <Trust />
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Этапы</p>
+        <h2 class="h-section">Как проходит работа</h2>
+      </div>
+      <Process />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Калькулятор</p>
+        <h2 class="h-section">Рассчитайте стоимость {city.in}</h2>
+      </div>
+      <Calculator />
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Вопросы</p>
+        <h2 class="h-section">Частые вопросы</h2>
+      </div>
+      <Faq items={faqs} />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Другие услуги</p>
+        <h2 class="h-section">Ещё мы делаем</h2>
+      </div>
+      <ServicesGrid city={city} exclude={s.slug} />
+      {
+        others.length > 0 && (
+          <p class="geo-links muted">
+            {s.name} в других городах:{' '}
+            {others.map((c, i) => (
+              <>
+                <a href={cityServiceUrl(c, s.slug)}>{c.name}</a>
+                {i < others.length - 1 ? ', ' : ''}
+              </>
+            ))}
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  <CtaBlock city={city} source={`Услуга: ${s.name} (${city.name})`} />
+</Base>
+
+<style>
+  .hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .two {
+    display: grid;
+    gap: clamp(28px, 5vw, 72px);
+    align-items: start;
+  }
+
+  @media (min-width: 1000px) {
+    .two {
+      grid-template-columns: 1.3fr 1fr;
+    }
+
+    .includes {
+      position: sticky;
+      top: calc(var(--header-h) + 20px);
+    }
+  }
+
+  .big {
+    font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+  }
+
+  .for ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+  }
+
+  .includes .h-card {
+    margin-bottom: 20px;
+  }
+
+  .price-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+
+  .price-line b {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 1.6rem;
+  }
+
+  .ba-row {
+    display: grid;
+    gap: clamp(28px, 5vw, 72px);
+    align-items: center;
+  }
+
+  .ba-row > div:first-child {
+    display: grid;
+    gap: 20px;
+  }
+
+  @media (min-width: 1000px) {
+    .ba-row {
+      grid-template-columns: 1fr 1.2fr;
+    }
+  }
+
+  .geo-links {
+    margin-top: 32px;
+  }
+</style>

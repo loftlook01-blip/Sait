@@ -1,0 +1,103 @@
+---
+import Art from './Art.astro';
+import type { ArtVariant } from './art';
+interface Props {
+  variant: ArtVariant;
+  before?: string;
+  after?: string;
+  label?: string;
+}
+const { variant, before, after, label = 'Сравнение до и после ремонта' } = Astro.props;
+---
+
+<div class="ba media" style="--pos:50%" data-ba>
+  <div class="layer after"><Art variant={variant} photo={after} /></div>
+  <div class="layer before"><Art variant={variant} state="before" photo={before} /></div>
+  <span class="tag tag--b">До</span>
+  <span class="tag tag--a">После</span>
+  <div class="handle" aria-hidden="true"><span>⟷</span></div>
+  <input type="range" min="0" max="100" value="50" aria-label={label} />
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-ba]').forEach((el) => {
+    const input = el.querySelector('input')!;
+    input.addEventListener('input', () => el.style.setProperty('--pos', input.value + '%'));
+  });
+</script>
+
+<style>
+  .ba {
+    aspect-ratio: 4 / 3;
+    user-select: none;
+  }
+
+  .layer {
+    position: absolute;
+    inset: 0;
+  }
+
+  .before {
+    clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+  }
+
+  .handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--pos);
+    width: 2px;
+    background: #fff;
+    transform: translateX(-1px);
+    pointer-events: none;
+  }
+
+  .handle span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--ink);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.3);
+    font-size: 1.2rem;
+  }
+
+  input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+  }
+
+  .tag {
+    position: absolute;
+    top: 16px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.45);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  .tag--b {
+    left: 16px;
+  }
+
+  .tag--a {
+    right: 16px;
+    background: var(--accent);
+  }
+</style>

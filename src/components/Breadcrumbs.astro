@@ -1,0 +1,45 @@
+---
+interface Props {
+  items: { name: string; url: string }[];
+}
+const { items } = Astro.props;
+---
+
+<nav class="bc" aria-label="Хлебные крошки">
+  <ol>
+    {
+      items.map((it, i) => (
+        <li>
+          {i < items.length - 1 ? <a href={it.url}>{it.name}</a> : <span aria-current="page">{it.name}</span>}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 26px;
+    font-size: 0.84rem;
+    color: var(--muted);
+  }
+
+  li:not(:last-child)::after {
+    content: '/';
+    margin-left: 6px;
+    opacity: 0.5;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--ink);
+  }
+</style>

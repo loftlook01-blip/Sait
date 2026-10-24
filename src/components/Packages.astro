@@ -1,0 +1,114 @@
+---
+import { PACKAGES } from '../data/content';
+import { fmt } from '../data/site';
+---
+
+<div class="packages">
+  {
+    PACKAGES.map((p) => (
+      <article class:list={['pkg reveal', { accent: p.accent }]}>
+        {p.accent && <span class="pop">Выбирают чаще</span>}
+        <h3 class="serif">{p.name}</h3>
+        <p class="note">{p.note}</p>
+        <p class="price">
+          от <b>{fmt.rub(p.price)}</b>
+          <span>/м² работы</span>
+        </p>
+        <ul class="tick-list">
+          {p.features.map((f) => <li>{f}</li>)}
+        </ul>
+        <button class:list={['btn', p.accent ? 'btn--accent' : 'btn--ghost']} data-lead={`Пакет «${p.name}»`}>
+          Рассчитать «{p.name}»
+        </button>
+      </article>
+    ))
+  }
+</div>
+<p class="foot muted">* При заказе ремонта стоимость дизайн-проекта снижается — условия фиксируются в договоре.</p>
+
+<style>
+  .packages {
+    display: grid;
+    gap: clamp(16px, 2vw, 24px);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    align-items: stretch;
+  }
+
+  .pkg {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: clamp(26px, 3vw, 38px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+
+  .pkg.accent {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  .pkg.accent .note,
+  .pkg.accent .price span {
+    color: var(--muted-dark);
+  }
+
+  .pkg.accent .btn--ghost {
+    --fg: var(--paper);
+  }
+
+  .pop {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: 2.2rem;
+  }
+
+  .note {
+    margin: 0;
+    color: var(--muted);
+    min-height: 3em;
+  }
+
+  .price {
+    margin: 0;
+    padding: 18px 0;
+    border-block: 1px solid var(--line);
+  }
+
+  .accent .price {
+    border-color: var(--line-dark);
+  }
+
+  .price b {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 2.2rem;
+  }
+
+  .price span {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .tick-list {
+    flex: 1;
+  }
+
+  .foot {
+    margin-top: 18px;
+    font-size: 0.84rem;
+  }
+</style>

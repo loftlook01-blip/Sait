@@ -1,0 +1,267 @@
+---
+/** Главная страница города. Используется для / (основной город) и /<город>/ (остальные). */
+import Base from '../layouts/Base.astro';
+import Hero from './Hero.astro';
+import Marquee from './Marquee.astro';
+import ServicesGrid from './ServicesGrid.astro';
+import Trust from './Trust.astro';
+import BeforeAfter from './BeforeAfter.astro';
+import ProductionBlock from './ProductionBlock.astro';
+import Process from './Process.astro';
+import Packages from './Packages.astro';
+import Calculator from './Calculator.astro';
+import ProjectsGrid from './ProjectsGrid.astro';
+import Faq from './Faq.astro';
+import CtaBlock from './CtaBlock.astro';
+import { FAQ } from '../data/content';
+import { SITE } from '../data/site';
+import type { City } from '../data/cities';
+import { faq as faqSchema } from '../lib/schema';
+
+interface Props {
+  city: City;
+}
+const { city } = Astro.props;
+
+const title = `Ремонт квартир под ключ ${city.in}`;
+const description = `Ремонт квартир и домов под ключ ${city.in}: дизайн-проект, фиксированная смета в договоре, оплата по этапам. Собственный столярный и сварочный цех с порошковой покраской. Бесплатный замер.`;
+---
+
+<Base title={title} description={description} city={city} schema={[faqSchema(FAQ)]}>
+  <Hero city={city} />
+  <Marquee />
+
+  <section class="section" id="services">
+    <div class="container">
+      <div class="section-head section-head--split">
+        <div>
+          <p class="eyebrow">Что мы делаем</p>
+          <h2 class="h-section">Полный цикл — от&nbsp;чертежа до&nbsp;<em>ключей</em></h2>
+        </div>
+        <p class="lead">Квартиры, дома и коммерческие помещения {city.in}. Одна команда отвечает за проект, ремонт и производство — вам не нужно координировать десяток подрядчиков.</p>
+      </div>
+      <ServicesGrid city={city} />
+    </div>
+  </section>
+
+  <section class="section section--dark">
+    <div class="container">
+      <div class="section-head section-head--split">
+        <div>
+          <p class="eyebrow">Почему нам доверяют</p>
+          <h2 class="h-section">Честные правила, записанные <em>в&nbsp;договоре</em></h2>
+        </div>
+        <p class="lead">Ремонт — это большие деньги и месяцы жизни. Поэтому все наши обещания — не слоганы, а пункты договора, которые вы можете проверить до подписания.</p>
+      </div>
+      <Trust />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container manifest">
+      <div class="manifest-copy reveal">
+        <p class="eyebrow">Качество, которое видно</p>
+        <h2 class="h-section">Из бетонной коробки — в&nbsp;дом, где хочется <em>жить</em></h2>
+        <p class="lead">Проведите по изображению, чтобы сравнить черновую и готовый интерьер. Хороший ремонт начинается с невидимого: ровных оснований, правильной гидроизоляции, аккуратной электрики.</p>
+        <ul class="tick-list">
+          <li>Скрытые работы фотографируем до закрытия — архив остаётся у вас</li>
+          <li>Стены выводим по маякам с допуском до 1 мм на 2 м</li>
+          <li>Приёмка каждого этапа по чек-листу из {SITE.promises.checklistPoints}+ пунктов</li>
+          <li>Исполнительная схема электрики и сантехники при сдаче</li>
+        </ul>
+      </div>
+      <div class="reveal"><BeforeAfter variant="living" /></div>
+    </div>
+  </section>
+
+  <section class="section section--dark" id="production">
+    <div class="container">
+      <div class="section-head section-head--split">
+        <div>
+          <p class="eyebrow">Собственное производство</p>
+          <h2 class="h-section">Свой цех — это <em>эксклюзив</em> по цене серийного</h2>
+        </div>
+        <div>
+          <p class="lead">Столярный участок, сварочный цех и камера порошковой покраски. Распиливаем, подгоняем и изготавливаем элементы точно под размеры вашего объекта — без ожидания и наценок посредников.</p>
+          <a class="btn btn--ghost" href="/proizvodstvo/">Подробнее о производстве <span class="arrow">→</span></a>
+        </div>
+      </div>
+      <ProductionBlock />
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Как мы работаем</p>
+        <h2 class="h-section">Шесть шагов без <em>сюрпризов</em></h2>
+      </div>
+      <Process />
+    </div>
+  </section>
+
+  <section class="section" id="prices">
+    <div class="container">
+      <div class="section-head section-head--split">
+        <div>
+          <p class="eyebrow">Стоимость</p>
+          <h2 class="h-section">Три уровня ремонта — <em>прозрачные</em> цены</h2>
+        </div>
+        <p class="lead">Цена за квадратный метр работ. Материалы можете покупать сами или доверить закупку нам — по ценам поставщиков, с доставкой и подъёмом.</p>
+      </div>
+      <Packages />
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Калькулятор</p>
+        <h2 class="h-section">Узнайте стоимость за&nbsp;<em>30&nbsp;секунд</em></h2>
+      </div>
+      <Calculator />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head section-head--split">
+        <div>
+          <p class="eyebrow">Проекты</p>
+          <h2 class="h-section">Интерьеры, которые мы <em>проектируем</em></h2>
+        </div>
+        <div>
+          <p class="lead">Концепции нашей студии — с решениями, которые мы реализуем в цехе и на объекте.</p>
+          <a class="btn btn--ghost" href="/portfolio/">Все проекты <span class="arrow">→</span></a>
+        </div>
+      </div>
+      <ProjectsGrid limit={4} />
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container geo">
+      <div>
+        <p class="eyebrow">Работаем {city.in}</p>
+        <h2 class="h-section">Знаем местный жилой фонд <em>изнутри</em></h2>
+        <p class="lead">{city.climateNote}</p>
+        {city.travel && <p class="chip">{city.travel}</p>}
+      </div>
+      <div class="geo-cols">
+        <div class="card">
+          <h3 class="h-card">Районы выезда</h3>
+          <ul class="districts">{city.districts.map((d) => <li>{d}</li>)}</ul>
+        </div>
+        <div class="card">
+          <h3 class="h-card">С чем работаем</h3>
+          <ul class="tick-list">{city.housing.map((h) => <li>{h}</li>)}</ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container faq-wrap">
+      <div>
+        <p class="eyebrow">Вопросы и ответы</p>
+        <h2 class="h-section">Отвечаем <em>честно</em></h2>
+        <p class="lead">Не нашли ответ? Задайте вопрос в мессенджере — инженер ответит в течение рабочего дня.</p>
+      </div>
+      <Faq items={FAQ} />
+    </div>
+  </section>
+
+  <CtaBlock city={city} source={`Главная ${city.name}`} />
+</Base>
+
+<style>
+  .manifest {
+    display: grid;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+  }
+
+  .manifest-copy {
+    display: grid;
+    gap: 22px;
+  }
+
+  @media (min-width: 1000px) {
+    .manifest {
+      grid-template-columns: 1fr 1.1fr;
+    }
+  }
+
+  .section-head .btn {
+    margin-top: 6px;
+  }
+
+  .geo {
+    display: grid;
+    gap: clamp(32px, 5vw, 64px);
+  }
+
+  .geo > div:first-child {
+    display: grid;
+    gap: 20px;
+    align-content: start;
+  }
+
+  .geo .chip {
+    justify-self: start;
+  }
+
+  @media (min-width: 1000px) {
+    .geo {
+      grid-template-columns: 1fr 1.2fr;
+    }
+  }
+
+  .geo-cols {
+    display: grid;
+    gap: 16px;
+  }
+
+  .geo-cols .h-card {
+    margin-bottom: 18px;
+  }
+
+  .districts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .districts li {
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: var(--paper);
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .faq-wrap {
+    display: grid;
+    gap: clamp(32px, 5vw, 72px);
+  }
+
+  .faq-wrap > div:first-child {
+    display: grid;
+    gap: 20px;
+    align-content: start;
+  }
+
+  @media (min-width: 1000px) {
+    .faq-wrap {
+      grid-template-columns: 0.8fr 1.4fr;
+    }
+
+    .faq-wrap > div:first-child {
+      position: sticky;
+      top: calc(var(--header-h) + 32px);
+    }
+  }
+</style>

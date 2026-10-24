@@ -1,0 +1,81 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import Art from '../../components/Art.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import { ARTICLES } from '../../data/articles';
+import { breadcrumbs } from '../../lib/schema';
+
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Журнал', url: '/blog/' },
+];
+const list = [...ARTICLES].sort((a, b) => b.date.localeCompare(a.date));
+const dateFmt = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<Base
+  title="Журнал о ремонте и интерьере"
+  description="Полезные статьи о ремонте квартир в Архангельске: цены, технологии для северного климата, дизайн-проект, производство мебели и металлоконструкций."
+  schema={[breadcrumbs(crumbs)]}
+>
+  <PageHero title="Журнал о&nbsp;ремонте <em>без воды</em>" eyebrow="Журнал" lead="Делимся опытом: цены, технологии и решения, которые помогут сделать ремонт правильно — даже если не с нами." crumbs={crumbs} />
+  <section class="section section--tight">
+    <div class="container posts">
+      {
+        list.map((a) => (
+          <a class="post reveal" href={`/blog/${a.slug}/`}>
+            <div class="media"><Art variant={a.art} /></div>
+            <p class="meta">
+              <span class="chip">{a.tag}</span> <time datetime={a.date}>{dateFmt.format(new Date(a.date))}</time> · {a.readMin} мин
+            </p>
+            <h2 class="h-card">{a.title}</h2>
+            <p class="muted">{a.description}</p>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+  <CtaBlock source="Журнал" />
+</Base>
+
+<style>
+  .posts {
+    display: grid;
+    gap: clamp(24px, 3vw, 40px) clamp(16px, 2vw, 28px);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+  }
+
+  .post {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    text-decoration: none;
+  }
+
+  .post .media {
+    aspect-ratio: 16 / 10;
+  }
+
+  .post .media :global(.art) {
+    transition: transform 0.8s var(--ease);
+  }
+
+  .post:hover .media :global(.art) {
+    transform: scale(1.04);
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .post p.muted {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+</style>

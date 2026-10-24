@@ -1,0 +1,154 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Art from '../../components/Art.astro';
+import BeforeAfter from '../../components/BeforeAfter.astro';
+import ProjectsGrid from '../../components/ProjectsGrid.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import { PROJECTS, type Project } from '../../data/content';
+import { breadcrumbs } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return PROJECTS.map((p) => ({ params: { slug: p.slug }, props: { p } }));
+}
+const { p } = Astro.props as { p: Project };
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Проекты', url: '/portfolio/' },
+  { name: p.title, url: `/portfolio/${p.slug}/` },
+];
+const facts = [
+  ['Тип', p.type],
+  ['Площадь', `${p.area} м²`],
+  ['Срок', `${p.days} дней`],
+  ['Стиль', p.style],
+  ['Локация', p.district],
+];
+---
+
+<Base title={`${p.title} — ${p.type}, ${p.area} м²`} description={p.summary} schema={[breadcrumbs(crumbs)]}>
+  <section class="section section--tight">
+    <div class="container">
+      <Breadcrumbs items={crumbs} />
+      <div class="head">
+        <div>
+          {p.concept && <p class="eyebrow">Концепт студии</p>}
+          <h1 class="h-display">{p.title}</h1>
+        </div>
+        <p class="lead">{p.summary}</p>
+      </div>
+      <div class="cover media"><Art variant={p.art} photo={p.photos?.[0]} eager /></div>
+      <dl class="facts">
+        {facts.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
+      </dl>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container two">
+      <div>
+        <p class="eyebrow">Решения</p>
+        <h2 class="h-section">Что сделали <em>особенным</em></h2>
+        <ul class="tick-list sol">{p.solutions.map((s) => <li>{s}</li>)}</ul>
+      </div>
+      <BeforeAfter variant={p.art} />
+    </div>
+  </section>
+
+  {
+    p.photos && p.photos.length > 1 && (
+      <section class="section section--tight">
+        <div class="container gallery">
+          {p.photos.slice(1).map((src) => (
+            <div class="media"><Art variant={p.art} photo={src} alt={p.title} /></div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head"><h2 class="h-section">Другие проекты</h2></div>
+      <ProjectsGrid limit={3} />
+    </div>
+  </section>
+
+  <CtaBlock title="Обсудим ваш проект?" source={`Проект: ${p.title}`} />
+</Base>
+
+<style>
+  .head {
+    display: grid;
+    gap: 24px;
+    margin-bottom: 40px;
+    align-items: end;
+  }
+
+  @media (min-width: 1000px) {
+    .head {
+      grid-template-columns: 1.2fr 1fr;
+    }
+  }
+
+  .cover {
+    aspect-ratio: 16 / 8;
+  }
+
+  @media (max-width: 700px) {
+    .cover {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0;
+    margin: 28px 0 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .facts div {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  dt {
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 4px 0 0;
+    font-weight: 700;
+  }
+
+  .two {
+    display: grid;
+    gap: 40px;
+    align-items: center;
+  }
+
+  @media (min-width: 1000px) {
+    .two {
+      grid-template-columns: 1fr 1.2fr;
+    }
+  }
+
+  .sol {
+    margin-top: 28px;
+  }
+
+  .gallery {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  }
+
+  .gallery .media {
+    aspect-ratio: 4 / 3;
+  }
+</style>

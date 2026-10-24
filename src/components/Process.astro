@@ -1,0 +1,59 @@
+---
+import { PROCESS } from '../data/content';
+---
+
+<ol class="process">
+  {
+    PROCESS.map((s, i) => (
+      <li class="reveal">
+        <span class="n">{String(i + 1).padStart(2, '0')}</span>
+        <div>
+          <p class="time">{s.time}</p>
+          <h3 class="h-card">{s.t}</h3>
+          <p class="muted">{s.d}</p>
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .process {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+    counter-reset: s;
+  }
+
+  li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 22px;
+    padding: 30px 8px;
+    border-top: 1px solid var(--line);
+  }
+
+  .n {
+    font-family: var(--font-serif);
+    font-size: 2.8rem;
+    line-height: 1;
+    color: var(--accent);
+    min-width: 64px;
+  }
+
+  .time {
+    margin: 0 0 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h3 + p {
+    margin: 8px 0 0;
+  }
+</style>

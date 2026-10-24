@@ -1,0 +1,86 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import Faq from '../components/Faq.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import Icon from '../components/Icon.astro';
+import { SITE, guaranteeLabel } from '../data/site';
+import { breadcrumbs, faq } from '../lib/schema';
+
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Гарантии и договор', url: '/garantii/' },
+];
+const clauses = [
+  { icon: 'doc', t: 'Фиксированная стоимость', d: 'Смета — приложение к договору. Изменения только по вашей инициативе, через допсоглашение с подписью.' },
+  { icon: 'clock', t: 'Сроки и неустойка', d: 'График работ — часть договора. За просрочку по нашей вине предусмотрена неустойка.' },
+  { icon: 'steps', t: 'Поэтапная оплата', d: 'Платёж за этап — только после его приёмки. Аванс — на материалы и запуск работ.' },
+  { icon: 'shield', t: `Гарантия ${guaranteeLabel()}`, d: 'На все виды работ. Гарантийный выезд — в течение 3 рабочих дней после обращения.' },
+  { icon: 'check', t: `Приёмка по чек-листу`, d: `${SITE.promises.checklistPoints}+ пунктов контроля: геометрия, перепады, швы, электрика, сантехника, отделка.` },
+  { icon: 'camera', t: 'Фотофиксация скрытых работ', d: 'До закрытия стен и полов фотографируем проводку, трубы и гидроизоляцию. Архив передаём вам.' },
+];
+const faqs = [
+  { q: 'Что делать, если после ремонта появился дефект?', a: 'Сообщите менеджеру или позвоните. Мастер приедет в течение 3 рабочих дней, оценит ситуацию и устранит дефект бесплатно, если он относится к гарантийным случаям.' },
+  { q: 'Можно ли посмотреть договор заранее?', a: 'Да, мы отправим шаблон договора до встречи. Покажите его юристу — нам нечего скрывать.' },
+  { q: 'Что не входит в гарантию?', a: 'Повреждения из-за неправильной эксплуатации, протечек от соседей, механических повреждений и естественного износа. Всё это прописано в договоре.' },
+];
+---
+
+<Base
+  title="Гарантии и договор на ремонт"
+  description={`Гарантия ${guaranteeLabel()} по договору, фиксированная смета, поэтапная оплата после приёмки и неустойка за просрочку. Что мы прописываем в договоре на ремонт.`}
+  schema={[breadcrumbs(crumbs), faq(faqs)]}
+>
+  <PageHero
+    title="Обещания, которые <em>можно проверить</em>"
+    eyebrow="Гарантии и договор"
+    lead="Всё, что мы говорим на сайте, записано в договоре. Попросите шаблон до встречи — и сравните с другими подрядчиками."
+    crumbs={crumbs}
+  >
+    <div><button class="btn btn--accent" data-lead="Запрос шаблона договора">Получить шаблон договора <span class="arrow">→</span></button></div>
+  </PageHero>
+
+  <section class="section section--tight">
+    <div class="container clauses">
+      {clauses.map((c) => (
+        <div class="card reveal">
+          <span class="ic"><Icon name={c.icon} /></span>
+          <h2 class="h-card">{c.t}</h2>
+          <p class="muted">{c.d}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head"><h2 class="h-section">Вопросы о гарантии</h2></div>
+      <Faq items={faqs} />
+    </div>
+  </section>
+
+  <CtaBlock source="Гарантии" />
+</Base>
+
+<style>
+  .clauses {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  }
+
+  .ic {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 22px;
+    border-radius: 16px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  .clauses p {
+    margin: 10px 0 0;
+  }
+</style>

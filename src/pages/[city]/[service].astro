@@ -1,0 +1,14 @@
+---
+import ServicePage from '../../components/ServicePage.astro';
+import { SECONDARY_CITIES, type City } from '../../data/cities';
+import { SERVICES, type Service } from '../../data/services';
+
+export function getStaticPaths() {
+  return SECONDARY_CITIES.flatMap((city) =>
+    SERVICES.map((service) => ({ params: { city: city.slug, service: service.slug }, props: { city, service } })),
+  );
+}
+const { city, service } = Astro.props as { city: City; service: Service };
+---
+
+<ServicePage service={service} city={city} />
