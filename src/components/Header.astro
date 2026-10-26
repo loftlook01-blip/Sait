@@ -123,6 +123,26 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
 </div>
 
 <script>
+  // Запасной вариант для браузеров без Popover API (iOS < 17, старые Android)
+  if (!('popover' in HTMLElement.prototype)) {
+    document.documentElement.classList.add('no-popover');
+    const close = () => document.querySelectorAll('[popover].is-open').forEach((el) => el.classList.remove('is-open'));
+    document.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      const btn = t.closest<HTMLElement>('[popovertarget]');
+      if (btn) {
+        const target = document.getElementById(btn.getAttribute('popovertarget')!);
+        const action = btn.getAttribute('popovertargetaction');
+        const open = target?.classList.contains('is-open');
+        close();
+        if (target && action !== 'hide' && !open) target.classList.add('is-open');
+        return;
+      }
+      if (!t.closest('[popover]')) close();
+    });
+    document.addEventListener('keydown', (e) => e.key === 'Escape' && close());
+  }
+
   const header = document.querySelector('[data-header]');
   const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 10);
   onScroll();
@@ -307,18 +327,47 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
   }
 
   @media (max-width: 560px) {
+    .header-inner {
+      gap: 10px;
+    }
+
+    .header-actions {
+      gap: 8px;
+    }
+
     .city-btn span {
-      max-width: 0;
-      overflow: hidden;
-    }
-
-    .city-btn {
-      padding: 12px;
-      gap: 0;
-    }
-
-    :global(.logo-sub) {
       display: none;
+    }
+
+    .city-btn,
+    .burger {
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      justify-content: center;
+    }
+
+    :global(.header .logo-sub) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 400px) {
+    :global(.header .logo) {
+      gap: 9px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    :global(.header .logo svg) {
+      width: 34px;
+      height: 34px;
+    }
+
+    :global(.header .logo-name) {
+      font-size: 1.02rem;
+      white-space: normal;
+      line-height: 1.05;
     }
   }
 
@@ -328,7 +377,7 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
     }
   }
 
-  @media (min-width: 1240px) {
+  @media (min-width: 1360px) {
     .nav {
       display: block;
     }
@@ -338,7 +387,7 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
     }
   }
 
-  @media (min-width: 1240px) and (max-width: 1499px) {
+  @media (min-width: 1360px) and (max-width: 1539px) {
     :global(.header .logo-sub) {
       display: none;
     }
@@ -348,7 +397,7 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
     }
   }
 
-  @media (min-width: 1620px) {
+  @media (min-width: 1700px) {
     .phone {
       display: block;
     }
@@ -429,13 +478,45 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
     display: flex;
   }
 
+  :global(.no-popover) [popover] {
+    display: none;
+    position: fixed;
+    z-index: 100;
+  }
+
+  :global(.no-popover) .city-popover:global(.is-open) {
+    display: block;
+    inset: 0;
+    height: fit-content;
+    box-shadow: 0 0 0 100vmax rgb(21 19 15 / 0.35);
+  }
+
+  :global(.no-popover) .mobile-menu:global(.is-open) {
+    display: flex;
+  }
+
   .mm-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
+  }
+
+  .mm-head :global(.logo-sub) {
+    display: none;
+  }
+
+  .mm-head :global(.logo) {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .mm-head :global(.logo-name) {
+    white-space: normal;
   }
 
   .mm-close {
+    flex: none;
     width: 46px;
     height: 46px;
     border: 1px solid var(--line);

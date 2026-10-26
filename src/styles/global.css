@@ -58,6 +58,7 @@ body {
   font-variant-numeric: lining-nums;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
   overflow-x: clip;
 }
 
@@ -76,6 +77,7 @@ h1,
 h2,
 h3,
 h4 {
+  overflow-wrap: break-word;
   margin: 0;
   font-weight: 500;
   line-height: 1.08;
@@ -92,7 +94,7 @@ h4 {
 .h-display {
   font-family: var(--font-serif);
   font-weight: 400;
-  font-size: clamp(2.6rem, 6.2vw, 5.6rem);
+  font-size: clamp(2rem, 5.6vw + 1rem, 5.6rem);
   line-height: 1.02;
   letter-spacing: -0.025em;
 }
@@ -100,7 +102,7 @@ h4 {
 .h-section {
   font-family: var(--font-serif);
   font-weight: 400;
-  font-size: clamp(2rem, 4.2vw, 3.6rem);
+  font-size: clamp(1.75rem, 3.6vw + 0.8rem, 3.6rem);
   line-height: 1.06;
 }
 
@@ -395,10 +397,18 @@ summary:focus-visible {
 }
 
 .prose table {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-collapse: collapse;
   margin: 1em 0 1.6em;
   font-size: 0.95rem;
+}
+
+.prose td:not(:last-child) {
+  white-space: nowrap;
 }
 
 .prose th,
@@ -483,4 +493,11 @@ summary:focus-visible {
 ::selection {
   background: var(--accent);
   color: #fff;
+}
+
+/* Браузеры без Popover API: скрываем окна до загрузки скрипта-замены */
+@supports not selector(:popover-open) {
+  [popover]:not(.is-open) {
+    display: none;
+  }
 }

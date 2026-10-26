@@ -124,6 +124,10 @@ import { fmt } from '../data/site';
     align-items: start;
   }
 
+  .calc > * {
+    min-width: 0;
+  }
+
   @media (min-width: 1000px) {
     .calc {
       grid-template-columns: 1.4fr 1fr;
@@ -142,7 +146,7 @@ import { fmt } from '../data/site';
 
   fieldset {
     margin: 0;
-    padding: 22px 24px;
+    padding: clamp(16px, 4vw, 22px) clamp(14px, 4vw, 24px);
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background: var(--card);
@@ -170,11 +174,11 @@ import { fmt } from '../data/site';
   }
 
   .seg {
-    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 104px), 1fr));
   }
 
   .pk {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
   }
 
   .seg label,
@@ -195,7 +199,8 @@ import { fmt } from '../data/site';
     display: grid;
     place-items: center;
     min-height: 50px;
-    padding: 10px 14px;
+    padding: 10px 12px;
+    overflow-wrap: anywhere;
     border: 1px solid var(--line);
     border-radius: 12px;
     font-weight: 600;

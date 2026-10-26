@@ -4,10 +4,12 @@ import { PROJECTS, PROJECT_CATS } from '../data/content';
 interface Props {
   limit?: number;
   filter?: boolean;
+  exclude?: string;
 }
-const { limit, filter = false } = Astro.props;
+const { limit, filter = false, exclude } = Astro.props;
 const cats = PROJECT_CATS.filter((c) => PROJECTS.some((p) => p.cat === c.id));
-const list = limit ? PROJECTS.slice(0, limit) : PROJECTS;
+const pool = PROJECTS.filter((p) => p.slug !== exclude);
+const list = limit ? pool.slice(0, limit) : pool;
 ---
 
 {

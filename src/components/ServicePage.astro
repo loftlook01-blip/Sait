@@ -184,15 +184,17 @@ const isRoomArt = !['blueprint'].includes(s.art);
 
   .price-line {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: baseline;
-    gap: 12px;
+    gap: 4px 12px;
     margin-top: 24px;
     padding-top: 20px;
     border-top: 1px solid var(--line);
   }
 
   .price-line b {
+    white-space: nowrap;
     font-family: var(--font-serif);
     font-weight: 400;
     font-size: 1.6rem;
