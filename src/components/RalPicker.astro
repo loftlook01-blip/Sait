@@ -1,0 +1,172 @@
+---
+/** Интерактивный подбор цвета порошковой покраски: изделие перекрашивается в выбранный RAL */
+const COLORS = [
+  ['9005', 'Чёрный янтарь', '#0e0e10'],
+  ['7016', 'Антрацит', '#383e42'],
+  ['7022', 'Серая умбра', '#4b4d46'],
+  ['7024', 'Графит', '#45494e'],
+  ['9006', 'Бело-алюминиевый', '#a5a8a6'],
+  ['9016', 'Транспортный белый', '#f1f0ea'],
+  ['1013', 'Жемчужно-белый', '#e3d9c6'],
+  ['1019', 'Серо-бежевый', '#a48f7a'],
+  ['8017', 'Шоколад', '#45322e'],
+  ['8023', 'Оранжево-коричневый', '#a65e2e'],
+  ['6005', 'Зелёный мох', '#0f4336'],
+  ['6021', 'Бледно-зелёный', '#89ac76'],
+  ['5011', 'Стальной синий', '#1a2b3c'],
+  ['5014', 'Голубиный', '#637d96'],
+  ['3005', 'Винно-красный', '#5e2028'],
+  ['3020', 'Транспортный красный', '#bb1e10'],
+];
+const [first] = COLORS;
+---
+
+<div class="ral" data-ral style={`--ral:${first[2]}`}>
+  <div class="ral-preview media">
+    <svg viewBox="0 0 600 420" role="img" aria-label="Предпросмотр металлической перегородки и стола в выбранном цвете">
+      <defs>
+        <linearGradient id="ral-wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe9df" /><stop offset="1" stop-color="#e2dacd" /></linearGradient>
+        <linearGradient id="ral-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8f0f2" stop-opacity="0.7" /><stop offset="1" stop-color="#c9d7dc" stop-opacity="0.4" /></linearGradient>
+        <linearGradient id="ral-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a77a52" /><stop offset="1" stop-color="#c9a077" /></linearGradient>
+      </defs>
+      <rect width="600" height="320" fill="url(#ral-wall)" />
+      <rect y="320" width="600" height="100" fill="url(#ral-floor)" />
+      <!-- перегородка -->
+      <rect x="40" y="30" width="300" height="290" fill="url(#ral-glass)" />
+      <g fill="none" stroke="var(--ral)" stroke-width="9" style="transition: stroke .4s">
+        <rect x="40" y="30" width="300" height="290" />
+        <line x1="140" y1="30" x2="140" y2="320" /><line x1="240" y1="30" x2="240" y2="320" />
+        <line x1="40" y1="127" x2="340" y2="127" /><line x1="40" y1="224" x2="340" y2="224" />
+      </g>
+      <polygon points="50,40 110,40 70,310 50,310" fill="#fff" opacity="0.25" />
+      <!-- стол на металлическом подстолье -->
+      <ellipse cx="470" cy="392" rx="120" ry="10" fill="#000" opacity="0.18" />
+      <rect x="360" y="250" width="220" height="16" fill="#c49a70" />
+      <g fill="none" stroke="var(--ral)" stroke-width="10" style="transition: stroke .4s">
+        <path d="M385 266 L410 388 M555 266 L530 388 M398 330 H542" />
+      </g>
+      <!-- подвесной светильник -->
+      <line x1="470" y1="0" x2="470" y2="150" stroke="#2a2723" stroke-width="2" />
+      <path d="M440 176 a30 26 0 0 1 60 0z" fill="var(--ral)" style="transition: fill .4s" />
+    </svg>
+    <p class="ral-label"><b data-ral-code>RAL {first[0]}</b> <span data-ral-name>{first[1]}</span></p>
+  </div>
+
+  <div class="ral-side">
+    <p class="eyebrow">Подбор цвета</p>
+    <h3 class="serif">Выберите цвет металла</h3>
+    <p class="muted">Нажмите на цвет — перегородка и подстолье перекрасятся. В цеху доступна вся палитра RAL и фактуры: мат, глянец, шагрень, металлик.</p>
+    <div class="swatches" role="radiogroup" aria-label="Цвета RAL">
+      {
+        COLORS.map(([code, name, hex], i) => (
+          <button
+            type="button"
+            role="radio"
+            aria-checked={i === 0 ? 'true' : 'false'}
+            class="sw"
+            style={`--c:${hex}`}
+            data-code={code}
+            data-name={name}
+            data-hex={hex}
+            title={`RAL ${code} — ${name}`}
+            aria-label={`RAL ${code}, ${name}`}
+          />
+        ))
+      }
+    </div>
+    <button class="btn btn--accent" data-lead="Порошковая покраска" data-ral-cta data-extra={`Цвет: RAL ${first[0]} ${first[1]}`}>
+      Заказать в этом цвете <span class="arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-ral]').forEach((root) => {
+    const code = root.querySelector('[data-ral-code]')!;
+    const name = root.querySelector('[data-ral-name]')!;
+    const cta = root.querySelector<HTMLElement>('[data-ral-cta]')!;
+    root.querySelectorAll<HTMLButtonElement>('.sw').forEach((b) =>
+      b.addEventListener('click', () => {
+        root.querySelectorAll('.sw').forEach((x) => x.setAttribute('aria-checked', 'false'));
+        b.setAttribute('aria-checked', 'true');
+        root.style.setProperty('--ral', b.dataset.hex!);
+        code.textContent = `RAL ${b.dataset.code}`;
+        name.textContent = b.dataset.name!;
+        cta.dataset.extra = `Цвет: RAL ${b.dataset.code} ${b.dataset.name}`;
+      }),
+    );
+  });
+</script>
+
+<style>
+  .ral {
+    display: grid;
+    gap: clamp(24px, 4vw, 56px);
+    align-items: center;
+  }
+
+  @media (min-width: 1000px) {
+    .ral {
+      grid-template-columns: 1.2fr 1fr;
+    }
+  }
+
+  .ral-preview {
+    background: #efe9df;
+  }
+
+  .ral-preview svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .ral-label {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    margin: 0;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgb(251 249 246 / 0.92);
+    font-size: 0.9rem;
+  }
+
+  .ral-side {
+    display: grid;
+    gap: 16px;
+    justify-items: start;
+  }
+
+  h3 {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+  }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+    width: 100%;
+    max-width: 440px;
+    margin: 6px 0 10px;
+  }
+
+  .sw {
+    aspect-ratio: 1;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background: var(--c);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .sw:hover {
+    transform: scale(1.08);
+  }
+
+  .sw[aria-checked='true'] {
+    border-color: var(--paper);
+    outline: 2px solid var(--accent);
+  }
+</style>

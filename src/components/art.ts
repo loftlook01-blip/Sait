@@ -5,6 +5,7 @@ export type ArtVariant =
   | 'bedroom'
   | 'office'
   | 'house'
+  | 'hall'
   | 'blueprint'
   | 'workshop-wood'
   | 'workshop-metal'
@@ -19,6 +20,7 @@ export const ART_LABELS: Record<ArtVariant, string> = {
   bedroom: 'Спальня с мягким изголовьем во всю стену',
   office: 'Офис со стеклянными перегородками',
   house: 'Интерьер частного дома с лестницей и деревянными балками',
+  hall: 'Прихожая со скрытой дверью и встроенным шкафом',
   blueprint: 'Чертёж планировки квартиры',
   'workshop-wood': 'Столярный цех',
   'workshop-metal': 'Сварочный цех',

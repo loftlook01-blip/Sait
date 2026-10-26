@@ -200,6 +200,8 @@ export interface Project {
   /** concept: true — концепт нашей студии (показывается с пометкой). Реальные объекты — false. */
   concept: boolean;
   art: ArtVariant;
+  /** Категория для фильтра в портфолио */
+  cat: 'flat' | 'house' | 'bath' | 'commercial';
   type: string;
   area: number;
   days: number;
@@ -211,9 +213,17 @@ export interface Project {
   photos?: string[];
 }
 
+export const PROJECT_CATS = [
+  { id: 'flat', label: 'Квартиры' },
+  { id: 'house', label: 'Дома' },
+  { id: 'bath', label: 'Санузлы' },
+  { id: 'commercial', label: 'Коммерция' },
+] as const;
+
 export const PROJECTS: Project[] = [
   {
     slug: 'kvartira-nordic-64',
+    cat: 'flat',
     title: 'Северный минимализм',
     concept: true,
     art: 'living',
@@ -233,6 +243,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: 'loft-kuhnya-gostinaya',
+    cat: 'flat',
     title: 'Лофт у Северной Двины',
     concept: true,
     art: 'kitchen',
@@ -252,6 +263,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: 'vannaya-mikrocement',
+    cat: 'bath',
     title: 'Ванная в микроцементе',
     concept: true,
     art: 'bath',
@@ -270,6 +282,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: 'derevyannyj-dom-solombala',
+    cat: 'house',
     title: 'Тёплый дом из бруса',
     concept: true,
     art: 'house',
@@ -288,6 +301,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: 'spalnya-teplaya-klassika',
+    cat: 'flat',
     title: 'Спальня в тёплой классике',
     concept: true,
     art: 'bedroom',
@@ -306,6 +320,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: 'ofis-it-kompanii',
+    cat: 'commercial',
     title: 'Офис IT-компании',
     concept: true,
     art: 'office',

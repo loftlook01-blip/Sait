@@ -1,0 +1,304 @@
+---
+/**
+ * Квиз: 5 вопросов → контакты. Ответы уходят в заявку полем extra.
+ */
+import Art from './Art.astro';
+import LeadForm from './LeadForm.astro';
+
+const steps = [
+  { q: 'Какой объект ремонтируем?', name: 'object', opts: ['Квартира в новостройке', 'Квартира на вторичке', 'Частный дом', 'Коммерческое помещение'] },
+  { q: 'Какая площадь?', name: 'area', opts: ['До 40 м²', '40–70 м²', '70–120 м²', 'Больше 120 м²'] },
+  { q: 'Нужен дизайн-проект?', name: 'design', opts: ['Да, нужен', 'Уже есть свой', 'Не знаю, нужна консультация'] },
+  { q: 'Что сделать в нашем цехе?', name: 'workshop', multi: true, opts: ['Кухня и шкафы', 'Межкомнатные двери', 'Металлические перегородки', 'Лестница', 'Ничего не нужно'] },
+  { q: 'Когда планируете начать?', name: 'start', opts: ['В ближайший месяц', 'Через 1–3 месяца', 'Позже, пока изучаю'] },
+];
+const total = steps.length + 1;
+---
+
+<div class="quiz" data-quiz>
+  <div class="q-side">
+    <div class="media q-art"><Art variant="hall" sizes="(min-width: 1000px) 30vw, 100vw" /></div>
+    <div class="q-gift">
+      <b>После ответов вы получите</b>
+      <ul class="tick-list">
+        <li>Смету в трёх вариантах бюджета</li>
+        <li>Подбор решений из нашего цеха</li>
+        <li>Срок ремонта по вашему объекту</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="q-main">
+    <div class="q-progress" aria-hidden="true"><span data-bar></span></div>
+    <p class="q-count"><span data-num>1</span> / {total}</p>
+
+    {
+      steps.map((s, i) => (
+        <fieldset class="q-step" data-step={i} hidden={i > 0}>
+          <legend class="q-title serif">{s.q}</legend>
+          {s.multi && <p class="muted q-hint">Можно выбрать несколько</p>}
+          <div class="q-opts">
+            {s.opts.map((o) => (
+              <label class="q-opt">
+                <input type={s.multi ? 'checkbox' : 'radio'} name={s.name} value={o} />
+                <span>{o}</span>
+              </label>
+            ))}
+          </div>
+          <div class="q-nav" hidden={i === 0 && !s.multi}>
+            {i > 0 && <button type="button" class="btn btn--ghost" data-prev>← Назад</button>}
+            {s.multi && <button type="button" class="btn btn--accent" data-next disabled>Далее →</button>}
+          </div>
+        </fieldset>
+      ))
+    }
+
+    <div class="q-step" data-step={steps.length} hidden>
+      <p class="q-title serif">Готово! Куда отправить расчёт?</p>
+      <p class="muted">Инженер изучит ответы и перезвонит в течение 15 минут в рабочее время.</p>
+      <div class="q-summary" data-summary></div>
+      <LeadForm source="Квиз" button="Получить расчёт" />
+      <button type="button" class="btn btn--ghost q-back" data-prev>← Изменить ответы</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-quiz]').forEach((root) => {
+    const steps = [...root.querySelectorAll<HTMLElement>('.q-step')];
+    const bar = root.querySelector<HTMLElement>('[data-bar]')!;
+    const num = root.querySelector<HTMLElement>('[data-num]')!;
+    const extra = root.querySelector<HTMLInputElement>('[data-extra]');
+    const summary = root.querySelector<HTMLElement>('[data-summary]')!;
+    let cur = 0;
+
+    const answers = () =>
+      steps.slice(0, -1).map((st) => {
+        const q = st.querySelector('legend')!.textContent!.trim();
+        const vals = [...st.querySelectorAll<HTMLInputElement>('input:checked')].map((i) => i.value);
+        return { q, a: vals.join(', ') };
+      });
+
+    const show = (i: number) => {
+      steps[cur].hidden = true;
+      cur = i;
+      steps[cur].hidden = false;
+      bar.style.width = `${((cur + 1) / steps.length) * 100}%`;
+      num.textContent = String(cur + 1);
+      if (cur === steps.length - 1) {
+        const list = answers();
+        summary.innerHTML = list.map((x) => `<span class="chip">${x.a}</span>`).join('');
+        if (extra) extra.value = list.map((x) => `${x.q} — ${x.a}`).join('; ');
+      }
+      (steps[cur].querySelector('input, button') as HTMLElement | null)?.focus({ preventScroll: true });
+    };
+
+    root.addEventListener('change', (e) => {
+      const st = (e.target as HTMLElement).closest<HTMLElement>('.q-step');
+      if (!st) return;
+      const next = st.querySelector<HTMLButtonElement>('[data-next]');
+      const any = st.querySelector('input:checked');
+      if (next) next.disabled = !any;
+      // для одиночного выбора — автопереход
+      if ((e.target as HTMLInputElement).type === 'radio') setTimeout(() => show(cur + 1), 220);
+    });
+
+    root.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.closest('[data-next]')) show(cur + 1);
+      if (t.closest('[data-prev]')) show(Math.max(0, cur - 1));
+    });
+
+    bar.style.width = `${(1 / steps.length) * 100}%`;
+  });
+</script>
+
+<style>
+  .quiz {
+    display: grid;
+    gap: clamp(20px, 3vw, 32px);
+    padding: clamp(16px, 2vw, 22px);
+    border-radius: calc(var(--radius) + 8px);
+    background: var(--card);
+    border: 1px solid var(--line);
+  }
+
+  @media (min-width: 1000px) {
+    .quiz {
+      grid-template-columns: 0.8fr 1.4fr;
+    }
+  }
+
+  .q-side {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+
+  .q-art {
+    aspect-ratio: 4 / 3;
+  }
+
+  .q-gift {
+    padding: 22px;
+    border-radius: var(--radius-sm);
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .q-gift b {
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  @media (max-width: 999px) {
+    .q-art {
+      display: none;
+    }
+  }
+
+  .q-main {
+    padding: clamp(8px, 2vw, 24px);
+    min-height: 460px;
+    display: grid;
+    align-content: start;
+  }
+
+  .q-progress {
+    height: 4px;
+    border-radius: 4px;
+    background: var(--paper-2);
+    overflow: hidden;
+  }
+
+  .q-progress span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s var(--ease);
+  }
+
+  .q-count {
+    margin: 12px 0 18px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .q-step {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    animation: qin 0.35s var(--ease);
+  }
+
+  @keyframes qin {
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+  }
+
+  .q-title {
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    line-height: 1.1;
+    margin-bottom: 22px;
+    padding: 0;
+  }
+
+  .q-hint {
+    margin: -12px 0 16px;
+    font-size: 0.9rem;
+  }
+
+  .q-opts {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  }
+
+  .q-opt {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .q-opt input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .q-opt span {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 64px;
+    padding: 14px 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    font-weight: 600;
+    transition: 0.2s;
+  }
+
+  .q-opt span::before {
+    content: '';
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--line);
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+
+  .q-opt input[type='checkbox'] + span::before {
+    border-radius: 5px;
+  }
+
+  .q-opt:hover span {
+    border-color: var(--ink);
+  }
+
+  .q-opt input:checked + span {
+    border-color: var(--accent);
+    background: #fff;
+  }
+
+  .q-opt input:checked + span::before {
+    border-color: var(--accent);
+    background: var(--accent);
+    box-shadow: inset 0 0 0 3px #fff;
+  }
+
+  .q-opt input:focus-visible + span {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .q-nav[hidden] {
+    display: none;
+  }
+
+  .q-nav {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .q-nav [data-next]:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .q-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0 20px;
+  }
+
+  .q-back {
+    margin-top: 14px;
+  }
+</style>

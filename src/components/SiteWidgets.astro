@@ -1,0 +1,276 @@
+---
+/** Плавающая кнопка связи (десктоп), уведомление о cookie, кнопка «наверх» */
+import { SITE } from '../data/site';
+---
+
+<div class="fab" data-fab>
+  <div class="fab-menu" id="fab-menu" hidden>
+    <a href={SITE.telegram} target="_blank" rel="noopener"><span class="dot tg"></span>Telegram</a>
+    <a href={SITE.whatsapp} target="_blank" rel="noopener"><span class="dot wa"></span>WhatsApp</a>
+    <a href={`tel:${SITE.phoneHref}`}><span class="dot ph"></span>{SITE.phone}</a>
+    <button type="button" data-lead="Плавающая кнопка: обратный звонок"><span class="dot cb"></span>Перезвоните мне</button>
+  </div>
+  <button class="fab-btn" type="button" aria-expanded="false" aria-controls="fab-menu" aria-label="Связаться с нами" data-fab-toggle>
+    <svg class="i-open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z" stroke-linejoin="round"></path><path d="M8 10h8M8 13h5" stroke-linecap="round"></path></svg>
+    <svg class="i-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"></path></svg>
+  </button>
+</div>
+
+<button class="to-top" type="button" aria-label="Наверх" data-to-top>↑</button>
+
+<div class="cookie" data-cookie hidden role="region" aria-label="Уведомление о cookie">
+  <p>Мы используем cookie и Яндекс Метрику, чтобы сайт работал лучше. Продолжая пользоваться сайтом, вы соглашаетесь с <a href="/politika-konfidencialnosti/">политикой конфиденциальности</a>.</p>
+  <button class="btn btn--light" type="button" data-cookie-ok>Понятно</button>
+</div>
+
+<script>
+  const fab = document.querySelector<HTMLElement>('[data-fab]')!;
+  const toggle = fab.querySelector<HTMLButtonElement>('[data-fab-toggle]')!;
+  const menu = fab.querySelector<HTMLElement>('.fab-menu')!;
+  const setOpen = (open: boolean) => {
+    menu.hidden = !open;
+    fab.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+  };
+  toggle.addEventListener('click', () => setOpen(fab.classList.contains('open') === false));
+  document.addEventListener('click', (e) => {
+    if (!fab.contains(e.target as Node) || (e.target as HTMLElement).closest('[data-lead]')) setOpen(false);
+  });
+  document.addEventListener('keydown', (e) => e.key === 'Escape' && setOpen(false));
+
+  const top = document.querySelector<HTMLElement>('[data-to-top]')!;
+  const onScroll = () => top.classList.toggle('show', window.scrollY > 1200);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  top.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  const KEY = 'cookie-ok';
+  const cookie = document.querySelector<HTMLElement>('[data-cookie]')!;
+  let seen = false;
+  try {
+    seen = localStorage.getItem(KEY) === '1';
+  } catch {}
+  if (!seen) setTimeout(() => (cookie.hidden = false), 1500);
+  cookie.querySelector('[data-cookie-ok]')!.addEventListener('click', () => {
+    cookie.hidden = true;
+    try {
+      localStorage.setItem(KEY, '1');
+    } catch {}
+  });
+</script>
+
+<style>
+  .fab {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 45;
+    display: none;
+  }
+
+  @media (min-width: 760px) {
+    .fab {
+      display: block;
+    }
+  }
+
+  .fab-btn {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 62px;
+    height: 62px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 18px 40px -12px rgb(142 90 53 / 0.7);
+    transition: transform 0.3s var(--ease);
+  }
+
+  .fab-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    animation: ping 2.6s infinite;
+  }
+
+  .fab.open .fab-btn::after {
+    display: none;
+  }
+
+  @keyframes ping {
+    0% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+
+    80%,
+    100% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+  }
+
+  .fab-btn:hover {
+    transform: scale(1.06);
+  }
+
+  .i-close,
+  .fab.open .i-open {
+    display: none;
+  }
+
+  .fab.open .i-close {
+    display: block;
+  }
+
+  .fab-menu {
+    position: absolute;
+    right: 0;
+    bottom: 76px;
+    display: grid;
+    gap: 4px;
+    width: 250px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--card);
+    box-shadow: 0 30px 60px -20px rgb(21 19 15 / 0.4);
+    animation: up 0.25s var(--ease);
+  }
+
+  .fab-menu[hidden] {
+    display: none;
+  }
+
+  @keyframes up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  .fab-menu a,
+  .fab-menu button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--ink);
+    font: 600 0.95rem var(--font-sans);
+    text-decoration: none;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .fab-menu a:hover,
+  .fab-menu button:hover {
+    background: var(--paper);
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .tg {
+    background: #2aabee;
+  }
+
+  .wa {
+    background: #25d366;
+  }
+
+  .ph {
+    background: var(--ink);
+  }
+
+  .cb {
+    background: var(--accent);
+  }
+
+  .to-top {
+    position: fixed;
+    right: 33px;
+    bottom: 100px;
+    z-index: 44;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--ink);
+    font-size: 1.1rem;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: 0.3s var(--ease);
+    display: none;
+  }
+
+  @media (min-width: 760px) {
+    .to-top {
+      display: block;
+    }
+  }
+
+  .to-top:global(.show) {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  .cookie {
+    position: fixed;
+    left: 16px;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    z-index: 46;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    max-width: 520px;
+    margin-right: 16px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.86rem;
+    line-height: 1.45;
+    box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.5);
+    animation: up 0.4s var(--ease);
+  }
+
+  .cookie[hidden] {
+    display: none;
+  }
+
+  @media (min-width: 760px) {
+    .cookie {
+      left: 24px;
+      bottom: 24px;
+    }
+  }
+
+  .cookie p {
+    flex: 1 1 260px;
+    margin: 0;
+  }
+
+  .cookie a {
+    color: var(--accent-soft);
+  }
+
+  .cookie .btn {
+    min-height: 42px;
+    padding: 0 18px;
+  }
+</style>

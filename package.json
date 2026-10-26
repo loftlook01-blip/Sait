@@ -8,7 +8,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "og": "node scripts/og.mjs"
+    "og": "node scripts/og.mjs",
+    "images": "node scripts/render-images.mjs",
+    "preview:static": "node scripts/make-preview.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
