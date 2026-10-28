@@ -116,10 +116,26 @@ const rows = [
   }
 
   dd {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 6px 10px;
+    align-items: start;
+  }
+
+  @media (max-width: 859px) {
+    dt,
+    dd {
+      padding: 12px 18px;
+    }
+
+    dt {
+      padding-top: 16px;
+      padding-bottom: 4px;
+    }
+
+    dd.them {
+      padding-top: 4px;
+    }
   }
 
   dd.them {
@@ -140,7 +156,7 @@ const rows = [
   }
 
   .lbl {
-    flex-basis: 100%;
+    grid-column: 1 / -1;
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.12em;
