@@ -11,7 +11,7 @@ export default defineConfig({
   compressHTML: true,
   integrations: [
     sitemap({
-      filter: (page) => !page.includes('/404') && !page.includes('/spasibo/'),
+      filter: (page) => !page.includes('/404') && !page.includes('/spasibo/') && !page.includes('/styleguide/'),
       changefreq: 'weekly',
       priority: 0.7,
       serialize(item) {

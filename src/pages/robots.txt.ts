@@ -6,6 +6,7 @@ export const GET: APIRoute = () =>
     `User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /styleguide/
 
 # AI-поисковики и ассистенты: разрешаем — это источник трафика из ответов нейросетей (GEO)
 User-agent: GPTBot
