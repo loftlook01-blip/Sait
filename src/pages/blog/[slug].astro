@@ -33,11 +33,11 @@ const more = ARTICLES.filter((x) => x.slug !== a.slug).slice(0, 2);
     </div>
     <div class="container narrow">
       <div class="prose" set:html={a.html} />
-      <aside class="box">
+      <div class="box">
         <p class="h-card">Нужна консультация по вашему объекту?</p>
         <p class="muted">Инженер приедет на бесплатный замер и ответит на вопросы на месте.</p>
         <button class="btn btn--accent" data-lead={`Статья: ${a.title}`}>Записаться на замер <span class="arrow">→</span></button>
-      </aside>
+      </div>
       <nav class="more" aria-label="Читайте также">
         <p class="eyebrow">Читайте также</p>
         {more.map((m) => <a href={`/blog/${m.slug}/`} class="h-card">{m.title} →</a>)}

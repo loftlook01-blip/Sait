@@ -1,6 +1,13 @@
 ---
 import { PACKAGES } from '../data/content';
 import { fmt } from '../data/site';
+
+interface Props {
+  /** Площадь по умолчанию — на страницах типов квартир подставляется типовая */
+  area?: number;
+  baths?: 1 | 2 | 3;
+}
+const { area = 54, baths = 1 } = Astro.props;
 ---
 
 <div class="calc" id="calc" data-calc>
@@ -15,8 +22,8 @@ import { fmt } from '../data/site';
     </fieldset>
 
     <fieldset>
-      <legend>2. Площадь — <output name="areaOut">54</output> м²</legend>
-      <input type="range" name="area" min="15" max="250" step="1" value="54" aria-label="Площадь, м²" />
+      <legend>2. Площадь — <output name="areaOut">{area}</output> м²</legend>
+      <input type="range" name="area" min="15" max="250" step="1" value={area} aria-label="Площадь, м²" />
       <div class="scale"><span>15</span><span>100</span><span>250 м²</span></div>
     </fieldset>
 
@@ -40,9 +47,9 @@ import { fmt } from '../data/site';
     <fieldset>
       <legend>4. Санузлы</legend>
       <div class="seg">
-        <label><input type="radio" name="baths" value="1" checked /><span>1</span></label>
-        <label><input type="radio" name="baths" value="2" /><span>2</span></label>
-        <label><input type="radio" name="baths" value="3" /><span>3+</span></label>
+        <label><input type="radio" name="baths" value="1" checked={baths === 1} /><span>1</span></label>
+        <label><input type="radio" name="baths" value="2" checked={baths === 2} /><span>2</span></label>
+        <label><input type="radio" name="baths" value="3" checked={baths === 3} /><span>3+</span></label>
       </div>
     </fieldset>
 
@@ -57,7 +64,7 @@ import { fmt } from '../data/site';
     </fieldset>
   </form>
 
-  <aside class="calc-result" aria-live="polite">
+  <div class="calc-result" aria-live="polite">
     <p class="eyebrow">Предварительный расчёт</p>
     <p class="total"><span data-total>—</span></p>
     <p class="range muted">Диапазон: <span data-range>—</span></p>
@@ -70,12 +77,12 @@ import { fmt } from '../data/site';
     </dl>
     <button class="btn btn--accent" data-lead="Калькулятор: точная смета" data-calc-cta>Получить точную смету <span class="arrow">→</span></button>
     <p class="note">Расчёт ориентировочный. Точную стоимость фиксируем в договоре после бесплатного замера.</p>
-  </aside>
+  </div>
 </div>
 
 <script>
   import { PACKAGES } from '../data/content';
-  import { SITE } from '../data/site';
+  import { SITE, daysLabel } from '../data/site';
 
   const rub = (n: number) => new Intl.NumberFormat('ru-RU').format(Math.round(n / 1000) * 1000) + ' ₽';
   const TYPE_K: Record<string, number> = { new: 1, old: 1.12, house: 1.08 };
@@ -106,7 +113,7 @@ import { fmt } from '../data/site';
       $('[data-design]').textContent = design ? rub(design) : '—';
       $('[data-prod]').textContent = prod ? rub(prod) : '—';
       $('[data-mat]').textContent = mat ? rub(mat) : 'отдельно';
-      $('[data-days]').textContent = `≈ ${days} дней`;
+      $('[data-days]').textContent = `≈ ${daysLabel(days)}`;
 
       const typeName = { new: 'новостройка', old: 'вторичка', house: 'дом' }[type];
       $('[data-calc-cta]').dataset.extra = `${typeName}, ${area} м², «${pkg.name}», санузлов: ${baths}, итого ≈ ${rub(total)}`;
@@ -162,7 +169,7 @@ import { fmt } from '../data/site';
   }
 
   legend output {
-    color: var(--accent);
+    color: var(--accent-ink);
   }
 
   .seg,

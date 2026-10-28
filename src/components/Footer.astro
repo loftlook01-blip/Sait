@@ -3,6 +3,7 @@ import Logo from './Logo.astro';
 import { SITE } from '../data/site';
 import { ACTIVE_CITIES, cityBase, cityServiceUrl, type City } from '../data/cities';
 import { SERVICES } from '../data/services';
+import { FLATS } from '../data/flats';
 
 interface Props {
   city: City;
@@ -30,6 +31,10 @@ const year = new Date().getFullYear();
           <ul>{SERVICES.map((s) => <li><a href={cityServiceUrl(city, s.slug)}>{s.short}</a></li>)}</ul>
         </div>
         <div>
+          <p class="col-title">Ремонт квартир</p>
+          <ul>{FLATS.map((f) => <li><a href={`/remont/${f.slug}/`}>{f.short}</a></li>)}</ul>
+        </div>
+        <div>
           <p class="col-title">Компания</p>
           <ul>
             <li><a href="/o-kompanii/">О компании</a></li>
@@ -37,6 +42,8 @@ const year = new Date().getFullYear();
             <li><a href="/portfolio/">Проекты</a></li>
             <li><a href="/ceny/">Цены и калькулятор</a></li>
             <li><a href="/garantii/">Гарантии и договор</a></li>
+            <li><a href="/smeta/">Пример сметы</a></li>
+            <li><a href="/voprosy/">Вопросы и ответы</a></li>
             <li><a href="/blog/">Журнал</a></li>
             <li><a href="/kontakty/">Контакты</a></li>
           </ul>

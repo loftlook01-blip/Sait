@@ -73,8 +73,23 @@ const inlineJs = (name) => {
   }
   return jsCache.get(name);
 };
+const fontCache = new Map();
+const fontData = (font) => {
+  if (!fontCache.has(font)) fontCache.set(font, readFileSync(join(A, font)).toString('base64'));
+  return fontCache.get(font);
+};
+// Шрифты во встроенных <style> (Astro встраивает CSS сам): основные — в data:, остальные наборы удаляем
+const inlineFontsInStyle = (css) =>
+  css
+    .replace(/@font-face\{[^}]*\}/g, (block) => {
+      const m = block.match(/url\((?:\.\.\/|\.\/)*assets\/([^)]+\.woff2)\)/);
+      return m && !FONT_INLINE.test(m[1]) ? '' : block;
+    })
+    .replace(/url\((?:\.\.\/|\.\/)*assets\/([^)]+\.woff2)\)/g, (_, font) => `url(data:font/woff2;base64,${fontData(font)})`);
+
 for (const [f, prefix] of pending) {
   let h = readFileSync(f, 'utf8');
+  h = h.replace(/<style>([\s\S]*?)<\/style>/g, (_, css) => `<style>${inlineFontsInStyle(css)}</style>`);
   h = h.replace(/<link rel="preload"[^>]*as="font"[^>]*>/g, '');
   h = h.replace(/<link rel="stylesheet" href="[^"]*assets\/([^"]+\.css)">/g, (_, n) => `<style>${inlineCss(n, prefix)}</style>`);
   h = h.replace(/<script type="module" src="[^"]*assets\/([^"]+\.js)"><\/script>/g, (_, n) => `<script type="module">${inlineJs(n)}</script>`);

@@ -3,6 +3,7 @@
 import { SITE } from '../data/site';
 ---
 
+<aside class="widgets" aria-label="Связаться с нами">
 <div class="fab" data-fab>
   <div class="fab-menu" id="fab-menu" hidden>
     <a href={SITE.telegram} target="_blank" rel="noopener"><span class="dot tg"></span>Telegram</a>
@@ -17,6 +18,7 @@ import { SITE } from '../data/site';
 </div>
 
 <button class="to-top" type="button" aria-label="Наверх" data-to-top>↑</button>
+</aside>
 
 <div class="cookie" data-cookie hidden role="region" aria-label="Уведомление о cookie">
   <p>Мы используем cookie и Яндекс Метрику, чтобы сайт работал лучше. Продолжая пользоваться сайтом, вы соглашаетесь с <a href="/politika-konfidencialnosti/">политикой конфиденциальности</a>.</p>
@@ -81,7 +83,7 @@ import { SITE } from '../data/site';
     height: 62px;
     border: 0;
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--accent-btn);
     color: #fff;
     cursor: pointer;
     box-shadow: 0 18px 40px -12px rgb(142 90 53 / 0.7);
@@ -193,7 +195,7 @@ import { SITE } from '../data/site';
   }
 
   .cb {
-    background: var(--accent);
+    background: var(--accent-btn);
   }
 
   .to-top {

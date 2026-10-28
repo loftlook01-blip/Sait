@@ -1,0 +1,290 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import Calculator from '../../components/Calculator.astro';
+import Faq from '../../components/Faq.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import Art from '../../components/Art.astro';
+import { FLATS, fillPrices, flatTotal, type Flat } from '../../data/flats';
+import { PACKAGES, FAQ } from '../../data/content';
+import { PRIMARY_CITY } from '../../data/cities';
+import { SITE, fmt, daysLabel } from '../../data/site';
+import { breadcrumbs, faq as faqSchema, ORG_ID } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return FLATS.map((flat) => ({ params: { flat: flat.slug }, props: { flat } }));
+}
+const { flat: f } = Astro.props as { flat: Flat };
+const url = `/remont/${f.slug}/`;
+const city = PRIMARY_CITY;
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Ремонт квартир', url: '/uslugi/remont-kvartir-pod-klyuch/' },
+  { name: f.short, url },
+];
+const faqs = [...f.faq.map((x) => ({ q: x.q, a: fillPrices(x.a, f) })), ...FAQ.filter((x) => /смета|оплата|удалённо/i.test(x.q))];
+const rows = PACKAGES.map((p) => {
+  const works = flatTotal(f, p.id);
+  const materials = Math.ceil((f.area * p.materials) / 1000) * 1000;
+  return { p, works, materials, total: works + materials, days: Math.round(p.days * Math.sqrt(f.area / 50)) };
+});
+const minTotal = rows[0].works;
+const title = `${f.title} в Архангельске — цена от ${fmt.rub(minTotal)}`;
+const description = `${f.title} под ключ в Архангельске: стоимость для ${f.areaRange} от ${fmt.rub(minTotal)}, сроки, что входит. Фиксированная смета, мебель из собственного цеха, бесплатный замер.`;
+const serviceLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: `${f.title} в Архангельске`,
+  serviceType: f.title,
+  description: f.lead,
+  url: new URL(url, SITE.url).href,
+  provider: { '@id': ORG_ID },
+  areaServed: { '@type': 'City', name: city.name },
+  offers: { '@type': 'AggregateOffer', priceCurrency: 'RUB', lowPrice: minTotal, highPrice: rows[2].total },
+};
+---
+
+<Base title={title} description={description} schema={[serviceLd, faqSchema(faqs), breadcrumbs(crumbs)]}>
+  <PageHero title={`${f.title} <em>в Архангельске</em>`} eyebrow={`Типовая площадь ${f.areaRange}`} lead={f.lead} crumbs={crumbs} art={f.art}>
+    <div class="ctas">
+      <button class="btn btn--accent" data-lead={`${f.title} — замер`}>Бесплатный замер <span class="arrow">→</span></button>
+      <a class="btn btn--ghost" href="#calc">Рассчитать свою площадь</a>
+    </div>
+  </PageHero>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Стоимость для {f.area} м²</p>
+        <h2 class="h-section">Сколько стоит ремонт {f.gen}</h2>
+        <p class="lead">Примерный расчёт для типовой площади. Материалы указаны ориентировочно — их можно купить самостоятельно или доверить закупку нам.</p>
+      </div>
+      <div class="prices">
+        {
+          rows.map((r) => (
+            <article class:list={['pr', 'reveal', { accent: r.p.accent }]}>
+              <h3 class="serif">{r.p.name}</h3>
+              <dl>
+                <div><dt>Работы</dt><dd>{fmt.rub(r.works)}</dd></div>
+                <div><dt>Материалы, ориентир</dt><dd>≈ {fmt.rub(r.materials)}</dd></div>
+                <div><dt>Срок</dt><dd>≈ {daysLabel(r.days)}</dd></div>
+              </dl>
+              <p class="total"><span>Итого с материалами</span><b>≈ {fmt.rub(r.total)}</b></p>
+              <button class:list={['btn', r.p.accent ? 'btn--accent' : 'btn--ghost']} data-lead={`${f.title}, пакет «${r.p.name}»`} data-extra={`${f.area} м², «${r.p.name}», ≈ ${fmt.rub(r.total)}`}>
+                Хочу такой расчёт
+              </button>
+            </article>
+          ))
+        }
+      </div>
+      <p class="muted note">Цена работ фиксируется в договоре после бесплатного замера. <a href="/smeta/">Посмотрите пример сметы и графика платежей →</a></p>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container two">
+      <div class="prose reveal">
+        <p class="eyebrow">Особенности</p>
+        <h2 class="h-section">Что важно в ремонте {f.gen}</h2>
+        {f.body.map((p) => <p>{p}</p>)}
+      </div>
+      <div class="tips">
+        {
+          f.tips.map((t) => (
+            <div class="card reveal">
+              <h3 class="h-card">{t.t}</h3>
+              <p class="muted">{t.d}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Калькулятор</p>
+        <h2 class="h-section">Рассчитайте для своей площади</h2>
+      </div>
+      <Calculator area={f.area} baths={f.baths as 1 | 2 | 3} />
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head"><h2 class="h-section">Частые вопросы</h2></div>
+      <Faq items={faqs} />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head"><h2 class="h-section">Другие типы квартир</h2></div>
+      <div class="others">
+        {
+          FLATS.filter((x) => x.slug !== f.slug).map((x) => (
+            <a class="other reveal" href={`/remont/${x.slug}/`}>
+              <div class="media"><Art variant={x.art} sizes="(min-width: 900px) 30vw, 100vw" /></div>
+              <h3 class="h-card">{x.title}</h3>
+              <p class="muted">{x.areaRange} · от {fmt.rub(flatTotal(x, 'base'))}</p>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <CtaBlock city={city} source={`Тип квартиры: ${f.short}`} />
+</Base>
+
+<style>
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .prices {
+    display: grid;
+    gap: clamp(16px, 2vw, 24px);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  }
+
+  .pr {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: clamp(22px, 3vw, 34px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+
+  .pr.accent {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+    --accent: #c08a5f;
+  }
+
+  .pr.accent dt,
+  .pr.accent .total span {
+    color: var(--muted-dark);
+  }
+
+  .pr.accent .btn--ghost {
+    --fg: var(--paper);
+  }
+
+  .pr h3 {
+    font-size: 2rem;
+  }
+
+  dl {
+    display: grid;
+    margin: 0;
+  }
+
+  dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .accent dl div {
+    border-color: var(--line-dark);
+  }
+
+  dt {
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 700;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .total {
+    display: grid;
+    gap: 2px;
+    margin: 0 0 auto;
+  }
+
+  .total span {
+    font-size: 0.86rem;
+    color: var(--muted);
+  }
+
+  .total b {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(1.8rem, 3vw, 2.3rem);
+  }
+
+  .note {
+    margin-top: 20px;
+    font-size: 0.9rem;
+  }
+
+  .note a {
+    color: var(--accent-ink);
+  }
+
+  .two {
+    display: grid;
+    gap: clamp(28px, 5vw, 64px);
+    align-items: start;
+  }
+
+  @media (min-width: 1000px) {
+    .two {
+      grid-template-columns: 1.2fr 1fr;
+    }
+  }
+
+  .two > * {
+    min-width: 0;
+  }
+
+  .prose h2 {
+    margin-top: 12px;
+  }
+
+  .tips {
+    display: grid;
+    gap: 14px;
+  }
+
+  .tips p {
+    margin: 8px 0 0;
+  }
+
+  .others {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+
+  .other {
+    display: grid;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .other .media {
+    aspect-ratio: 4 / 3;
+  }
+
+  .other p {
+    margin: 0;
+  }
+
+  .other:hover h3 {
+    color: var(--accent-ink);
+  }
+</style>

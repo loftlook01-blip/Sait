@@ -76,3 +76,5 @@ export const plural = (n: number, forms: [string, string, string]) => {
 };
 
 export const guaranteeLabel = () => `${SITE.promises.guaranteeYears} ${plural(SITE.promises.guaranteeYears, ['год', 'года', 'лет'])}`;
+
+export const daysLabel = (n: number) => `${n} ${plural(n, ['день', 'дня', 'дней'])}`;

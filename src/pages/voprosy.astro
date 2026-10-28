@@ -1,0 +1,132 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import Faq from '../components/Faq.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import { FAQ } from '../data/content';
+import { SERVICES } from '../data/services';
+import { breadcrumbs, faq as faqSchema } from '../lib/schema';
+
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Вопросы и ответы', url: '/voprosy/' },
+];
+const groups = [
+  { id: 'obshchee', t: 'Стоимость, договор, оплата', items: FAQ },
+  ...SERVICES.map((s) => ({ id: s.slug, t: s.name, items: s.faq, href: `/uslugi/${s.slug}/` })),
+];
+const all = groups.flatMap((g) => g.items);
+---
+
+<Base
+  title="Вопросы и ответы о ремонте под ключ"
+  description="Ответы на частые вопросы о ремонте квартир и домов в Архангельске: стоимость, смета, договор, оплата, сроки, гарантия, дизайн-проект и собственное производство."
+  schema={[breadcrumbs(crumbs), faqSchema(all)]}
+>
+  <PageHero title="Вопросы <em>и ответы</em>" eyebrow="Отвечаем честно" lead="Собрали ответы на то, о чём нас спрашивают чаще всего. Не нашли свой вопрос — напишите нам, ответим в течение рабочего дня." crumbs={crumbs} />
+
+  <section class="section section--tight">
+    <div class="container layout">
+      <nav class="toc" aria-label="Темы">
+        <p class="eyebrow">Темы</p>
+        <ul>{groups.map((g) => <li><a href={`#${g.id}`}>{g.t}</a></li>)}</ul>
+      </nav>
+      <div class="groups">
+        {
+          groups.map((g) => (
+            <section id={g.id} class="group">
+              <h2 class="h-card">{g.t}</h2>
+              <Faq items={g.items} group={g.id} openFirst={g.id === groups[0].id} />
+              {'href' in g && g.href && <a class="more" href={g.href}>Подробнее об услуге →</a>}
+            </section>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <CtaBlock title="Остались вопросы?" source="Вопросы и ответы" />
+</Base>
+
+<style>
+  .layout {
+    display: grid;
+    gap: 40px;
+  }
+
+  @media (min-width: 1000px) {
+    .layout {
+      grid-template-columns: 280px 1fr;
+      align-items: start;
+    }
+
+    .toc {
+      position: sticky;
+      top: calc(var(--header-h) + 24px);
+    }
+  }
+
+  .layout > * {
+    min-width: 0;
+  }
+
+  .toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  @media (min-width: 1000px) {
+    .toc ul {
+      display: grid;
+      gap: 4px;
+    }
+  }
+
+  .toc a {
+    display: block;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  @media (min-width: 1000px) {
+    .toc a {
+      border: 0;
+      padding: 8px 0;
+    }
+  }
+
+  .toc a:hover {
+    color: var(--accent-ink);
+  }
+
+  .groups {
+    display: grid;
+    gap: 56px;
+  }
+
+  .group {
+    scroll-margin-top: calc(var(--header-h) + 16px);
+  }
+
+  .group h2 {
+    margin-bottom: 8px;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
+  }
+
+  .more {
+    display: inline-block;
+    margin-top: 16px;
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+</style>

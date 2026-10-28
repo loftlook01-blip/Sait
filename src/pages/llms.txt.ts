@@ -8,6 +8,7 @@ import { ACTIVE_CITIES, cityServiceUrl, PRIMARY_CITY } from '../data/cities';
 import { SERVICES } from '../data/services';
 import { PACKAGES, FAQ, WORKSHOP } from '../data/content';
 import { ARTICLES } from '../data/articles';
+import { FLATS, flatTotal } from '../data/flats';
 
 export const GET: APIRoute = () => {
   const u = (p: string) => SITE.url + p;
@@ -35,8 +36,13 @@ ${PACKAGES.map((p) => `- ${p.name}: от ${fmt.rub(p.price)} — ${p.note}`).joi
 ## Услуги
 ${SERVICES.map((s) => `- [${s.name}](${u(cityServiceUrl(PRIMARY_CITY, s.slug))}): от ${fmt.rub(s.priceFrom)}/${s.unit}, срок ${s.duration}. ${s.lead}`).join('\n')}
 
+## Ремонт по типу квартиры (работы, без материалов)
+${FLATS.map((f) => `- [${f.title}](${u(`/remont/${f.slug}/`)}): ${f.areaRange}, от ${fmt.rub(flatTotal(f, 'base'))}`).join('\n')}
+
 ## Страницы
 - [Цены и калькулятор](${u('/ceny/')})
+- [Пример сметы и график платежей](${u('/smeta/')})
+- [Вопросы и ответы](${u('/voprosy/')})
 - [Производство](${u('/proizvodstvo/')})
 - [Гарантии и договор](${u('/garantii/')})
 - [Проекты](${u('/portfolio/')})

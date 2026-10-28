@@ -7,6 +7,7 @@ import ProjectsGrid from '../../components/ProjectsGrid.astro';
 import CtaBlock from '../../components/CtaBlock.astro';
 import { PROJECTS, type Project } from '../../data/content';
 import { breadcrumbs } from '../../lib/schema';
+import { daysLabel } from '../../data/site';
 
 export function getStaticPaths() {
   return PROJECTS.map((p) => ({ params: { slug: p.slug }, props: { p } }));
@@ -20,7 +21,7 @@ const crumbs = [
 const facts = [
   ['Тип', p.type],
   ['Площадь', `${p.area} м²`],
-  ['Срок', `${p.days} дней`],
+  ['Срок', daysLabel(p.days)],
   ['Стиль', p.style],
   ['Локация', p.district],
 ];

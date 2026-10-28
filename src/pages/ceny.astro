@@ -6,6 +6,7 @@ import Packages from '../components/Packages.astro';
 import Faq from '../components/Faq.astro';
 import CtaBlock from '../components/CtaBlock.astro';
 import { PRICE_TABLE, FAQ } from '../data/content';
+import { FLATS } from '../data/flats';
 import { fmt } from '../data/site';
 import { breadcrumbs, faq } from '../lib/schema';
 
@@ -26,7 +27,12 @@ const faqs = FAQ.filter((f) => /стоит|смета|оплата|длится/
     eyebrow="Прайс 2026"
     lead="Рассчитайте ориентировочную стоимость онлайн. Точная сумма фиксируется в договоре после бесплатного замера и не меняется в процессе работ."
     crumbs={crumbs}
-  />
+  >
+    <nav class="quick" aria-label="Цены по типу квартиры">
+      {FLATS.map((f) => <a class="chip" href={`/remont/${f.slug}/`}>{f.short}</a>)}
+      <a class="chip" href="/smeta/">Пример сметы →</a>
+    </nav>
+  </PageHero>
 
   <section class="section section--tight">
     <div class="container"><Calculator /></div>
@@ -57,6 +63,9 @@ const faqs = FAQ.filter((f) => /стоит|смета|оплата|длится/
             <div class="pg reveal">
               <h3 class="h-card">{g.group}</h3>
               <table>
+                <thead class="visually-hidden">
+                  <tr><th scope="col">Работа</th><th scope="col">Единица</th><th scope="col">Цена</th></tr>
+                </thead>
                 <tbody>
                   {g.rows.map(([name, unit, price]) => (
                     <tr>
@@ -86,6 +95,20 @@ const faqs = FAQ.filter((f) => /стоит|смета|оплата|длится/
 </Base>
 
 <style>
+  .quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .quick .chip {
+    text-decoration: none;
+  }
+
+  .quick .chip:hover {
+    border-color: var(--ink);
+  }
+
   .price-groups {
     display: grid;
     gap: 20px;

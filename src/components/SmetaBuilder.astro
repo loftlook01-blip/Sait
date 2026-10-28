@@ -1,0 +1,454 @@
+---
+/**
+ * Пример сметы по этапам + график работ и платежей.
+ * Доли этапов — типичное распределение стоимости и времени в ремонте под ключ.
+ */
+import { PACKAGES } from '../data/content';
+import { fmt, daysLabel } from '../data/site';
+import { splitExact } from '../lib/money';
+
+const STAGES = [
+  { t: 'Демонтаж и подготовка', d: 'Демонтаж, вывоз мусора, защита лифта и подъезда, разметка по проекту', cost: 0.06, time: 0.08 },
+  { t: 'Инженерные сети', d: 'Электрика и слаботочка, водоснабжение, канализация, вентиляция', cost: 0.18, time: 0.15 },
+  { t: 'Стены и потолки', d: 'Штукатурка по маякам, шпаклёвка, перегородки, тёплые откосы', cost: 0.22, time: 0.22 },
+  { t: 'Полы', d: 'Стяжка, гидроизоляция, тёплые полы', cost: 0.11, time: 0.1 },
+  { t: 'Плитка и санузлы', d: 'Плитка, инсталляции, трапы, скрытые смесители, короба', cost: 0.17, time: 0.17 },
+  { t: 'Чистовая отделка', d: 'Покраска, обои, напольные покрытия, двери из нашего цеха', cost: 0.17, time: 0.18 },
+  { t: 'Монтаж и сдача', d: 'Свет, сантехника, мебель из цеха, клининг, приёмка по чек-листу', cost: 0.09, time: 0.1 },
+];
+const ADVANCE = 0.1;
+
+// Значения по умолчанию — для первой отрисовки без JS
+const def = { area: 54, pkg: PACKAGES.find((p) => p.accent)! };
+const days = Math.round(def.pkg.days * Math.sqrt(def.area / 50));
+const { total, parts } = splitExact(def.area * def.pkg.price, STAGES.map((s) => s.cost));
+// Платежи: аванс + этапы за вычетом доли аванса; сумма платежей = итог
+const pay = splitExact(total, [ADVANCE, ...STAGES.map((s) => s.cost * (1 - ADVANCE))]).parts;
+let acc = 0;
+const rows = STAGES.map((s, i) => {
+  const start = acc;
+  acc += s.time;
+  return { ...s, sum: parts[i], pay: pay[i + 1], start, len: s.time };
+});
+---
+
+<div class="smeta" data-smeta data-stages={JSON.stringify(STAGES)} data-advance={ADVANCE}>
+  <form class="controls" onsubmit="return false">
+    <label class="ctl">
+      <span>Площадь: <output name="areaOut">{def.area}</output> м²</span>
+      <input type="range" name="area" min="20" max="200" value={def.area} aria-label="Площадь, м²" />
+    </label>
+    <div class="ctl">
+      <span>Уровень ремонта</span>
+      <div class="seg">
+        {
+          PACKAGES.map((p) => (
+            <label>
+              <input type="radio" name="pkg" value={p.id} checked={p.accent} />
+              <span>{p.name}</span>
+            </label>
+          ))
+        }
+      </div>
+    </div>
+    <div class="ctl">
+      <span>Объект</span>
+      <div class="seg">
+        <label><input type="radio" name="type" value="1" checked /><span>Новостройка</span></label>
+        <label><input type="radio" name="type" value="1.12" /><span>Вторичка</span></label>
+      </div>
+    </div>
+  </form>
+
+  <div class="summary">
+    <div><span>Стоимость работ</span><b data-total>{fmt.rub(total)}</b></div>
+    <div><span>Срок</span><b data-days>≈ {daysLabel(days)}</b></div>
+    <div><span>Этапов оплаты</span><b>{STAGES.length + 1}</b></div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="stages">
+      <caption class="visually-hidden">Смета по этапам ремонта</caption>
+      <thead>
+        <tr>
+          <th scope="col">Этап</th>
+          <th scope="col" class="gantt-h">График</th>
+          <th scope="col" class="num">Стоимость</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((r, i) => (
+            <tr>
+              <th scope="row">
+                <span class="n">{String(i + 1).padStart(2, '0')}</span>
+                <span class="st">
+                  <b>{r.t}</b>
+                  <small>{r.d}</small>
+                </span>
+              </th>
+              <td class="gantt">
+                <span class="bar" style={`--s:${r.start * 100}%;--l:${r.len * 100}%`} />
+                <small class="when" data-when>
+                  дни {Math.round(r.start * days) + 1}–{Math.round((r.start + r.len) * days)}
+                </small>
+              </td>
+              <td class="num" data-sum>{fmt.rub(r.sum)}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+      <tfoot>
+        <tr>
+          <th scope="row">Итого работы</th>
+          <td class="gantt-h"></td>
+          <td class="num" data-total>{fmt.rub(total)}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="pay">
+    <h2 class="h-card">График платежей</h2>
+    <p class="muted">Вы платите только за принятый этап. Аванс {ADVANCE * 100}% вносится при подписании договора и равномерно засчитывается в платежи по этапам.</p>
+    <ol class="pay-list" data-pay>
+      <li><span>При подписании договора — аванс</span><b data-pay-advance>{fmt.rub(pay[0])}</b></li>
+      {
+        rows.map((r) => (
+          <li>
+            <span>После приёмки этапа «{r.t}»</span>
+            <b data-pay-item>{fmt.rub(r.pay)}</b>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn--accent" data-lead="Пример сметы: расчёт по объекту" data-smeta-cta>Получить смету по моему объекту <span class="arrow">→</span></button>
+    <p class="muted note">Это пример: доли этапов типичны для ремонта под ключ. Точная смета составляется по дизайн-проекту и замеру, с объёмами и расценками по каждой позиции.</p>
+  </div>
+</div>
+
+<script>
+  import { PACKAGES } from '../data/content';
+  import { daysLabel } from '../data/site';
+  import { splitExact } from '../lib/money';
+
+  const rub = (n: number) => new Intl.NumberFormat('ru-RU').format(n) + ' ₽';
+
+  document.querySelectorAll<HTMLElement>('[data-smeta]').forEach((root) => {
+    const stages = JSON.parse(root.dataset.stages!) as { t: string; cost: number; time: number }[];
+    const advance = Number(root.dataset.advance);
+    const form = root.querySelector('form')!;
+
+    const update = () => {
+      const fd = new FormData(form);
+      const area = Number(fd.get('area'));
+      const pkg = PACKAGES.find((p) => p.id === fd.get('pkg'))!;
+      const k = Number(fd.get('type'));
+      const { total, parts } = splitExact(area * pkg.price * k, stages.map((s) => s.cost));
+      const pay = splitExact(total, [advance, ...stages.map((s) => s.cost * (1 - advance))]).parts;
+      const days = Math.round(pkg.days * Math.sqrt(area / 50) * (k > 1 ? 1.1 : 1));
+
+      (form.elements.namedItem('areaOut') as HTMLOutputElement).value = String(area);
+      root.querySelectorAll('[data-total]').forEach((el) => (el.textContent = rub(total)));
+      root.querySelector('[data-days]')!.textContent = `≈ ${daysLabel(days)}`;
+
+      let acc = 0;
+      const sums = root.querySelectorAll('[data-sum]');
+      const whens = root.querySelectorAll('[data-when]');
+      const pays = root.querySelectorAll('[data-pay-item]');
+      stages.forEach((s, i) => {
+        const start = acc;
+        acc += s.time;
+        sums[i].textContent = rub(parts[i]);
+        whens[i].textContent = `дни ${Math.round(start * days) + 1}–${Math.round(acc * days)}`;
+        pays[i].textContent = rub(pay[i + 1]);
+      });
+      root.querySelector('[data-pay-advance]')!.textContent = rub(pay[0]);
+      root.querySelector<HTMLElement>('[data-smeta-cta]')!.dataset.extra = `${area} м², «${pkg.name}», ${k > 1 ? 'вторичка' : 'новостройка'}, работы ≈ ${rub(total)}`;
+    };
+
+    form.addEventListener('input', update);
+    update();
+  });
+</script>
+
+<style>
+  .smeta {
+    display: grid;
+    gap: clamp(20px, 3vw, 32px);
+  }
+
+  .smeta > * {
+    min-width: 0;
+  }
+
+  .controls {
+    display: grid;
+    gap: 16px;
+    padding: clamp(18px, 3vw, 28px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+
+  @media (min-width: 1000px) {
+    .controls {
+      grid-template-columns: 1.2fr 1.2fr 1fr;
+      align-items: end;
+    }
+  }
+
+  .ctl {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .ctl > span {
+    font-weight: 700;
+  }
+
+  .ctl output {
+    color: var(--accent-ink);
+  }
+
+  input[type='range'] {
+    width: 100%;
+    height: 28px;
+    accent-color: var(--accent-btn);
+  }
+
+  .seg {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 112px), 1fr));
+    gap: 6px;
+  }
+
+  .seg label {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .seg input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .seg span {
+    display: grid;
+    place-items: center;
+    min-height: 46px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    text-align: center;
+    overflow-wrap: break-word;
+  }
+
+  .seg input:checked + span {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .seg input:focus-visible + span {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 1px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--line-dark);
+  }
+
+  .summary div {
+    display: grid;
+    gap: 4px;
+    padding: 20px 24px;
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .summary span {
+    font-size: 0.82rem;
+    color: var(--muted-dark);
+  }
+
+  .summary b {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+
+  .stages {
+    width: 100%;
+    min-width: 0;
+    border-collapse: collapse;
+  }
+
+  .stages th,
+  .stages td {
+    padding: 16px clamp(12px, 2vw, 22px);
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .stages thead th {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .stages tbody th {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    font-weight: 400;
+  }
+
+  .n {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    color: var(--accent-ink);
+    min-width: 30px;
+  }
+
+  .st {
+    display: grid;
+    gap: 2px;
+  }
+
+  .st small {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .num {
+    text-align: right !important;
+    white-space: nowrap;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gantt {
+    width: 34%;
+    min-width: 140px;
+  }
+
+  .bar {
+    position: relative;
+    display: block;
+    height: 10px;
+    border-radius: 6px;
+    background: var(--paper-2);
+  }
+
+  .bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--s);
+    width: var(--l);
+    border-radius: 6px;
+    background: var(--accent-btn);
+  }
+
+  .when {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  tfoot th,
+  tfoot td {
+    border-bottom: 0 !important;
+    font-weight: 700;
+  }
+
+  tfoot .num {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 1.5rem;
+  }
+
+  @media (max-width: 700px) {
+    .gantt,
+    .gantt-h {
+      display: none;
+    }
+  }
+
+  .pay {
+    display: grid;
+    gap: 10px;
+    padding: clamp(20px, 3vw, 32px);
+    border-radius: var(--radius);
+    background: var(--paper-2);
+  }
+
+  .pay p {
+    margin: 0;
+  }
+
+  .pay-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+    display: grid;
+    counter-reset: p;
+  }
+
+  .pay-list li {
+    counter-increment: p;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .pay-list li span::before {
+    content: counter(p) '. ';
+    color: var(--accent-ink);
+    font-weight: 700;
+  }
+
+  .pay-list b {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .actions {
+    display: grid;
+    gap: 12px;
+    justify-items: start;
+  }
+
+  .note {
+    margin: 0;
+    font-size: 0.88rem;
+    max-width: 70ch;
+  }
+</style>

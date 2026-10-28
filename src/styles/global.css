@@ -13,12 +13,14 @@
   --ink: #15130f;
   --graphite: #1f1d19;
   --graphite-2: #2a2723;
-  --muted: #6e675e;
+  --muted: #675f56;
   --muted-dark: #a59d92;
   --line: rgb(21 19 15 / 0.12);
   --line-dark: rgb(244 241 236 / 0.14);
-  --accent: #b6774b;
-  --accent-ink: #8e5a35;
+  /* Медь: на светлом фоне — темнее (контраст ≥ 4.5 для текста на кнопках), на тёмном — светлее */
+  --accent: #a3653b;
+  --accent-ink: #8a5330;
+  --accent-btn: #a3653b;
   --accent-soft: #e9d5c3;
   --pine: #2f4a43;
 
@@ -245,8 +247,17 @@ summary:focus-visible {
   outline-offset: 3px;
 }
 
+@media (max-width: 480px) {
+  .btn {
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 10px;
+  }
+}
+
 .btn--accent {
-  --bg: var(--accent);
+  --bg: var(--accent-btn);
   --fg: #fff;
 }
 
@@ -490,8 +501,21 @@ summary:focus-visible {
   }
 }
 
+/* Тёмные блоки: более светлая медь для текста и иконок */
+.section--dark,
+.footer,
+.calc-result,
+.cta,
+.pkg.accent,
+.q-gift,
+.cookie,
+.mobile-bar,
+.marquee {
+  --accent: #c08a5f;
+}
+
 ::selection {
-  background: var(--accent);
+  background: var(--accent-btn);
   color: #fff;
 }
 

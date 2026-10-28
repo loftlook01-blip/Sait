@@ -1,14 +1,18 @@
 ---
 interface Props {
   items: { q: string; a: string }[];
+  /** Имя группы: внутри группы открыт только один ответ */
+  group?: string;
+  /** Раскрыть первый вопрос */
+  openFirst?: boolean;
 }
-const { items } = Astro.props;
+const { items, group = 'faq', openFirst = true } = Astro.props;
 ---
 
 <div class="faq">
   {
     items.map((i, n) => (
-      <details name="faq" open={n === 0}>
+      <details name={group} open={openFirst && n === 0}>
         <summary>
           <span>{i.q}</span>
           <i aria-hidden="true" />

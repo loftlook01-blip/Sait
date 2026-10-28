@@ -7,8 +7,10 @@ import { fmt } from '../data/site';
 interface Props {
   city: City;
   exclude?: string;
+  level?: 'h2' | 'h3';
 }
-const { city, exclude } = Astro.props;
+const { city, exclude, level = 'h3' } = Astro.props;
+const Heading = level;
 const list = SERVICES.filter((s) => s.slug !== exclude);
 ---
 
@@ -21,7 +23,7 @@ const list = SERVICES.filter((s) => s.slug !== exclude);
         </div>
         <div class="svc-body">
           <div>
-            <h3 class="h-card">{s.name}</h3>
+            <Heading class="h-card">{s.name}</Heading>
             <p>{s.lead}</p>
           </div>
           <div class="svc-meta">
@@ -111,7 +113,7 @@ const list = SERVICES.filter((s) => s.slug !== exclude);
   }
 
   .svc:hover .go {
-    background: var(--accent);
+    background: var(--accent-btn);
     border-color: var(--accent);
     color: #fff;
   }

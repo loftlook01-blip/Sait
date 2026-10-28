@@ -1,12 +1,16 @@
 ---
 import Art from './Art.astro';
 import { PROJECTS, PROJECT_CATS } from '../data/content';
+import { plural } from '../data/site';
 interface Props {
   limit?: number;
   filter?: boolean;
   exclude?: string;
+  /** Уровень заголовка карточек — зависит от структуры страницы */
+  level?: 'h2' | 'h3';
 }
-const { limit, filter = false, exclude } = Astro.props;
+const { limit, filter = false, exclude, level = 'h3' } = Astro.props;
+const Heading = level;
 const cats = PROJECT_CATS.filter((c) => PROJECTS.some((p) => p.cat === c.id));
 const pool = PROJECTS.filter((p) => p.slug !== exclude);
 const list = limit ? pool.slice(0, limit) : pool;
@@ -31,11 +35,11 @@ const list = limit ? pool.slice(0, limit) : pool;
         </div>
         <div class="pj-info">
           <div>
-            <h3 class="h-card">{p.title}</h3>
+            <Heading class="h-card">{p.title}</Heading>
             <p class="muted">{p.type} · {p.area} м² · {p.district}</p>
           </div>
           <span class="days">
-            <b>{p.days}</b> дней
+            <b>{p.days}</b> {plural(p.days, ['день', 'дня', 'дней'])}
           </span>
         </div>
       </a>

@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import SmetaBuilder from '../components/SmetaBuilder.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import { breadcrumbs } from '../lib/schema';
+
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Цены', url: '/ceny/' },
+  { name: 'Пример сметы', url: '/smeta/' },
+];
+const rules = [
+  { t: 'Смета по проекту', d: 'Считаем по чертежам и замеру: у каждой позиции есть объём и цена за единицу. Никаких «итого» без расшифровки.' },
+  { t: 'Цена в договоре', d: 'Смета — приложение к договору. Стоимость меняется, только если вы сами добавили работы, и только допсоглашением.' },
+  { t: 'Оплата после приёмки', d: 'Каждый этап принимается по чек-листу. Пока вы не подписали акт этапа, следующий платёж не нужен.' },
+];
+---
+
+<Base
+  title="Пример сметы на ремонт квартиры и график платежей"
+  description="Как устроена смета на ремонт под ключ: этапы, стоимость каждого этапа, сроки и поэтапная оплата после приёмки. Интерактивный пример для вашей площади."
+  schema={[breadcrumbs(crumbs)]}
+>
+  <PageHero
+    title="Пример сметы и <em>график платежей</em>"
+    eyebrow="Прозрачность"
+    lead="Покажем, из чего складывается стоимость ремонта и когда вы платите. Выберите площадь и уровень ремонта — всё пересчитается."
+    crumbs={crumbs}
+  />
+
+  <section class="section section--tight">
+    <div class="container"><SmetaBuilder /></div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Правила</p>
+        <h2 class="h-section">Как мы работаем со сметой</h2>
+      </div>
+      <div class="rules">
+        {
+          rules.map((r) => (
+            <div class="card reveal">
+              <h3 class="h-card">{r.t}</h3>
+              <p class="muted">{r.d}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <CtaBlock title="Нужна смета по вашему объекту?" text="Инженер бесплатно приедет на замер, а через 1–2 дня вы получите предварительную смету по этапам." source="Пример сметы" />
+</Base>
+
+<style>
+  .rules {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+
+  .rules p {
+    margin: 10px 0 0;
+  }
+</style>

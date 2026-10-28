@@ -7,7 +7,7 @@ export default defineConfig({
   site: SITE.url,
   trailingSlash: 'always',
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
-  build: { inlineStylesheets: 'auto', format: 'directory' },
+  build: { inlineStylesheets: 'always', format: 'directory' },
   compressHTML: true,
   integrations: [
     sitemap({

@@ -9,6 +9,8 @@ import Calculator from './Calculator.astro';
 import BeforeAfter from './BeforeAfter.astro';
 import Trust from './Trust.astro';
 import { withCity, type Service } from '../data/services';
+import { FLATS, flatTotal } from '../data/flats';
+import Art from './Art.astro';
 import { ACTIVE_CITIES, cityBase, cityServiceUrl, type City } from '../data/cities';
 import { FAQ } from '../data/content';
 import { fmt, guaranteeLabel } from '../data/site';
@@ -49,14 +51,14 @@ const isRoomArt = !['blueprint'].includes(s.art);
           <ul>{s.forWhom.map((f) => <li class="chip">{f}</li>)}</ul>
         </div>
       </div>
-      <aside class="card includes reveal">
+      <div class="card includes reveal">
         <h2 class="h-card">Что входит</h2>
         <ul class="tick-list">{s.includes.map((i) => <li>{i}</li>)}</ul>
         <div class="price-line">
           <span>Стоимость работ</span>
           <b>от {fmt.rub(s.priceFrom)}/{s.unit}</b>
         </div>
-      </aside>
+      </div>
     </div>
   </section>
 
@@ -114,6 +116,28 @@ const isRoomArt = !['blueprint'].includes(s.art);
       <Faq items={faqs} />
     </div>
   </section>
+
+  {
+    s.slug === 'remont-kvartir-pod-klyuch' && city.primary && (
+      <section class="section section--tight">
+        <div class="container">
+          <div class="section-head">
+            <p class="eyebrow">По типу квартиры</p>
+            <h2 class="h-section">Цены для вашей квартиры</h2>
+          </div>
+          <div class="flats">
+            {FLATS.map((f) => (
+              <a class="flat reveal" href={`/remont/${f.slug}/`}>
+                <div class="media"><Art variant={f.art} sizes="(min-width: 1000px) 25vw, 100vw" /></div>
+                <h3 class="h-card">{f.title}</h3>
+                <p class="muted">{f.areaRange} · работы от {fmt.rub(flatTotal(f, 'base'))}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   <section class="section">
     <div class="container">
@@ -215,6 +239,32 @@ const isRoomArt = !['blueprint'].includes(s.art);
     .ba-row {
       grid-template-columns: 1fr 1.2fr;
     }
+  }
+
+  .flats {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  }
+
+  .flat {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    text-decoration: none;
+  }
+
+  .flat .media {
+    aspect-ratio: 4 / 3;
+  }
+
+  .flat p {
+    margin: 0;
+    font-size: 0.92rem;
+  }
+
+  .flat:hover h3 {
+    color: var(--accent-ink);
   }
 
   .geo-links {
