@@ -5,7 +5,7 @@
  * (исходники сцен — scripts/art/scenes.mjs, пересобрать: npm run images).
  * Чтобы поставить реальную фотографию — передайте photo или замените файл с тем же именем.
  */
-import { ART_LABELS, type ArtVariant } from './art';
+import { ART_LABELS, ROOM_VARIANTS, type ArtVariant } from './art';
 
 interface Props {
   variant: ArtVariant;
@@ -19,9 +19,10 @@ interface Props {
 
 const { variant, state = 'after', photo, alt, class: cls = '', eager = false, sizes = '(min-width: 1000px) 50vw, 100vw' } = Astro.props;
 const label = alt ?? (state === 'before' ? 'Объект до ремонта: черновая отделка' : ART_LABELS[variant]);
-const name = state === 'before' ? 'before' : variant;
+// У каждой комнаты свой кадр «до» с той же точки съёмки
+const name = state === 'before' ? (ROOM_VARIANTS.includes(variant) ? `${variant}-before` : 'before') : variant;
 const src = photo ?? `/images/art/${name}.webp`;
-const srcset = photo ? undefined : `/images/art/${name}-800.webp 800w, /images/art/${name}.webp 1600w`;
+const srcset = photo ? undefined : `/images/art/${name}-800.webp 800w, /images/art/${name}.webp 1440w`;
 ---
 
 <img

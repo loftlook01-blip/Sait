@@ -8,7 +8,7 @@ import { SITE } from '../data/site';
   <p class="eyebrow">Ответим за 15 минут</p>
   <h2 id="lead-modal-title" class="serif">Бесплатный замер и&nbsp;смета</h2>
   <p class="muted">Инженер приедет с лазерным оборудованием, оценит объект и подготовит предварительный расчёт. Это ни к чему вас не обязывает.</p>
-  <LeadForm source="Модальное окно" button="Записаться на замер" compact withMessage />
+  <LeadForm source="Модальное окно" button="Записаться на замер" compact withMessage withSlot />
   <p class="alt">
     Или напишите: <a href={SITE.telegram} target="_blank" rel="noopener">Telegram</a> · <a href={SITE.whatsapp} target="_blank" rel="noopener">WhatsApp</a> · <a href={`tel:${SITE.phoneHref}`}>{SITE.phone}</a>
   </p>

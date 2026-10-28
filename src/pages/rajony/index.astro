@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import Art from '../../components/Art.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import { DISTRICTS } from '../../data/districts';
+import { breadcrumbs } from '../../lib/schema';
+
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Районы', url: '/rajony/' },
+];
+---
+
+<Base title="Ремонт квартир по районам Архангельска" description="Ремонт квартир и домов во всех районах Архангельска: Ломоносовский, Октябрьский, Соломбала, Майская горка, Варавино-Фактория и другие. Бесплатный выезд на замер." schema={[breadcrumbs(crumbs)]}>
+  <PageHero title="Работаем во всех районах <em>Архангельска</em>" eyebrow="География" lead="У каждого района свой жилой фонд и свои задачи: от деревянных домов Соломбалы до новостроек Майской горки. Выберите район — расскажем, что важно именно там." crumbs={crumbs} />
+  <section class="section section--tight">
+    <div class="container grid">
+      {
+        DISTRICTS.map((d) => (
+          <a class="d reveal" href={`/rajony/${d.slug}/`}>
+            <div class="media"><Art variant={d.art} sizes="(min-width: 1000px) 25vw, 100vw" /></div>
+            <h2 class="h-card">{d.name}</h2>
+            <p class="muted">{d.housing.slice(0, 2).join(', ')}</p>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+  <CtaBlock source="Районы" />
+</Base>
+
+<style>
+  .grid {
+    display: grid;
+    gap: 28px 20px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  }
+
+  .d {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    text-decoration: none;
+  }
+
+  .d .media {
+    aspect-ratio: 4 / 3;
+  }
+
+  .d p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .d:hover h2 {
+    color: var(--accent-ink);
+  }
+</style>

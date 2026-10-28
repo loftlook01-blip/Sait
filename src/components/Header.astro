@@ -6,8 +6,9 @@ import { SERVICES } from '../data/services';
 
 interface Props {
   city: City;
+  overlay?: boolean;
 }
-const { city } = Astro.props;
+const { city, overlay = false } = Astro.props;
 const path = Astro.url.pathname;
 
 const nav = [
@@ -22,7 +23,7 @@ const nav = [
 const isActive = (href: string) => path === href || (href !== '/' && path.startsWith(href) && href !== '/uslugi/');
 ---
 
-<header class="header" data-header>
+<header class:list={['header', { 'header--overlay': overlay }]} data-header>
   <div class="container header-inner">
     <Logo />
 
@@ -162,6 +163,35 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
     transition:
       border-color 0.3s,
       background 0.3s;
+  }
+
+  /* Прозрачная шапка поверх фото: светлый текст до начала прокрутки */
+  .header--overlay:not(:global(.is-scrolled)) {
+    --ink: #fbf9f6;
+    --line: rgb(255 255 255 / 0.32);
+    --logo-fg: #fbf9f6;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: #fbf9f6;
+  }
+
+  .header--overlay:not(:global(.is-scrolled)) :global(.logo) {
+    --logo-bg: #15130f;
+  }
+
+  .header--overlay:not(:global(.is-scrolled)) .nav > ul > li > a:hover,
+  .header--overlay:not(:global(.is-scrolled)) .nav a[aria-current='page'] {
+    background: rgb(255 255 255 / 0.14);
+  }
+
+  .header--overlay .sub ul {
+    --ink: #15130f;
+    color: #15130f;
+  }
+
+  .header--overlay:not(:global(.is-scrolled)) .phone-hours {
+    color: rgb(251 249 246 / 0.7);
   }
 
   .header:global(.is-scrolled) {

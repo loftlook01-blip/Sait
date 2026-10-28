@@ -1,0 +1,444 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import { CHECKLIST, CHECK_TOTAL } from '../data/checklist';
+import { SITE } from '../data/site';
+import { article, breadcrumbs } from '../lib/schema';
+
+const url = '/chek-list-priemki/';
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Гарантии', url: '/garantii/' },
+  { name: 'Чек-лист приёмки', url },
+];
+const title = `Чек-лист приёмки ремонта: ${CHECK_TOTAL} пунктов с допусками`;
+const description = `Как принять ремонт квартиры: ${CHECK_TOTAL} пунктов проверки электрики, сантехники, стен, полов, плитки, покраски, дверей и мебели с допусками и способами проверки. Отмечайте пункты прямо на странице.`;
+const tolCount = CHECKLIST.reduce((a, s) => a + s.items.filter((i) => i.tol).length, 0);
+---
+
+<Base title={title} description={description} schema={[article({ title, description, url, date: '2026-10-28' }), breadcrumbs(crumbs)]}>
+  <PageHero
+    title={`Чек-лист приёмки ремонта — <em>${CHECK_TOTAL} пунктов</em>`}
+    eyebrow="Контроль качества"
+    lead="По этому списку мы сдаём каждый этап. Используйте его и для приёмки ремонта у любого подрядчика: отмечайте пункты прямо на странице, отметки сохранятся в вашем браузере."
+    crumbs={crumbs}
+  >
+    <ul class="facts">
+      <li><b>{CHECKLIST.length}</b><span>разделов</span></li>
+      <li><b>{CHECK_TOTAL}</b><span>пунктов проверки</span></li>
+      <li><b>{tolCount}</b><span>с допусками в мм и процентах</span></li>
+    </ul>
+  </PageHero>
+
+  <section class="section section--tight">
+    <div class="container cl" data-checklist>
+      <div class="cl-side">
+        <div class="progress card">
+          <p class="p-num"><b data-done>0</b> из {CHECK_TOTAL}</p>
+          <div class="p-bar" role="progressbar" aria-label="Проверено пунктов" aria-valuemin="0" aria-valuemax={CHECK_TOTAL} aria-valuenow="0" data-bar><span></span></div>
+          <label class="only-tol"><input type="checkbox" id="cl-only-tol" data-only-tol /> Только пункты с допусками</label>
+          <div class="p-actions">
+            <button type="button" class="btn btn--ghost small" data-reset>Сбросить отметки</button>
+            {import.meta.env.PUBLIC_DEMO !== 'true' && <button type="button" class="btn btn--ghost small" data-print>Распечатать</button>}
+          </div>
+        </div>
+        <nav class="toc" aria-label="Разделы чек-листа">
+          <ol>
+            {
+              CHECKLIST.map((s) => (
+                <li>
+                  <a href={`#${s.id}`}>
+                    <span>{s.title}</span>
+                    <small data-sec-count={s.id}>0/{s.items.length}</small>
+                  </a>
+                </li>
+              ))
+            }
+          </ol>
+        </nav>
+      </div>
+
+      <div class="cl-main">
+        {
+          CHECKLIST.map((s, si) => (
+            <section class="sec" id={s.id} data-sec={s.id}>
+              <header class="sec-head">
+                <span class="sec-n">{String(si + 1).padStart(2, '0')}</span>
+                <div>
+                  <h2 class="h-card">{s.title}</h2>
+                  <p class="muted">{s.stage}</p>
+                </div>
+              </header>
+              <ul class="items">
+                {s.items.map((it, ii) => (
+                  <li class:list={['item', { 'has-tol': !!it.tol }]}>
+                    <label>
+                      <input type="checkbox" id={`cl-${s.id}-${ii}`} data-key={`${s.id}-${ii}`} />
+                      <span class="box" aria-hidden="true" />
+                      <span class="txt">
+                        <span class="t">{it.t}</span>
+                        {it.how && <span class="how">{it.how}</span>}
+                      </span>
+                      {it.tol && <span class="tol">{it.tol}</span>}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        }
+        <p class="muted note">
+          Допуски — ориентиры для высококачественной отделки по СП 71.13330.2017 и ПУЭ. Конкретные значения для вашего объекта фиксируются в договоре. {SITE.brand} сдаёт каждый этап по этому списку и фотографирует скрытые работы до закрытия.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <CtaBlock title="Хотите ремонт, который проходит этот список?" text="Мы сдаём каждый этап по чек-листу и не берём оплату, пока этап не принят. Расскажите о вашем объекте — пришлём смету." source="Чек-лист приёмки" />
+</Base>
+
+<script>
+  const KEY = 'checklist-v1';
+  document.querySelectorAll<HTMLElement>('[data-checklist]').forEach((root) => {
+    const boxes = [...root.querySelectorAll<HTMLInputElement>('input[data-key]')];
+    const total = boxes.length;
+    let saved: Record<string, boolean> = {};
+    try {
+      saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+    } catch {}
+    boxes.forEach((b) => (b.checked = !!saved[b.dataset.key!]));
+
+    const update = () => {
+      const done = boxes.filter((b) => b.checked).length;
+      root.querySelector('[data-done]')!.textContent = String(done);
+      const bar = root.querySelector<HTMLElement>('[data-bar]')!;
+      bar.setAttribute('aria-valuenow', String(done));
+      bar.querySelector('span')!.style.width = `${(done / total) * 100}%`;
+      root.querySelectorAll<HTMLElement>('[data-sec]').forEach((sec) => {
+        const items = [...sec.querySelectorAll<HTMLInputElement>('input[data-key]')];
+        const d = items.filter((b) => b.checked).length;
+        const counter = root.querySelector(`[data-sec-count="${sec.dataset.sec}"]`);
+        if (counter) counter.textContent = `${d}/${items.length}`;
+        sec.classList.toggle('complete', d === items.length);
+      });
+    };
+
+    root.addEventListener('change', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.matches('[data-only-tol]')) {
+        root.classList.toggle('only-tol-on', t.checked);
+        return;
+      }
+      if (!t.dataset.key) return;
+      saved[t.dataset.key] = t.checked;
+      try {
+        localStorage.setItem(KEY, JSON.stringify(saved));
+      } catch {}
+      update();
+    });
+    root.querySelector('[data-reset]')?.addEventListener('click', () => {
+      boxes.forEach((b) => (b.checked = false));
+      saved = {};
+      try {
+        localStorage.removeItem(KEY);
+      } catch {}
+      update();
+    });
+    root.querySelector('[data-print]')?.addEventListener('click', () => window.print());
+    update();
+  });
+</script>
+
+<style>
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 40px;
+    list-style: none;
+    padding: 20px 0 0;
+    margin: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .facts li {
+    display: grid;
+  }
+
+  .facts b {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 2.4rem;
+    line-height: 1;
+  }
+
+  .facts span {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .cl {
+    display: grid;
+    gap: 32px;
+    align-items: start;
+  }
+
+  .cl > * {
+    min-width: 0;
+  }
+
+  @media (min-width: 1000px) {
+    .cl {
+      grid-template-columns: 300px 1fr;
+      gap: 56px;
+    }
+
+    .cl-side {
+      position: sticky;
+      top: calc(var(--header-h) + 20px);
+    }
+  }
+
+  .cl-side {
+    display: grid;
+    gap: 16px;
+  }
+
+  .progress {
+    display: grid;
+    gap: 12px;
+  }
+
+  .p-num {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  .p-num b {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 2.2rem;
+    color: var(--ink);
+  }
+
+  .p-bar {
+    height: 8px;
+    border-radius: 6px;
+    background: var(--paper-2);
+    overflow: hidden;
+  }
+
+  .p-bar span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--accent-btn);
+    transition: width 0.4s var(--ease);
+  }
+
+  .only-tol {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .only-tol input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-btn);
+  }
+
+  .p-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .small {
+    min-height: 40px;
+    padding: 0 16px;
+    font-size: 0.86rem;
+  }
+
+  .toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 2px;
+  }
+
+  .toc a {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .toc a:hover {
+    background: var(--paper-2);
+  }
+
+  .toc small {
+    color: var(--muted);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 999px) {
+    .toc {
+      display: none;
+    }
+  }
+
+  .cl-main {
+    display: grid;
+    gap: 40px;
+  }
+
+  .sec {
+    scroll-margin-top: calc(var(--header-h) + 16px);
+  }
+
+  .sec-head {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .sec-head p {
+    margin: 2px 0 0;
+    font-size: 0.88rem;
+  }
+
+  .sec-n {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--accent-ink);
+    min-width: 44px;
+  }
+
+  .sec.complete .sec-n::after {
+    content: ' ✓';
+    font-size: 1.2rem;
+  }
+
+  .items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .item label {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 14px;
+    align-items: start;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+  }
+
+  @media (min-width: 700px) {
+    .item label {
+      grid-template-columns: auto 1fr auto;
+    }
+  }
+
+  .item input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .box {
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
+    border: 1.5px solid var(--line);
+    border-radius: 7px;
+    background: var(--card);
+    transition: 0.2s;
+  }
+
+  .item input:checked + .box {
+    border-color: var(--accent-btn);
+    background: var(--accent-btn) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5 10 17 19 7'/%3E%3C/svg%3E") center / 16px no-repeat;
+  }
+
+  .item input:focus-visible + .box {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .item input:checked ~ .txt .t {
+    color: var(--muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--line);
+  }
+
+  .txt {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .t {
+    font-weight: 600;
+  }
+
+  .how {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .tol {
+    grid-column: 2;
+    justify-self: start;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: normal;
+  }
+
+  @media (min-width: 700px) {
+    .tol {
+      grid-column: 3;
+      justify-self: end;
+      max-width: 260px;
+      text-align: right;
+    }
+  }
+
+  :global(.only-tol-on) .item:not(.has-tol) {
+    display: none;
+  }
+
+  .note {
+    font-size: 0.86rem;
+    max-width: 75ch;
+  }
+
+  @media print {
+    .cl-side,
+    :global(header),
+    :global(footer),
+    :global(.cta-wrap),
+    :global(.widgets),
+    :global(.mobile-bar) {
+      display: none !important;
+    }
+  }
+</style>

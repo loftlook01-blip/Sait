@@ -17,9 +17,11 @@ interface Props {
   schema?: object[];
   noindex?: boolean;
   ogImage?: string;
+  /** Шапка прозрачная поверх первого экрана (главные страницы) */
+  overlayHeader?: boolean;
 }
 
-const { title, description, city = PRIMARY_CITY, schema = [], noindex = false, ogImage = '/og.jpg' } = Astro.props;
+const { title, description, city = PRIMARY_CITY, schema = [], noindex = false, ogImage = '/og.jpg', overlayHeader = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, SITE.url).href;
 // Бренд добавляем, только если заголовок не слишком длинный (сниппет Яндекса ~70 символов)
 const fullTitle = title.includes(SITE.brand) || title.length > 52 ? title : `${title} — ${SITE.brand}`;
@@ -38,6 +40,7 @@ const metrika = SITE.analytics.yandexMetrikaId;
     <link rel="preload" href={manropeCyr} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={playfairCyr} as="font" type="font/woff2" crossorigin />
     {noindex && <meta name="robots" content="noindex, follow" />}
+    {overlayHeader && <link rel="preload" as="image" href="/images/art/hero.webp" imagesrcset="/images/art/hero-1200.webp 1200w, /images/art/hero.webp 1920w" imagesizes="100vw" />}
 
     <meta name="theme-color" content="#1f1d19" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -84,7 +87,7 @@ const metrika = SITE.analytics.yandexMetrikaId;
   </head>
   <body>
     <a class="skip-link" href="#main">К содержанию</a>
-    <Header city={city} />
+    <Header city={city} overlay={overlayHeader} />
     <main id="main">
       <slot />
     </main>

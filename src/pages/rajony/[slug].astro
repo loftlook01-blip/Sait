@@ -1,0 +1,200 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import ServicesGrid from '../../components/ServicesGrid.astro';
+import Packages from '../../components/Packages.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import Faq from '../../components/Faq.astro';
+import { DISTRICTS, type District } from '../../data/districts';
+import { FLATS, flatTotal } from '../../data/flats';
+import { FAQ } from '../../data/content';
+import { PRIMARY_CITY } from '../../data/cities';
+import { fmt } from '../../data/site';
+import { breadcrumbs, faq as faqSchema } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return DISTRICTS.map((d) => ({ params: { slug: d.slug }, props: { d } }));
+}
+const { d } = Astro.props as { d: District };
+const city = PRIMARY_CITY;
+const url = `/rajony/${d.slug}/`;
+const crumbs = [
+  { name: 'Главная', url: '/' },
+  { name: 'Районы', url: '/rajony/' },
+  { name: d.name, url },
+];
+const faqs = FAQ.slice(0, 4);
+const title = `Ремонт квартир ${d.in} — под ключ, с собственным производством`;
+const description = `Ремонт квартир и домов ${d.in} (Архангельск): ${d.housing[0]}, ${d.housing[1]}. Фиксированная смета, свой столярный и сварочный цех, бесплатный замер.`;
+---
+
+<Base title={title} description={description} schema={[breadcrumbs(crumbs), faqSchema(faqs)]}>
+  <PageHero title={`Ремонт квартир <em>${d.in}</em>`} eyebrow={`Архангельск · ${d.name}`} lead={d.lead} crumbs={crumbs} art={d.art}>
+    <div class="ctas">
+      <button class="btn btn--accent" data-lead={`Район: ${d.name}`}>Бесплатный замер <span class="arrow">→</span></button>
+      <a class="btn btn--ghost" href="/ceny/#calc">Рассчитать стоимость</a>
+    </div>
+  </PageHero>
+
+  <section class="section section--tight">
+    <div class="container two">
+      <div>
+        <p class="eyebrow">Жилой фонд района</p>
+        <h2 class="h-section">Что мы ремонтируем {d.in}</h2>
+        <ul class="tick-list housing">{d.housing.map((h) => <li>{h}</li>)}</ul>
+        <p class="note">{d.note}</p>
+      </div>
+      <div class="tasks">
+        {
+          d.tasks.map((t, i) => (
+            <div class="card reveal">
+              <span class="n">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="h-card">{t.t}</h3>
+              <p class="muted">{t.d}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Цены</p>
+        <h2 class="h-section">Стоимость ремонта {d.in}</h2>
+        <p class="lead">Цены одинаковые для всех районов города, выезд на замер бесплатный.</p>
+      </div>
+      <div class="flats">
+        {
+          FLATS.map((f) => (
+            <a class="flat" href={`/remont/${f.slug}/`}>
+              <b>{f.short}</b>
+              <span>{f.areaRange}</span>
+              <span class="pr">от {fmt.rub(flatTotal(f, 'base'))}</span>
+            </a>
+          ))
+        }
+      </div>
+      <Packages />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head"><h2 class="h-section">Услуги {d.in}</h2></div>
+      <ServicesGrid city={city} />
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head"><h2 class="h-section">Частые вопросы</h2></div>
+      <Faq items={faqs} />
+      <p class="others">
+        Другие районы:{' '}
+        {DISTRICTS.filter((x) => x.slug !== d.slug).map((x, i, arr) => (
+          <>
+            <a href={`/rajony/${x.slug}/`}>{x.name}</a>
+            {i < arr.length - 1 ? ', ' : ''}
+          </>
+        ))}
+      </p>
+    </div>
+  </section>
+
+  <CtaBlock city={city} source={`Район: ${d.name}`} />
+</Base>
+
+<style>
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .two {
+    display: grid;
+    gap: clamp(28px, 5vw, 64px);
+    align-items: start;
+  }
+
+  .two > * {
+    min-width: 0;
+  }
+
+  @media (min-width: 1000px) {
+    .two {
+      grid-template-columns: 1fr 1.1fr;
+    }
+  }
+
+  .two h2 {
+    margin: 12px 0 20px;
+  }
+
+  .note {
+    margin-top: 20px;
+    padding: 16px 18px;
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+    color: var(--ink);
+  }
+
+  .tasks {
+    display: grid;
+    gap: 14px;
+  }
+
+  .tasks .n {
+    display: block;
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    color: var(--accent-ink);
+    margin-bottom: 8px;
+  }
+
+  .tasks p {
+    margin: 8px 0 0;
+  }
+
+  .flats {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    margin-bottom: 28px;
+  }
+
+  .flat {
+    display: grid;
+    gap: 2px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    text-decoration: none;
+  }
+
+  .flat:hover {
+    border-color: var(--ink);
+  }
+
+  .flat span {
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+
+  .flat .pr {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .others {
+    margin-top: 28px;
+    color: var(--muted);
+  }
+
+  .others a {
+    color: var(--accent-ink);
+  }
+</style>

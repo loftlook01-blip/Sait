@@ -37,7 +37,10 @@ const faqs = [
     lead="Всё, что мы говорим на сайте, записано в договоре. Попросите шаблон до встречи — и сравните с другими подрядчиками."
     crumbs={crumbs}
   >
-    <div><button class="btn btn--accent" data-lead="Запрос шаблона договора">Получить шаблон договора <span class="arrow">→</span></button></div>
+    <div class="hero-ctas">
+      <button class="btn btn--accent" data-lead="Запрос шаблона договора">Получить шаблон договора <span class="arrow">→</span></button>
+      <a class="btn btn--ghost" href="/chek-list-priemki/">Чек-лист приёмки</a>
+    </div>
   </PageHero>
 
   <section class="section section--tight">
@@ -63,6 +66,12 @@ const faqs = [
 </Base>
 
 <style>
+  .hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
   .clauses {
     display: grid;
     gap: 16px;

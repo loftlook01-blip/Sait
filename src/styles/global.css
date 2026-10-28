@@ -286,6 +286,18 @@ summary:focus-visible {
   border-color: var(--paper);
 }
 
+.btn--glass {
+  --bg: rgb(255 255 255 / 0.12);
+  --fg: #fbf9f6;
+  border-color: rgb(255 255 255 / 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.btn--glass:hover {
+  --bg: rgb(255 255 255 / 0.22);
+}
+
 .btn--light {
   --bg: var(--paper);
   --fg: var(--ink);

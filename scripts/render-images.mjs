@@ -3,11 +3,12 @@
 // Чтобы заменить иллюстрацию фотографией — положите фото с тем же именем.
 import sharp from 'sharp';
 import { mkdirSync } from 'node:fs';
-import { svg, VARIANTS } from './art/scenes.mjs';
+import { svg } from './art/scenes.mjs';
 
 const out = 'public/images/art';
 mkdirSync(out, { recursive: true });
-const jobs = [...VARIANTS.map((v) => [v, 'after']), ['before', 'before']];
+// Интерьеры и цеха теперь — 3D-визуализации (scripts/render3d). Здесь остался только чертёж и запасной кадр «до».
+const jobs = [['blueprint', 'after'], ['before', 'before']];
 for (const [name, state] of jobs) {
   const src = Buffer.from(svg(state === 'before' ? 'living' : name, state));
   const img = sharp(src, { density: 144 });

@@ -12,8 +12,11 @@ interface Props {
   withMessage?: boolean;
   dark?: boolean;
   compact?: boolean;
+  /** Выбор дня и времени замера */
+  withSlot?: boolean;
 }
-const { source = 'Форма на сайте', button = 'Получить консультацию', withMessage = false, dark = false, compact = false } = Astro.props;
+const { source = 'Форма на сайте', button = 'Получить консультацию', withMessage = false, dark = false, compact = false, withSlot = false } = Astro.props;
+const TIMES = ['10:00', '12:00', '14:00', '16:00', '18:00'];
 ---
 
 <form class:list={['lead-form', { dark, compact }]} action={SITE.forms.endpoint} method="post" data-lead-form novalidate>
@@ -42,6 +45,23 @@ const { source = 'Форма на сайте', button = 'Получить кон
     }
   </div>
 
+  {
+    withSlot && (
+      <fieldset class="slot" data-slot>
+        <legend>Когда удобно принять замерщика? <span class="opt">необязательно</span></legend>
+        <div class="days" data-days role="radiogroup" aria-label="День замера" />
+        <div class="times" role="radiogroup" aria-label="Время замера">
+          {TIMES.map((t) => (
+            <label class="pill">
+              <input type="radio" name="time" value={t} />
+              <span>{t}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    )
+  }
+
   <label class="consent">
     <input type="checkbox" name="consent" required checked />
     <span>Соглашаюсь на обработку персональных данных согласно <a href="/politika-konfidencialnosti/" target="_blank">политике конфиденциальности</a></span>
@@ -57,6 +77,30 @@ const { source = 'Форма на сайте', button = 'Получить кон
 
 <script>
   import { SITE } from '../data/site';
+
+  // Ближайшие 6 рабочих дней (Пн–Сб) для выбора даты замера — считаются в браузере, чтобы не устаревать
+  document.querySelectorAll<HTMLElement>('[data-days]').forEach((box) => {
+    const wd = new Intl.DateTimeFormat('ru-RU', { weekday: 'short' });
+    const dm = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' });
+    const full = new Intl.DateTimeFormat('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+    const d = new Date();
+    let n = 0;
+    while (n < 6) {
+      d.setDate(d.getDate() + 1);
+      if (d.getDay() === 0) continue;
+      const label = document.createElement('label');
+      label.className = 'pill day';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'day';
+      input.value = full.format(d);
+      const span = document.createElement('span');
+      span.innerHTML = `<small>${wd.format(d)}</small>${dm.format(d).replace('.', '')}`;
+      label.append(input, span);
+      box.append(label);
+      n++;
+    }
+  });
 
   // Маска телефона без зависимостей
   const formatPhone = (v: string) => {
@@ -122,7 +166,7 @@ const { source = 'Форма на сайте', button = 'Получить кон
         if (!res.ok || !json?.ok) throw new Error(String(res.status));
       }
       form.classList.add('is-sent');
-      form.innerHTML = `<div class="thanks"><p class="thanks-title">Спасибо, ${data.name.replace(/[<>&"]/g, '')}!</p><p>Мы перезвоним в течение 15 минут в рабочее время (${SITE.hours.label}).</p>${demo ? '<p class="demo-note">Демо-режим: заявка никуда не отправлена.</p>' : ''}</div>`;
+      form.innerHTML = `<div class="thanks"><p class="thanks-title">Спасибо, ${data.name.replace(/[<>&"]/g, '')}!</p><p>Мы перезвоним в течение 15 минут в рабочее время (${SITE.hours.label})${data.day ? `, чтобы подтвердить замер: ${data.day.replace(/[<>&"]/g, '')}${data.time ? `, ${data.time.replace(/[<>&"]/g, '')}` : ''}` : ''}.</p>${demo ? '<p class="demo-note">Демо-режим: заявка никуда не отправлена.</p>' : ''}</div>`;
       // Цель в Яндекс Метрике
       const w = window as unknown as { ym?: (...a: unknown[]) => void; __ym?: string };
       if (w.ym && w.__ym) w.ym(w.__ym, 'reachGoal', 'lead');
@@ -204,6 +248,90 @@ const { source = 'Форма на сайте', button = 'Получить кон
     background: rgb(255 255 255 / 0.06);
     border-color: var(--line-dark);
     color: var(--paper);
+  }
+
+  .slot {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .slot legend {
+    padding: 0;
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .opt {
+    font-weight: 400;
+    opacity: 0.8;
+  }
+
+  .days,
+  .times {
+    display: grid;
+    gap: 6px;
+  }
+
+  .days {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  }
+
+  .times {
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  }
+
+  .slot :global(.pill) {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .slot :global(.pill input) {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .slot :global(.pill span) {
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: 6px 4px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    font-size: 0.86rem;
+    font-weight: 600;
+    line-height: 1.15;
+    text-align: center;
+    transition: 0.15s;
+  }
+
+  .slot :global(.pill small) {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: capitalize;
+  }
+
+  .slot :global(.pill input:checked + span) {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .slot :global(.pill input:checked + span small) {
+    color: var(--muted-dark);
+  }
+
+  .slot :global(.pill input:focus-visible + span) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   .consent {

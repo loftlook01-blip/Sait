@@ -40,6 +40,8 @@ $message = $clean($in['message'] ?? '', 2000);
 $source  = $clean($in['source'] ?? '', 120);
 $extra   = $clean($in['extra'] ?? '', 500);
 $page    = $clean($in['page'] ?? '', 300);
+$day     = $clean($in['day'] ?? '', 60);
+$time    = $clean($in['time'] ?? '', 10);
 
 if ($name === '' || strlen(preg_replace('/\D/', '', $phone)) < 11) out(422, ['ok' => false, 'error' => 'validation']);
 if (empty($in['consent'])) out(422, ['ok' => false, 'error' => 'consent']);
@@ -56,6 +58,7 @@ $lines = [
     "Телефон: $phone",
     $message ? "Задача: $message" : null,
     $extra ? "Расчёт: $extra" : null,
+    ($day || $time) ? 'Замер: ' . trim("$day $time") : null,
     $source ? "Источник: $source" : null,
     $page ? "Страница: $page" : null,
     'Время: ' . date('d.m.Y H:i'),

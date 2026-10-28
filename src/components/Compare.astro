@@ -1,0 +1,177 @@
+---
+import { SITE, guaranteeLabel } from '../data/site';
+import { CHECK_TOTAL } from '../data/checklist';
+
+const rows = [
+  ['Смета', '«Примерно столько», растёт по ходу работ', 'Фиксируется в договоре, меняется только допсоглашением'],
+  ['Оплата', 'Предоплата 50–100%', 'После приёмки каждого этапа, аванс 10%'],
+  ['Проект', '«Решим на месте»', 'Дизайн-проект и рабочие чертежи до начала работ'],
+  ['Мебель и металл', 'Заказ у сторонних фабрик, 4–8 недель ожидания', 'Свой цех: делаем за дни и подгоняем по месту'],
+  ['Контроль качества', 'На глаз', `Чек-лист из ${CHECK_TOTAL} пунктов с допусками`],
+  ['Скрытые работы', 'Закрыты — не проверить', 'Фотоархив проводки, труб и гидроизоляции'],
+  ['Сроки', '«Как получится»', 'График в договоре и неустойка за просрочку'],
+  ['Ответственность', 'Несколько подрядчиков, виноватых нет', 'Один договор и персональный менеджер'],
+  ['Гарантия', 'Устная', `${guaranteeLabel()} по договору`],
+];
+---
+
+<div class="cmp">
+  <div class="cmp-head" aria-hidden="true">
+    <span></span>
+    <span class="them">Типичная бригада</span>
+    <span class="us">{SITE.brand}</span>
+  </div>
+  <dl class="cmp-rows">
+    {
+      rows.map(([k, them, us]) => (
+        <div class="row reveal">
+          <dt>{k}</dt>
+          <dd class="them">
+            <span class="lbl">Типичная бригада</span>
+            <span class="ic no" aria-hidden="true">✕</span>
+            {them}
+          </dd>
+          <dd class="us">
+            <span class="lbl">{SITE.brand}</span>
+            <span class="ic yes" aria-hidden="true">✓</span>
+            {us}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+</div>
+
+<style>
+  .cmp {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--card);
+  }
+
+  .cmp-head,
+  .row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 860px) {
+    .cmp-head,
+    .row {
+      grid-template-columns: 0.8fr 1.1fr 1.3fr;
+    }
+  }
+
+  .cmp-head {
+    display: none;
+  }
+
+  @media (min-width: 860px) {
+    .cmp-head {
+      display: grid;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .cmp-head span {
+      padding: 18px 24px;
+    }
+
+    .cmp-head .them {
+      color: var(--muted);
+    }
+
+    .cmp-head .us {
+      background: var(--ink);
+      color: #e2b48c;
+    }
+  }
+
+  .cmp-rows {
+    margin: 0;
+  }
+
+  .row {
+    border-top: 1px solid var(--line);
+  }
+
+  dt,
+  dd {
+    margin: 0;
+    padding: 16px 24px;
+  }
+
+  dt {
+    font-weight: 700;
+    padding-bottom: 6px;
+  }
+
+  @media (min-width: 860px) {
+    dt {
+      padding-bottom: 16px;
+    }
+  }
+
+  dd {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  dd.them {
+    color: var(--muted);
+    padding-top: 6px;
+  }
+
+  dd.us {
+    background: var(--ink);
+    color: #fbf9f6;
+    font-weight: 600;
+  }
+
+  @media (min-width: 860px) {
+    dd.them {
+      padding-top: 16px;
+    }
+  }
+
+  .lbl {
+    flex-basis: 100%;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.65;
+  }
+
+  @media (min-width: 860px) {
+    .lbl {
+      display: none;
+    }
+  }
+
+  .ic {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .ic.no {
+    background: var(--paper-2);
+    color: var(--muted);
+  }
+
+  .ic.yes {
+    background: var(--accent-btn);
+    color: #fff;
+  }
+</style>

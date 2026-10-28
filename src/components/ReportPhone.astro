@@ -1,0 +1,232 @@
+---
+/**
+ * Пример фотоотчёта в мессенджере — показывает, как заказчик следит за ремонтом.
+ * Изображения — визуализации «до» и «после» (заменятся реальными фото объектов).
+ */
+import { CHECK_TOTAL } from '../data/checklist';
+---
+
+<div class="rp">
+  <div class="rp-copy">
+    <p class="eyebrow">Ремонт под контролем</p>
+    <h2 class="h-section">Вы видите каждый этап — <em>даже из другого города</em></h2>
+    <p class="lead">Персональный менеджер присылает фото- и видеоотчёты в мессенджер. Скрытые работы снимаем до того, как их закроют, а этап принимаете по чек-листу — лично или по видеосвязи.</p>
+    <ul class="tick-list">
+      <li>Отчёт после каждого рабочего дня</li>
+      <li>Фото проводки, труб и гидроизоляции до закрытия — архив остаётся у вас</li>
+      <li>Приёмка этапа по чек-листу из {CHECK_TOTAL} пунктов, потом оплата</li>
+      <li>График и платежи — всегда в одном чате</li>
+    </ul>
+  </div>
+
+  <div class="phone" role="img" aria-label="Пример переписки с менеджером проекта: фотоотчёт и приёмка этапа">
+    <div class="screen" aria-hidden="true">
+      <div class="bar">
+        <span class="ava">М</span>
+        <div><b>Марина, менеджер проекта</b><small>онлайн</small></div>
+      </div>
+      <div class="chat">
+        <p class="day">Вторник</p>
+        <div class="msg in photo">
+          <img src="/images/art/kitchen-before-800.webp" alt="" loading="lazy" width="800" height="600" />
+          <span>Электрика и вода разведены. Фото трасс до штукатурки — в архиве проекта.</span>
+          <time>18:42</time>
+        </div>
+        <div class="msg in card">
+          <b>Этап «Инженерные сети»</b>
+          <span class="ok">✓ 34 из 34 пунктов чек-листа</span>
+          <span class="muted-s">Приёмка: завтра в 12:00 или по видеосвязи</span>
+          <time>18:44</time>
+        </div>
+        <div class="msg out">
+          <span>Принимаю по видео, спасибо! 👍</span>
+          <time>19:02</time>
+        </div>
+        <p class="day">Через 6 недель</p>
+        <div class="msg in photo">
+          <img src="/images/art/kitchen-800.webp" alt="" loading="lazy" width="800" height="600" />
+          <span>Кухня и перегородка из нашего цеха смонтированы. Завтра клининг.</span>
+          <time>17:15</time>
+        </div>
+      </div>
+      <div class="input"><span>Сообщение</span><i></i></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .rp {
+    display: grid;
+    gap: clamp(32px, 5vw, 80px);
+    align-items: center;
+  }
+
+  .rp > * {
+    min-width: 0;
+  }
+
+  @media (min-width: 1000px) {
+    .rp {
+      grid-template-columns: 1.1fr 0.9fr;
+    }
+  }
+
+  .rp-copy {
+    display: grid;
+    gap: 20px;
+  }
+
+  .phone {
+    justify-self: center;
+    width: min(360px, 100%);
+    padding: 12px;
+    border-radius: 48px;
+    background: #121110;
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.06) inset,
+      0 50px 100px -40px rgb(0 0 0 / 0.6);
+  }
+
+  .screen {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 640px;
+    border-radius: 38px;
+    overflow: hidden;
+    background: #e9e3d9;
+    color: #15130f;
+    font-size: 0.84rem;
+  }
+
+  .bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 34px 16px 12px;
+    background: #fbf9f6;
+    border-bottom: 1px solid rgb(0 0 0 / 0.06);
+  }
+
+  .bar div {
+    display: grid;
+    line-height: 1.2;
+  }
+
+  .bar small {
+    color: #3c8a5e;
+    font-size: 0.72rem;
+  }
+
+  .ava {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent-btn);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .chat {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding: 12px;
+    overflow: hidden;
+  }
+
+  .day {
+    justify-self: center;
+    margin: 4px 0;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.07);
+    font-size: 0.7rem;
+    color: #5b544c;
+  }
+
+  .msg {
+    position: relative;
+    display: grid;
+    gap: 4px;
+    max-width: 84%;
+    padding: 8px 10px 18px;
+    border-radius: 14px;
+    line-height: 1.35;
+  }
+
+  .msg time {
+    position: absolute;
+    right: 10px;
+    bottom: 4px;
+    font-size: 0.64rem;
+    color: #8a8178;
+  }
+
+  .in {
+    justify-self: start;
+    background: #fbf9f6;
+    border-bottom-left-radius: 4px;
+  }
+
+  .out {
+    justify-self: end;
+    background: #e4c8ae;
+    border-bottom-right-radius: 4px;
+  }
+
+  .photo {
+    padding: 4px 4px 18px;
+  }
+
+  .photo img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 11px;
+  }
+
+  .photo span {
+    padding: 2px 6px 0;
+  }
+
+  .card b {
+    font-size: 0.86rem;
+  }
+
+  .ok {
+    color: #2f7a52;
+    font-weight: 700;
+  }
+
+  .muted-s {
+    color: #6b635a;
+    font-size: 0.76rem;
+  }
+
+  .input {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 10px 14px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: #fbf9f6;
+    color: #9b9288;
+  }
+
+  .input i {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent-btn);
+  }
+
+  @media (max-width: 420px) {
+    .screen {
+      height: 560px;
+    }
+  }
+</style>

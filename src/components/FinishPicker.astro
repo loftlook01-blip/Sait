@@ -1,0 +1,249 @@
+---
+/**
+ * «Примерьте отделку»: 3 цвета стен × 3 тона пола = 9 визуализаций одной комнаты.
+ * Файлы: /images/art/var-<стена>-<пол>.webp (рендер: scripts/render3d, сцена living с параметрами).
+ */
+const WALLS = [
+  { id: 'warm', name: 'Тёплый белый', hex: '#ece5da' },
+  { id: 'greige', name: 'Грейдж', hex: '#d6cbbb' },
+  { id: 'sage', name: 'Северный шалфей', hex: '#c9cfc0' },
+];
+const FLOORS = [
+  { id: 'light', name: 'Светлый дуб', hex: '#ddc5a5' },
+  { id: 'oak', name: 'Натуральный дуб', hex: '#b88c62' },
+  { id: 'walnut', name: 'Орех', hex: '#6f4b31' },
+];
+const def = { wall: WALLS[0], floor: FLOORS[1] };
+const src = (w: string, f: string) => `/images/art/var-${w}-${f}.webp`;
+---
+
+<div class="fp" data-fp>
+  <div class="fp-stage media">
+    <img class="fp-img is-on" src={src(def.wall.id, def.floor.id)} alt={`Гостиная: стены «${def.wall.name}», пол «${def.floor.name}»`} width="1280" height="960" loading="lazy" decoding="async" data-a />
+    <img class="fp-img" src={src(def.wall.id, def.floor.id)} alt="" width="1280" height="960" loading="lazy" decoding="async" aria-hidden="true" data-b />
+    <p class="fp-tag" aria-live="polite" data-tag>{def.wall.name} · {def.floor.name}</p>
+  </div>
+
+  <div class="fp-side">
+    <p class="eyebrow">Примерьте отделку</p>
+    <h2 class="h-section">Выберите стены и&nbsp;пол — <em>комната изменится</em></h2>
+    <p class="muted">Это визуализация одной из наших гостиных. На этапе дизайн-проекта так же подбираем материалы для вашей квартиры: вы видите результат до начала ремонта.</p>
+
+    <fieldset class="group">
+      <legend>Стены</legend>
+      <div class="sw-row">
+        {
+          WALLS.map((w) => (
+            <label class="sw">
+              <input type="radio" name="fp-wall" value={w.id} checked={w.id === def.wall.id} data-name={w.name} />
+              <span class="chip-c" style={`--c:${w.hex}`} />
+              <span class="sw-name">{w.name}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <fieldset class="group">
+      <legend>Пол — инженерная доска</legend>
+      <div class="sw-row">
+        {
+          FLOORS.map((f) => (
+            <label class="sw">
+              <input type="radio" name="fp-floor" value={f.id} checked={f.id === def.floor.id} data-name={f.name} />
+              <span class="chip-c wood" style={`--c:${f.hex}`} />
+              <span class="sw-name">{f.name}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <button class="btn btn--accent" data-lead="Примерьте отделку" data-extra={`Стены: ${def.wall.name}, пол: ${def.floor.name}`} data-fp-cta>
+      Хочу такой интерьер <span class="arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-fp]').forEach((root) => {
+    const a = root.querySelector<HTMLImageElement>('[data-a]')!;
+    const b = root.querySelector<HTMLImageElement>('[data-b]')!;
+    const tag = root.querySelector('[data-tag]')!;
+    const cta = root.querySelector<HTMLElement>('[data-fp-cta]')!;
+    let front = a;
+    let back = b;
+    const pick = (name: string) => root.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)!;
+
+    // Предзагрузка остальных вариантов, когда блок рядом с экраном
+    const preload = () =>
+      root.querySelectorAll<HTMLInputElement>('input[name="fp-wall"]').forEach((w) =>
+        root.querySelectorAll<HTMLInputElement>('input[name="fp-floor"]').forEach((f) => {
+          const i = new Image();
+          i.src = `/images/art/var-${w.value}-${f.value}.webp`;
+        }),
+      );
+    new IntersectionObserver((e, o) => {
+      if (e[0].isIntersecting) {
+        preload();
+        o.disconnect();
+      }
+    }, { rootMargin: '400px' }).observe(root);
+
+    root.addEventListener('change', () => {
+      const w = pick('fp-wall');
+      const f = pick('fp-floor');
+      const url = `/images/art/var-${w.value}-${f.value}.webp`;
+      const label = `${w.dataset.name} · ${f.dataset.name}`;
+      back.src = url;
+      back.alt = `Гостиная: стены «${w.dataset.name}», пол «${f.dataset.name}»`;
+      const swap = () => {
+        back.classList.add('is-on');
+        front.classList.remove('is-on');
+        back.removeAttribute('aria-hidden');
+        front.setAttribute('aria-hidden', 'true');
+        [front, back] = [back, front];
+      };
+      if (back.complete) swap();
+      else back.onload = swap;
+      tag.textContent = label;
+      cta.dataset.extra = `Стены: ${w.dataset.name}, пол: ${f.dataset.name}`;
+    });
+  });
+</script>
+
+<style>
+  .fp {
+    display: grid;
+    gap: clamp(24px, 4vw, 56px);
+    align-items: center;
+  }
+
+  .fp > * {
+    min-width: 0;
+  }
+
+  @media (min-width: 1000px) {
+    .fp {
+      grid-template-columns: 1.35fr 1fr;
+    }
+  }
+
+  .fp-stage {
+    aspect-ratio: 4 / 3;
+    box-shadow: 0 40px 80px -40px rgb(21 19 15 / 0.45);
+  }
+
+  .fp-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.6s var(--ease);
+  }
+
+  .fp-img.is-on {
+    opacity: 1;
+  }
+
+  .fp-tag {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    margin: 0;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgb(251 249 246 / 0.9);
+    backdrop-filter: blur(8px);
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+
+  .fp-side {
+    display: grid;
+    gap: 18px;
+    justify-items: start;
+  }
+
+  .fp-side p {
+    margin: 0;
+  }
+
+  .group {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+    width: 100%;
+  }
+
+  legend {
+    padding: 0;
+    margin-bottom: 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .sw-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .sw {
+    position: relative;
+    display: grid;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--card);
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .sw:hover {
+    border-color: var(--ink);
+  }
+
+  .sw input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .sw:has(input:checked) {
+    border-color: var(--accent-btn);
+    box-shadow: 0 0 0 1px var(--accent-btn);
+  }
+
+  .sw:has(input:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .chip-c {
+    display: block;
+    height: 46px;
+    border-radius: 9px;
+    background: var(--c);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+  }
+
+  .chip-c.wood {
+    background:
+      repeating-linear-gradient(90deg, rgb(0 0 0 / 0.08) 0 1px, transparent 1px 22%),
+      repeating-linear-gradient(0deg, rgb(255 255 255 / 0.08) 0 2px, transparent 2px 7px),
+      var(--c);
+  }
+
+  .sw-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+</style>
