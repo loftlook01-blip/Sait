@@ -32,7 +32,7 @@ const more = ARTICLES.filter((x) => x.slug !== a.slug).slice(0, 2);
       <div class="cover media"><Art variant={a.art} eager /></div>
     </div>
     <div class="container narrow">
-      <div class="prose" set:html={a.html} />
+      <div class="prose" set:html={a.html.replaceAll("<table>", "<table tabindex=\"0\">")} />
       <div class="box">
         <p class="h-card">Нужна консультация по вашему объекту?</p>
         <p class="muted">Инженер приедет на бесплатный замер и ответит на вопросы на месте.</p>

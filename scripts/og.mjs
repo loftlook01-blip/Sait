@@ -1,6 +1,6 @@
 // Генерация OG-картинки и PNG-иконок: node scripts/og.mjs
 import sharp from 'sharp';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 const fav = readFileSync('public/favicon.svg');
 await sharp(fav, { density: 1200 }).resize(180, 180).png().toFile('public/apple-touch-icon.png');
@@ -21,5 +21,17 @@ const og = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" vi
   <text x="80" y="470" font-family="Arial, sans-serif" font-size="26" fill="#a59d92">Дизайн-проект · Фиксированная смета · Собственный цех</text>
   <text x="80" y="540" font-family="Arial, sans-serif" font-size="24" fill="#a59d92">Столярное и сварочное производство · Порошковая покраска</text>
 </svg>`;
-await sharp(Buffer.from(og)).jpeg({ quality: 88 }).toFile('public/og.jpg');
+// Если есть фотореалистичный рендер — кладём его фоном справа, текст на тёмном градиенте слева
+const hero = 'public/images/art/hero.webp';
+if (existsSync(hero)) {
+  const bg = await sharp(hero).resize(1200, 630, { fit: 'cover', position: 'right' }).toBuffer();
+  const shade = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#15130f" stop-opacity="0.94"/><stop offset="0.5" stop-color="#15130f" stop-opacity="0.78"/><stop offset="0.85" stop-color="#15130f" stop-opacity="0.1"/></linearGradient></defs><rect width="1200" height="630" fill="url(#g)"/></svg>`;
+  const text = og.replace(/<rect width="1200" height="630" fill="#1f1d19"\/>[\s\S]*?<rect x="80"/, '<rect x="80"');
+  await sharp(bg)
+    .composite([{ input: Buffer.from(shade) }, { input: Buffer.from(text) }])
+    .jpeg({ quality: 86 })
+    .toFile('public/og.jpg');
+} else {
+  await sharp(Buffer.from(og)).jpeg({ quality: 88 }).toFile('public/og.jpg');
+}
 console.log('OK: og.jpg, apple-touch-icon.png, icon-512.png');
