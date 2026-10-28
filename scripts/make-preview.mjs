@@ -36,7 +36,7 @@ for (const f of files) {
     const prefix = depth ? '../'.repeat(depth) : './';
     let h = readFileSync(f, 'utf8');
     h = h.replace(/\b(href|src|action)="([^"]*)"/g, (_, a, u) => `${a}="${fix(u, prefix)}"`);
-    h = h.replace(/\bsrcset="([^"]*)"/g, (_, s) => `srcset="${s.split(',').map((p) => { const [u, w] = p.trim().split(/\s+/); return `${fix(u, prefix)} ${w ?? ''}`.trim(); }).join(', ')}"`);
+    h = h.replace(/\b(srcset|imagesrcset)="([^"]*)"/g, (_, a, s) => `${a}="${s.split(',').map((p) => { const [u, w] = p.trim().split(/\s+/); return `${fix(u, prefix)} ${w ?? ''}`.trim(); }).join(', ')}"`);
     h = h.replace(/url\(\/_astro\//g, `url(${prefix}_astro/`);
     h = h.replace(/_astro\//g, 'assets/').replace(/<link rel="manifest"[^>]*>/, '');
     pending.push([f, prefix]);

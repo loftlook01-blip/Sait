@@ -71,6 +71,8 @@ const src = (w: string, f: string) => `/images/art/var-${w}-${f}.webp`;
     const b = root.querySelector<HTMLImageElement>('[data-b]')!;
     const tag = root.querySelector('[data-tag]')!;
     const cta = root.querySelector<HTMLElement>('[data-fp-cta]')!;
+    // База пути берётся из разметки — работает и в превью с относительными ссылками
+    const base = a.getAttribute('src')!.replace(/var-[^/]*$/, '');
     let front = a;
     let back = b;
     const pick = (name: string) => root.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)!;
@@ -80,7 +82,7 @@ const src = (w: string, f: string) => `/images/art/var-${w}-${f}.webp`;
       root.querySelectorAll<HTMLInputElement>('input[name="fp-wall"]').forEach((w) =>
         root.querySelectorAll<HTMLInputElement>('input[name="fp-floor"]').forEach((f) => {
           const i = new Image();
-          i.src = `/images/art/var-${w.value}-${f.value}.webp`;
+          i.src = `${base}var-${w.value}-${f.value}.webp`;
         }),
       );
     new IntersectionObserver((e, o) => {
@@ -93,7 +95,7 @@ const src = (w: string, f: string) => `/images/art/var-${w}-${f}.webp`;
     root.addEventListener('change', () => {
       const w = pick('fp-wall');
       const f = pick('fp-floor');
-      const url = `/images/art/var-${w.value}-${f.value}.webp`;
+      const url = `${base}var-${w.value}-${f.value}.webp`;
       const label = `${w.dataset.name} · ${f.dataset.name}`;
       back.src = url;
       back.alt = `Гостиная: стены «${w.dataset.name}», пол «${f.dataset.name}»`;
