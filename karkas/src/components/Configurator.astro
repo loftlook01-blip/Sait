@@ -1,0 +1,250 @@
+---
+/**
+ * Конфигуратор дома: модель → комплектация → фасад → фундамент → терраса → опции → доставка.
+ * Итог, ежемесячный платёж и состав сметы пересчитываются на лету; выбор сохраняется в URL (?m=barn-36&p=pre…).
+ */
+import Icon from './Icon.astro';
+import { MODELS, PACKAGES, OPTIONS, FACADES, FOUNDATIONS, TERRACE_M2, FREE_KM, KM_RATE } from '../data/models';
+import { CITIES } from '../data/cities';
+import { MORTGAGE } from '../data/content';
+import { fmt } from '../data/site';
+interface Props { initial?: string; compact?: boolean }
+const { initial = 'barn-36', compact = false } = Astro.props;
+const data = {
+  freeKm: FREE_KM,
+  kmRate: KM_RATE,
+  models: MODELS.map((m) => ({ slug: m.slug, name: m.name, area: m.area, price: m.price, modules: m.modules, img: m.img, cat: m.category, wall: Math.round((m.size[0] + m.size[1]) * 2 * 3.2) })),
+  packages: PACKAGES.map((p) => ({ id: p.id, name: p.name, k: p.k })),
+  options: OPTIONS,
+  facades: FACADES,
+  foundations: FOUNDATIONS,
+  terrace: TERRACE_M2,
+  cities: CITIES.map((c) => ({ slug: c.slug, name: c.name, km: c.km })),
+  rate: MORTGAGE[0].rate,
+};
+---
+<div class:list={['cfg', { compact }]} data-cfg data-initial={initial}>
+  <script type="application/json" data-cfg-json set:html={JSON.stringify(data)} />
+  <div class="cfg-steps">
+    <div class="cfg-peek" aria-hidden="true"><span>Итого <b data-total2>—</b></span><a href="#cfg-sum" tabindex="-1">Смета ↓</a></div>
+    <fieldset class="cfg-step">
+      <legend><span>1</span>Модель</legend>
+      <div class="cfg-models">
+        {MODELS.map((m) => (
+          <label class="cfg-model">
+            <input type="radio" name="m" value={m.slug} checked={m.slug === initial} />
+            <img src={`/images/${m.img}-800.webp`} alt="" width="160" height="120" loading="lazy" />
+            <span><b>{m.name}</b><small>{m.area} м² · от {fmt.mln(m.price)}</small></span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+
+    <fieldset class="cfg-step">
+      <legend><span>2</span>Комплектация</legend>
+      <div class="cfg-pk">
+        {PACKAGES.map((p) => (
+          <label class="cfg-opt-card">
+            <input type="radio" name="p" value={p.id} checked={p.id === 'turnkey'} />
+            <b>{p.name}</b>
+            <ul>{p.items.map((i) => <li>{i}</li>)}</ul>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+
+    <div class="cfg-two">
+      <fieldset class="cfg-step">
+        <legend><span>3</span>Фасад</legend>
+        {FACADES.map((f, i) => (
+          <label class="cfg-radio"><input type="radio" name="f" value={f.id} checked={i === 0} /><span>{f.name}</span><em>{f.perM2 ? `+${fmt.num(f.perM2)} ₽/м²` : 'включено'}</em></label>
+        ))}
+      </fieldset>
+      <fieldset class="cfg-step">
+        <legend><span>4</span>Фундамент</legend>
+        {FOUNDATIONS.map((f, i) => (
+          <label class="cfg-radio"><input type="radio" name="fd" value={f.id} checked={i === 0} /><span>{f.name}</span><em>{f.perM2 ? `+${fmt.num(f.perM2)} ₽/м²` : ''}</em></label>
+        ))}
+      </fieldset>
+    </div>
+
+    <fieldset class="cfg-step">
+      <legend><span>5</span>Терраса</legend>
+      <div class="cfg-range">
+        <input type="range" name="t" min="0" max="30" step="1" value="0" aria-label="Площадь террасы, м²" />
+        <output data-t-out>без террасы</output>
+      </div>
+      <p class="small muted">Термососна или лиственница на оцинкованной обвязке, {fmt.num(TERRACE_M2)} ₽/м² со ступенями.</p>
+    </fieldset>
+
+    <fieldset class="cfg-step">
+      <legend><span>6</span>Опции</legend>
+      <div class="cfg-opts">
+        {OPTIONS.map((o) => (
+          <label class="cfg-check"><input type="checkbox" name="o" value={o.id} /><span>{o.name}</span><em>+{fmt.num(o.price)} ₽{'perM2' in o && o.perM2 ? '/м²' : ''}</em></label>
+        ))}
+      </div>
+    </fieldset>
+
+    <fieldset class="cfg-step">
+      <legend><span>7</span>Доставка</legend>
+      <div class="cfg-two">
+        <div class="field">
+          <label for="cfg-city">Куда везём</label>
+          <select class="select" id="cfg-city" name="c">
+            {CITIES.map((c) => <option value={c.slug}>{c.name} — {c.km ? `${c.km} км` : 'рядом с цехом'}</option>)}
+            <option value="custom">Другой адрес</option>
+          </select>
+        </div>
+        <div class="field" data-km-wrap hidden>
+          <label for="cfg-km">Расстояние от Архангельска, км</label>
+          <input class="input" id="cfg-km" name="km" type="number" min="0" max="2000" value="100" inputmode="numeric" />
+        </div>
+      </div>
+    </fieldset>
+  </div>
+
+  <aside class="cfg-sum card card--green" id="cfg-sum" aria-live="polite">
+    <img class="cfg-sum-img" data-sum-img src="/images/model-barn-800.webp" alt="" width="800" height="600" />
+    <div class="cfg-sum-body">
+      <p class="eyebrow light">Ваш дом</p>
+      <p class="cfg-sum-name" data-sum-name>Барн 36</p>
+      <ul class="cfg-lines" data-lines></ul>
+      <div class="cfg-total">
+        <span>Итого</span>
+        <b data-total>—</b>
+      </div>
+      <p class="cfg-mort">Ипотека {data.rate}%: <b data-month>—</b> <span class="small">в месяц при взносе 20% на 20 лет</span></p>
+      <button class="btn btn--white btn--lg btn--block" data-lead="Конфигуратор" data-lead-title="Получить смету на дом" data-cfg-send>Получить смету в PDF</button>
+      <button class="cfg-share" type="button" data-share><Icon name="arrowUp" size={16} /> <span>Скопировать ссылку на расчёт</span></button>
+      <p class="small cfg-note">Цена фиксируется в договоре. Расчёт предварительный — точную смету подготовим после выезда на участок.</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+  import { goal } from '../lib/lead-client';
+  type D = { freeKm: number; kmRate: number; models: any[]; packages: any[]; options: any[]; facades: any[]; foundations: any[]; terrace: number; cities: any[]; rate: number };
+  const rub = (n: number) => new Intl.NumberFormat('ru-RU').format(Math.round(n / 1000) * 1000) + ' ₽';
+  const deliveryExtra = (km: number, modules: number, d: D) => Math.max(1, modules) * Math.max(0, km - d.freeKm) * 2 * d.kmRate;
+
+  document.querySelectorAll<HTMLElement>('[data-cfg]').forEach((root) => {
+    const d: D = JSON.parse(root.querySelector('[data-cfg-json]')!.textContent!);
+    const q = new URLSearchParams(location.search);
+    const set = (name: string, v: string | null) => {
+      if (!v) return;
+      root.querySelectorAll<HTMLInputElement>(`[name="${name}"]`).forEach((i) => {
+        if (i.type === 'radio') i.checked = i.value === v;
+        else if (i.type === 'checkbox') i.checked = v.split(',').includes(i.value);
+        else i.value = v;
+      });
+    };
+    ['m', 'p', 'f', 'fd', 't', 'c', 'km'].forEach((k) => set(k, q.get(k)));
+    set('o', q.get('o'));
+    const val = (n: string) => (root.querySelector<HTMLInputElement>(`[name="${n}"]:checked`) || root.querySelector<HTMLInputElement>(`[name="${n}"]`))!.value;
+    let summary = '';
+    let firstCalc = true;
+
+    function calc() {
+      const m = d.models.find((x) => x.slug === val('m'))!;
+      const p = d.packages.find((x) => x.id === val('p'))!;
+      const f = d.facades.find((x) => x.id === val('f'))!;
+      const fd = d.foundations.find((x) => x.id === val('fd'))!;
+      const t = +val('t');
+      const opts = [...root.querySelectorAll<HTMLInputElement>('[name="o"]:checked')].map((i) => d.options.find((o) => o.id === i.value));
+      const cSlug = (root.querySelector('[name="c"]') as HTMLSelectElement).value;
+      const kmWrap = root.querySelector<HTMLElement>('[data-km-wrap]')!;
+      kmWrap.hidden = cSlug !== 'custom';
+      const km = cSlug === 'custom' ? +(root.querySelector<HTMLInputElement>('[name="km"]')!.value || 0) : d.cities.find((c) => c.slug === cSlug)!.km;
+      const cityName = cSlug === 'custom' ? `${km} км` : d.cities.find((c) => c.slug === cSlug)!.name;
+
+      const lines: [string, number][] = [];
+      const base = m.price * p.k;
+      lines.push([`${m.name}, «${p.name}»`, base]);
+      if (f.perM2) lines.push([f.name, f.perM2 * m.wall]);
+      if (fd.perM2) lines.push([fd.name, fd.perM2 * m.area]);
+      if (t > 0) lines.push([`Терраса ${t} м²`, t * d.terrace]);
+      opts.forEach((o) => lines.push([o.name, o.perM2 ? o.price * m.area : o.price]));
+      const dc = deliveryExtra(km, m.modules, d);
+      lines.push([`Доставка: ${cityName}`, Math.max(0, dc)]);
+      const total = lines.reduce((s, l) => s + l[1], 0);
+      const r = d.rate / 100 / 12, n = 240, P = total * 0.8;
+      const month = (P * r) / (1 - Math.pow(1 + r, -n));
+
+      (root.querySelector('[data-t-out]') as HTMLElement).textContent = t ? `${t} м²` : 'без террасы';
+      root.querySelector<HTMLImageElement>('[data-sum-img]')!.src = `/images/${m.img}-800.webp`;
+      root.querySelector('[data-sum-name]')!.textContent = `${m.name} · ${m.area} м²`;
+      root.querySelector('[data-lines]')!.innerHTML = lines.map(([a, b]) => `<li><span>${a}</span><b>${b ? rub(b) : 'включено'}</b></li>`).join('');
+      root.querySelector('[data-total]')!.textContent = rub(total);
+      root.querySelector('[data-total2]')!.textContent = rub(total);
+      root.querySelector('[data-month]')!.textContent = rub(month).replace(/000 ₽$/, '000 ₽');
+      summary = `${m.name}, ${p.name}; ${lines.slice(1).map((l) => l[0]).join('; ')}. Итого ≈ ${rub(total)}`;
+      root.querySelector<HTMLElement>('[data-cfg-send]')!.dataset.leadExtra = summary;
+
+      const u = new URLSearchParams({ m: m.slug, p: p.id, f: f.id, fd: fd.id, t: String(t), c: cSlug });
+      if (cSlug === 'custom') u.set('km', String(km));
+      if (opts.length) u.set('o', opts.map((o) => o.id).join(','));
+      if (!firstCalc) history.replaceState(null, '', `${location.pathname}?${u}${location.hash}`);
+      if (!firstCalc) goal('calc');
+      firstCalc = false;
+    }
+    root.addEventListener('input', calc);
+    root.addEventListener('change', calc);
+    root.querySelector('[data-share]')?.addEventListener('click', async (e) => {
+      const b = e.currentTarget as HTMLElement;
+      try { await navigator.clipboard.writeText(location.href); b.querySelector('span')!.textContent = 'Ссылка скопирована'; } catch { b.querySelector('span')!.textContent = location.href; }
+    });
+    calc();
+  });
+</script>
+
+<style>
+  .cfg { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: var(--gap); align-items: start; }
+  .cfg-steps { display: grid; gap: var(--gap); }
+  .cfg-step { border: 0; margin: 0; padding: clamp(18px, 2.5vw, 28px); background: #fff; border-radius: var(--r); box-shadow: var(--shadow); display: grid; gap: 10px; min-width: 0; }
+  .cfg-step legend { float: left; width: 100%; display: flex; align-items: center; gap: 10px; font-weight: 700; text-transform: uppercase; font-size: 15px; margin-bottom: 6px; }
+  .cfg-step legend span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--green); color: #fff; font-size: 13px; }
+  .cfg-two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+  .cfg-models { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .cfg-model { position: relative; display: grid; gap: 8px; padding: 6px; border-radius: 14px; border: 2px solid var(--line); cursor: pointer; transition: border-color 0.2s; }
+  .cfg-model img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 9px; }
+  .cfg-model span { display: grid; padding: 0 4px 4px; line-height: 1.3; }
+  .cfg-model small { color: var(--muted); font-size: 12px; }
+  .cfg-model input, .cfg-opt-card input { position: absolute; opacity: 0; }
+  .cfg-model:has(input:checked), .cfg-opt-card:has(input:checked) { border-color: var(--green); background: var(--green-soft); }
+  .cfg-model:has(input:focus-visible), .cfg-opt-card:has(input:focus-visible) { outline: 2px solid var(--green-3); outline-offset: 2px; }
+  .cfg-pk { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .cfg-opt-card { position: relative; display: grid; align-content: start; gap: 8px; padding: 16px; border: 2px solid var(--line); border-radius: 14px; cursor: pointer; }
+  .cfg-opt-card ul { margin: 0; padding-left: 16px; font-size: 13px; color: var(--ink-2); display: grid; gap: 4px; }
+  .cfg-radio, .cfg-check { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: background 0.2s; }
+  .cfg-radio:hover, .cfg-check:hover { background: var(--bg); }
+  .cfg-radio input, .cfg-check input { accent-color: var(--green); width: 18px; height: 18px; }
+  .cfg-radio em, .cfg-check em { font-style: normal; font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .cfg-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
+  .cfg-range { display: flex; align-items: center; gap: 16px; }
+  .cfg-range input { flex: 1; accent-color: var(--green); }
+  .cfg-range output { min-width: 110px; font-weight: 700; }
+  .cfg-sum { position: sticky; top: 92px; overflow: hidden; }
+  .cfg-sum-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; }
+  .cfg-sum-body { padding: 22px 24px 24px; display: grid; gap: 12px; }
+  .eyebrow.light { color: rgb(255 255 255 / 0.6); }
+  .cfg-sum-name { font-size: 24px; font-weight: 700; text-transform: uppercase; }
+  .cfg-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13.5px; }
+  .cfg-lines :global(li) { display: flex; justify-content: space-between; gap: 12px; color: rgb(255 255 255 / 0.78); }
+  .cfg-lines :global(b) { color: #fff; white-space: nowrap; font-weight: 600; }
+  .cfg-total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 14px; border-top: 1px solid rgb(255 255 255 / 0.2); }
+  .cfg-total b { font-size: 30px; letter-spacing: -0.02em; }
+  .cfg-mort { font-size: 15px; color: rgb(255 255 255 / 0.85); }
+  .cfg-mort b { color: #fff; }
+  .cfg-share { display: inline-flex; justify-content: center; align-items: center; gap: 6px; background: none; border: 0; color: rgb(255 255 255 / 0.75); font-size: 13px; cursor: pointer; padding: 4px; }
+  .cfg-share:hover { color: #fff; }
+  .cfg-note { color: rgb(255 255 255 / 0.55); }
+  .cfg-peek { display: none; }
+  @media (max-width: 1080px) {
+    .cfg { grid-template-columns: 1fr; } .cfg-sum { position: static; }
+    .cfg-peek { display: flex; justify-content: space-between; align-items: center; position: sticky; top: 8px; z-index: 5; padding: 12px 18px; border-radius: 14px; background: var(--green); color: #fff; box-shadow: 0 10px 30px rgb(0 0 0 / 0.18); }
+    .cfg-peek b { font-size: 18px; margin-left: 6px; }
+    .cfg-peek a { color: #fff; font-weight: 600; font-size: 14px; text-decoration: none; }
+  }
+  @media (max-width: 700px) { .cfg-pk, .cfg-two, .cfg-opts { grid-template-columns: 1fr; } }
+</style>

@@ -1,0 +1,367 @@
+---
+import Base from '../layouts/Base.astro';
+import Pic from '../components/Pic.astro';
+import Icon from '../components/Icon.astro';
+import ModelsGrid from '../components/ModelsGrid.astro';
+import Configurator from '../components/Configurator.astro';
+import Steps from '../components/Steps.astro';
+import Wall from '../components/Wall.astro';
+import CitiesBlock from '../components/CitiesBlock.astro';
+import Faq from '../components/Faq.astro';
+import CtaLead from '../components/CtaLead.astro';
+import { SITE, fmt } from '../data/site';
+import { HERO_FACTS, COZY, MORTGAGE_FACTS, COMPARE, FAQ, STEPS } from '../data/content';
+import { HOUSES, minHousePrice } from '../data/models';
+import { ARTICLES } from '../data/articles';
+import { faq, itemList, howTo } from '../lib/schema';
+
+const P = SITE.promises;
+const schema = [faq(FAQ), itemList(HOUSES, 'Модельный ряд модульных домов'), howTo('Как строится модульный дом', STEPS, P.totalDays)];
+---
+
+<Base
+  title="Модульные дома под ключ в Архангельске — от 1,69 млн ₽ за 45 дней"
+  description={`Модульные каркасные дома под ключ в Архангельске и области: от ${fmt.mln(minHousePrice)}, сборка в цеху 30 дней, монтаж от 1 дня. Ипотека 3–6%, эскроу, гарантия 5 лет. Запишитесь на просмотр выставочного дома.`}
+  schema={schema}
+  preload="hero"
+>
+  <!-- ───── Первый экран (бенто) ───── -->
+  <section class="hero wrap">
+    <div class="hero-img media">
+      <Pic name="hero" alt="Модульный дом-барнхаус «Барн 36» с деревянным порталом и панорамным остеклением в сосновом лесу" eager sizes="(max-width: 860px) 100vw, 46vw" w={1400} h={1560} />
+      <span class="tag tag--dark hero-tag"><Icon name="pin" size={14} />Барн 36 · выставочный дом у цеха</span>
+    </div>
+    <div class="hero-side">
+      <ul class="hero-facts card">
+        {HERO_FACTS.map((f) => (
+          <li>
+            <img src={`/images/${f.img}-800.webp`} alt="" width="40" height="40" loading="eager" />
+            <span><b>{f.big}</b><small>{f.small}</small></span>
+          </li>
+        ))}
+      </ul>
+      <div class="hero-main card">
+        <div class="hero-avatars">
+          <span class="hero-thumbs" aria-hidden="true">
+            {['model-nord', 'interior', 'model-duo', 'model-banya'].map((n) => <img src={`/images/${n}-800.webp`} alt="" width="48" height="48" />)}
+          </span>
+          <span class="small muted">Строим для тех, кто выбирает свой дом раз и навсегда</span>
+        </div>
+        <h1 class="hero-h1">
+          <span class="hero-kicker">Модульные дома под ключ в Архангельске</span>
+          <span class="hero-title">Дом, <u>в который хочется возвращаться</u> каждый вечер</span>
+        </h1>
+        <p class="hero-p">{SITE.brand} — производство модульных каркасных домов, которое доводит дом от чертежа до момента, когда вы впервые пьёте утренний кофе на своей веранде. За {P.totalDays} дней.</p>
+        <div class="hero-btns">
+          <a class="btn btn--lg" href="#modeli">Смотреть проекты</a>
+          <a class="btn btn--lg btn--ghost" href="#konfigurator">Рассчитать стоимость</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── Манифест ───── -->
+  <section class="wrap manifest card card--green reveal">
+    <div class="manifest-pill media"><Pic name="model-terrace" alt="" sizes="200px" w={1200} h={900} /></div>
+    <p class="manifest-text"><b>{SITE.brand}</b> — это дом, который построен под вашу жизнь, а не под усреднённый проект. Благодаря фиксированной смете и еженедельным отчётам вы контролируете стройку, не выезжая на объект каждую неделю.</p>
+    <a class="btn btn--glass manifest-btn" href="/tehnologiya/">Наш подход <Icon name="arrow" size={18} /></a>
+  </section>
+
+  <!-- ───── Убеждение ───── -->
+  <section class="section belief wrap">
+    <div class="belief-grid">
+      <h2 class="h-sec belief-h reveal"><span class="dim">Наше</span> глубокое убеждение —</h2>
+      <figure class="belief-small reveal">
+        <div class="media"><Pic name="series8" alt="Модульный дом в деревянном фасаде с террасой на опушке леса" sizes="(max-width: 860px) 60vw, 22vw" w={1200} h={1000} /></div>
+        <figcaption class="caption">Дом серии «Норд» в планкене из лиственницы</figcaption>
+      </figure>
+      <figure class="belief-big reveal">
+        <div class="media"><Pic name="interior" alt="Интерьер модульного дома: скатный деревянный потолок, печь-камин, панорамное окно в лес" sizes="(max-width: 860px) 100vw, 34vw" w={1200} h={1400} /></div>
+        <figcaption class="caption">Вариант обустройства интерьера</figcaption>
+      </figure>
+      <div class="belief-text reveal">
+        <p class="belief-lead">дом не должен строиться годами. Он не обязан отнимать все ваши силы и весь ваш бюджет.</p>
+        <p class="muted">Мы проектируем и собираем дома, которые на {P.factoryReady}% готовы в цеху. На участок приезжают почти законченные модули: мы доводим всё до идеала уже на месте за несколько дней и передаём ключи хозяевам.</p>
+      </div>
+      <div class="belief-stats">
+        <div class="stat reveal">
+          <h3 class="stat-h">Ипотека</h3>
+          <ul>{MORTGAGE_FACTS.map((f) => <li>{f}</li>)}</ul>
+        </div>
+        <div class="stat reveal">
+          <h3 class="stat-h">{P.guaranteeMonths} мес</h3>
+          <ul><li>заводская гарантия на конструктив</li><li>2 года на инженерные системы</li><li>гарантийные выезды за наш счёт</li></ul>
+        </div>
+        <div class="stat reveal">
+          <h3 class="stat-h">{P.totalDays} дней</h3>
+          <ul><li>срок от договора до ключей</li><li>сборка модулей на производстве до {P.productionDays} дней</li><li>монтаж модулей от 1 до {P.assemblyDays} дней на объекте</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── Есть всё для уютной жизни ───── -->
+  <section class="wrap cozy" data-cozy>
+    <div class="cozy-bg"><Pic name="cozy" alt="Длинный модульный дом с крытой террасой среди сосен" sizes="100vw" w={2000} h={1000} /></div>
+    <div class="cozy-shade" aria-hidden="true"></div>
+    <div class="cozy-in">
+      <h2 class="h-sec cozy-h">Есть всё для<br />уютной жизни</h2>
+      <div class="cozy-panels">
+        {COZY.map((c, i) => (
+          <div class="cozy-panel" id={`cozy-${c.id}`} role="tabpanel" aria-labelledby={`cozy-tab-${c.id}`} hidden={i !== 0}>
+            <p>{c.text}</p>
+            <ul>{c.points.map((p) => <li><Icon name="check" size={16} />{p}</li>)}</ul>
+          </div>
+        ))}
+      </div>
+      <div class="cozy-tabs" role="tablist" aria-label="Что входит в дом">
+        {COZY.map((c, i) => (
+          <button class="cozy-tab" role="tab" id={`cozy-tab-${c.id}`} aria-controls={`cozy-${c.id}`} aria-selected={i === 0 ? 'true' : 'false'}>
+            <Icon name={c.icon as any} size={22} />
+            <span>{c.title}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── Модельный ряд ───── -->
+  <section class="section wrap" id="modeli">
+    <ModelsGrid />
+    <div class="center"><a class="btn btn--ghost btn--lg" href="/doma/">Весь модельный ряд и фильтры <Icon name="arrow" size={18} /></a></div>
+  </section>
+
+  <!-- ───── Сравнение ───── -->
+  <section class="wrap section--tight">
+    <div class="cmp card">
+      <div class="cmp-head">
+        <h2 class="h-sec"><span class="dim">Модульный дом</span> или стройка на участке</h2>
+        <p class="lead">Технология каркаса та же. Разница — в том, где и как собирается дом.</p>
+      </div>
+      <div class="cmp-table" role="table" aria-label="Сравнение модульного дома и стройки на участке">
+        <div class="cmp-row cmp-th" role="row"><span role="columnheader"></span><span role="columnheader">{SITE.brand}</span><span role="columnheader">Обычная стройка</span></div>
+        {COMPARE.map((c) => (
+          <div class="cmp-row" role="row"><span role="rowheader">{c.p}</span><span role="cell" class="cmp-a"><Icon name="check" size={16} />{c.a}</span><span role="cell" class="cmp-b">{c.b}</span></div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── Конфигуратор ───── -->
+  <section class="section wrap" id="konfigurator">
+    <div class="sec-head">
+      <h2 class="h-sec"><span class="dim">Соберите</span> свой дом</h2>
+      <p class="lead">Выберите модель, комплектацию и опции — цена с доставкой до вашего участка и платёж по ипотеке посчитаются сразу.</p>
+    </div>
+    <Configurator />
+  </section>
+
+  <!-- ───── Этапы ───── -->
+  <section class="section wrap">
+    <div class="sec-head">
+      <h2 class="h-sec"><span class="dim">От договора</span> до ключей</h2>
+      <p class="lead">{P.totalDays} дней, из которых на вашем участке мы работаем всего несколько. Пока модуль собирается в цеху, параллельно готовим фундамент.</p>
+    </div>
+    <Steps />
+  </section>
+
+  <!-- ───── Технология ───── -->
+  <section class="section wrap">
+    <div class="sec-head">
+      <h2 class="h-sec"><span class="dim">Тёплый</span> для −45 °C</h2>
+      <p class="lead">Пирог стены 315 мм с двумя контурами утепления и проклеенной пароизоляцией. Каждый модуль проверяем тепловизором до отгрузки.</p>
+    </div>
+    <Wall />
+    <div class="center" style="margin-top:28px"><a class="btn btn--ghost btn--lg" href="/tehnologiya/">Подробнее о технологии <Icon name="arrow" size={18} /></a></div>
+  </section>
+
+  <!-- ───── Ипотека-баннер ───── -->
+  <section class="wrap section--tight">
+    <a class="mort card reveal" href="/ipoteka/">
+      <span class="mort-rate">3%</span>
+      <span class="mort-text"><b>Сельская ипотека на модульный дом</b><span>Семейная и IT — 6%. Эскроу-счёт, маткапитал, аккредитация в {SITE.banks.join(', ')}.</span></span>
+      <span class="btn">Рассчитать платёж <Icon name="arrow" size={18} /></span>
+    </a>
+  </section>
+
+  <!-- ───── География ───── -->
+  <section class="section wrap">
+    <div class="sec-head">
+      <h2 class="h-sec"><span class="dim">Доставим</span> по всей области</h2>
+      <p class="lead">Бесплатно в радиусе 40 км от цеха — это Архангельск, Северодвинск, Новодвинск и Приморский округ. В Холмогоры, Онегу, Вельск и Котлас — по фиксированному тарифу из договора.</p>
+    </div>
+    <CitiesBlock />
+  </section>
+
+  <!-- ───── FAQ ───── -->
+  <section class="section wrap faq-sec">
+    <div class="faq-grid">
+      <div>
+        <h2 class="h-sec"><span class="dim">Частые</span> вопросы</h2>
+        <p class="lead" style="margin-top:16px">Не нашли ответ? Напишите нам — инженер ответит в течение 15 минут.</p>
+        <div class="faq-btns">
+          <a class="btn btn--ghost" href={SITE.telegram} target="_blank" rel="noopener" data-goal="messenger"><Icon name="tg" />Telegram</a>
+          <a class="btn btn--ghost" href="/voprosy/">Все вопросы</a>
+        </div>
+      </div>
+      <Faq items={FAQ.slice(0, 6)} />
+    </div>
+  </section>
+
+  <!-- ───── Новости ───── -->
+  <section class="section wrap">
+    <div class="sec-head">
+      <h2 class="h-sec"><span class="dim">Новости</span> и статьи</h2>
+      <a class="btn btn--ghost" href="/novosti/">Все материалы <Icon name="arrow" size={18} /></a>
+    </div>
+    <div class="grid g-3">
+      {ARTICLES.slice(0, 3).map((a) => (
+        <a class="art card reveal" href={`/novosti/${a.slug}/`}>
+          <div class="media art-media"><Pic name={a.img} alt="" sizes="(max-width: 620px) 100vw, 33vw" w={1200} h={900} /></div>
+          <div class="art-body">
+            <span class="tag">{a.tag}</span>
+            <h3>{a.title}</h3>
+            <span class="small muted">{new Date(a.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })} · {a.read} мин</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <CtaLead />
+</Base>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-cozy]').forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role=tab]')];
+    const select = (t: HTMLButtonElement) => {
+      tabs.forEach((x) => {
+        const on = x === t;
+        x.setAttribute('aria-selected', String(on));
+        x.tabIndex = on ? 0 : -1;
+        document.getElementById(x.getAttribute('aria-controls')!)!.hidden = !on;
+      });
+    };
+    tabs.forEach((t, i) => {
+      t.tabIndex = i === 0 ? 0 : -1;
+      t.addEventListener('click', () => select(t));
+      t.addEventListener('keydown', (e) => {
+        const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (d) { const n = tabs[(i + d + tabs.length) % tabs.length]; n.focus(); select(n); }
+      });
+    });
+  });
+</script>
+
+<style>
+  /* Первый экран */
+  .hero { display: grid; grid-template-columns: 1fr 1.1fr; gap: var(--gap); margin-top: var(--gap); }
+  .hero-img { min-height: 560px; }
+  .hero-img img { position: absolute; inset: 0; }
+  .hero-tag { position: absolute; left: 14px; bottom: 14px; }
+  .hero-side { display: grid; grid-template-rows: auto 1fr; gap: var(--gap); }
+  .hero-facts { display: flex; justify-content: space-around; gap: 12px; padding: 14px 18px; margin: 0; list-style: none; flex-wrap: wrap; }
+  .hero-facts li { display: flex; align-items: center; gap: 10px; }
+  .hero-facts img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+  .hero-facts span { display: grid; line-height: 1.2; }
+  .hero-facts b { font-size: 14px; text-transform: uppercase; }
+  .hero-facts small { font-size: 12px; color: var(--muted); }
+  .hero-main { display: grid; place-content: center; justify-items: center; text-align: center; gap: 22px; padding: clamp(28px, 5vw, 64px) clamp(20px, 4vw, 56px); }
+  .hero-avatars { display: flex; align-items: center; gap: 14px; text-align: left; max-width: 360px; }
+  .hero-thumbs { display: flex; flex: none; }
+  .hero-thumbs img { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 3px solid #fff; margin-left: -10px; box-shadow: 0 4px 10px rgb(0 0 0 / 0.12); }
+  .hero-thumbs img:first-child { margin-left: 0; }
+  .hero-h1 { display: grid; gap: 14px; }
+  .hero-kicker { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .hero-title { font-size: clamp(30px, 3.6vw, 48px); text-transform: uppercase; line-height: 1.05; letter-spacing: -0.02em; max-width: 15ch; margin-inline: auto; }
+  .hero-title u { color: var(--green); text-decoration-thickness: 3px; text-underline-offset: 6px; text-decoration-color: rgb(36 81 74 / 0.5); }
+  .hero-p { color: var(--ink-2); max-width: 46ch; font-size: 15.5px; }
+  .hero-btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-img { min-height: 0; aspect-ratio: 4 / 3.4; }
+    .hero-side { grid-template-rows: auto; }
+    .hero-facts { order: 2; justify-content: flex-start; }
+  }
+
+  /* Манифест */
+  .manifest { display: grid; grid-template-columns: 180px 1fr auto; align-items: center; gap: clamp(20px, 3vw, 44px); padding: clamp(24px, 4vw, 56px) clamp(20px, 4vw, 48px); margin-top: var(--gap); }
+  .manifest-pill { height: 96px; border-radius: 999px; }
+  .manifest-text { font-size: clamp(19px, 2.2vw, 28px); line-height: 1.3; font-weight: 500; max-width: 38ch; }
+  .manifest-btn { align-self: end; }
+  @media (max-width: 860px) { .manifest { grid-template-columns: 1fr; } .manifest-pill { height: 80px; width: 160px; } .manifest-btn { justify-self: start; } }
+
+  /* Убеждение */
+  .belief-grid { display: grid; grid-template-columns: 1fr 1fr 0.8fr; grid-template-areas: 'h h small' 'big text small' 'big stats stats'; gap: 28px clamp(20px, 3vw, 40px); }
+  .belief-h { grid-area: h; max-width: 13ch; }
+  .belief-small { grid-area: small; margin: 0; }
+  .belief-small .media { aspect-ratio: 1.05; }
+  .belief-big { grid-area: big; margin: 0; }
+  .belief-big .media { aspect-ratio: 0.82; }
+  .belief-text { grid-area: text; display: grid; gap: 16px; align-content: start; max-width: 44ch; }
+  .belief-lead { font-size: clamp(18px, 1.8vw, 22px); font-weight: 600; line-height: 1.35; }
+  .belief-stats { grid-area: stats; display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 24px; align-self: end; }
+  .stat-h { font-size: clamp(26px, 2.8vw, 36px); text-transform: uppercase; margin-bottom: 14px; letter-spacing: -0.02em; }
+  .stat ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 14px; color: var(--ink-2); }
+  @media (max-width: 960px) {
+    .belief-grid { grid-template-columns: 1fr 1fr; grid-template-areas: 'h h' 'text small' 'big big' 'stats stats'; }
+    .belief-big .media { aspect-ratio: 4/3; }
+  }
+  @media (max-width: 620px) {
+    .belief-grid { grid-template-columns: 1fr; grid-template-areas: 'h' 'text' 'small' 'big' 'stats'; }
+    .belief-stats { grid-template-columns: 1fr; }
+  }
+
+  /* Уют */
+  .cozy { position: relative; border-radius: var(--r); overflow: hidden; min-height: clamp(520px, 52vw, 680px); display: grid; color: #fff; }
+  .cozy-bg, .cozy-shade { position: absolute; inset: 0; }
+  .cozy-bg :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .cozy-shade { background: linear-gradient(180deg, rgb(0 0 0 / 0) 30%, rgb(10 18 15 / 0.75)); }
+  .cozy-in { position: relative; align-self: end; padding: clamp(20px, 3vw, 36px); display: grid; gap: 18px; }
+  .cozy-h { color: #fff; text-shadow: 0 2px 24px rgb(0 0 0 / 0.35); }
+  .cozy-panel { max-width: 640px; background: rgb(12 22 19 / 0.45); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgb(255 255 255 / 0.18); border-radius: 16px; padding: 18px 20px; display: grid; gap: 10px; animation: fade 0.4s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } }
+  .cozy-panel p { font-size: 15px; color: rgb(255 255 255 / 0.9); }
+  .cozy-panel ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13.5px; }
+  .cozy-panel li { display: inline-flex; gap: 6px; align-items: center; }
+  .cozy-panel :global(svg) { color: var(--accent); }
+  .cozy-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .cozy-tab { display: grid; gap: 28px; justify-items: start; text-align: left; min-height: 120px; padding: 16px 18px; border-radius: 16px; border: 1px solid rgb(255 255 255 / 0.22); background: rgb(255 255 255 / 0.12); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #fff; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.25s, transform 0.25s; }
+  .cozy-tab:hover { background: rgb(255 255 255 / 0.2); }
+  .cozy-tab[aria-selected='true'] { background: #fff; color: var(--green); }
+  @media (max-width: 760px) { .cozy-tabs { grid-template-columns: 1fr 1fr; } .cozy-tab { min-height: 92px; gap: 14px; } }
+
+  .center { display: flex; justify-content: center; margin-top: 28px; }
+
+  /* Сравнение */
+  .cmp { padding: clamp(20px, 4vw, 48px); display: grid; grid-template-columns: 0.8fr 1.2fr; gap: clamp(20px, 4vw, 56px); }
+  .cmp-head { display: grid; gap: 18px; align-content: start; }
+  .cmp-row { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .cmp-th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; padding-top: 0; }
+  .cmp-row [role=rowheader] { color: var(--muted); }
+  .cmp-a { font-weight: 600; color: var(--green); display: flex; gap: 6px; align-items: flex-start; }
+  .cmp-a :global(svg) { flex: none; margin-top: 3px; }
+  .cmp-b { color: var(--ink-2); }
+  @media (max-width: 900px) { .cmp { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) { .cmp-row { grid-template-columns: 1fr 1fr; } .cmp-row [role=rowheader] { grid-column: 1 / -1; } .cmp-th span:first-child { display: none; } }
+
+  /* Ипотека-баннер */
+  .mort { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: clamp(16px, 3vw, 40px); padding: clamp(20px, 3vw, 32px) clamp(20px, 4vw, 44px); text-decoration: none; background: linear-gradient(110deg, #fff 55%, var(--green-soft)); }
+  .mort-rate { font-size: clamp(56px, 8vw, 104px); font-weight: 800; color: var(--green); letter-spacing: -0.05em; line-height: 0.9; }
+  .mort-text { display: grid; gap: 6px; }
+  .mort-text b { font-size: clamp(18px, 2vw, 24px); text-transform: uppercase; }
+  .mort-text span { color: var(--ink-2); }
+  @media (max-width: 760px) { .mort { grid-template-columns: 1fr; } .mort .btn { justify-self: start; } }
+
+  /* FAQ */
+  .faq-grid { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: clamp(24px, 5vw, 72px); }
+  .faq-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  @media (max-width: 860px) { .faq-grid { grid-template-columns: 1fr; } }
+
+  /* Статьи */
+  .art { text-decoration: none; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s, box-shadow 0.3s; }
+  .art:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgb(16 30 26 / 0.12); }
+  .art-media { aspect-ratio: 16/10; border-radius: 0; }
+  .art-body { padding: 18px 20px 22px; display: grid; gap: 10px; justify-items: start; }
+  .art-body h3 { font-size: 19px; line-height: 1.25; }
+</style>

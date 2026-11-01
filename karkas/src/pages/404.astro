@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+import { MODELS } from '../data/models';
+---
+<Base title="Страница не найдена" description="Такой страницы нет" noindex>
+  <section class="section wrap"><div class="card card--pad nf">
+    <p class="nf-code">404</p>
+    <h1 class="h-sec">Страница <span class="dim">не найдена</span></h1>
+    <p class="lead">Возможно, адрес изменился. Посмотрите модельный ряд или вернитесь на главную.</p>
+    <div class="pills">{MODELS.slice(0, 6).map((m) => <a class="pill" style="display:inline-flex;align-items:center;text-decoration:none" href={`/doma/${m.slug}/`}>{m.name}</a>)}</div>
+    <a class="btn btn--lg" href="/">На главную</a>
+  </div></section>
+</Base>
+<style>
+  .nf { display: grid; gap: 18px; justify-items: start; }
+  .nf-code { font-size: clamp(80px, 14vw, 180px); font-weight: 800; color: var(--green-soft); line-height: 0.9; letter-spacing: -0.05em; }
+</style>

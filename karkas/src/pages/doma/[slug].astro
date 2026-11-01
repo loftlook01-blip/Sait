@@ -1,0 +1,178 @@
+---
+import Base from '../../layouts/Base.astro';
+import Crumbs from '../../components/Crumbs.astro';
+import Pic from '../../components/Pic.astro';
+import Icon from '../../components/Icon.astro';
+import FloorPlan from '../../components/FloorPlan.astro';
+import Configurator from '../../components/Configurator.astro';
+import ModelCard from '../../components/ModelCard.astro';
+import CtaLead from '../../components/CtaLead.astro';
+import Faq from '../../components/Faq.astro';
+import { MODELS, PACKAGES, deliveryExtra, type Model } from '../../data/models';
+import { CITIES, cityUrl } from '../../data/cities';
+import { SITE, fmt, monthly, days } from '../../data/site';
+import { breadcrumbs, product, faq } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return MODELS.map((m) => ({ params: { slug: m.slug }, props: { m } }));
+}
+const { m } = Astro.props as { m: Model };
+const crumbs = [{ name: 'Главная', url: '/' }, { name: 'Модельный ряд', url: '/doma/' }, { name: m.name, url: `/doma/${m.slug}/` }];
+const isHouse = m.category === 'house';
+const pay = monthly(m.price * 0.8, 3, 20);
+const others = MODELS.filter((x) => x.slug !== m.slug && x.category === m.category).slice(0, 3);
+const qa = [
+  { q: `Сколько стоит ${isHouse ? 'модульный дом' : ''} «${m.name}» под ключ?`, a: `${fmt.rub(m.price)} под ключ с фундаментом на винтовых сваях, доставкой до 40 км от Архангельска и монтажом. В комплектации «Тёплый контур» — от ${fmt.rub(m.price * PACKAGES[0].k)}.` },
+  { q: `За сколько дней строится «${m.name}»?`, a: `Производство модулей в цеху — ${days(m.productionDays)}, монтаж на участке — ${days(m.assemblyDays)}. Фундамент ставим параллельно с производством.` },
+  { q: 'Можно ли изменить планировку?', a: 'Да. Перегородки, окна, отделку и фасад меняем без доплаты за проект в пределах габаритов модуля.' },
+  ...(isHouse ? [{ q: `Можно ли купить «${m.name}» в ипотеку?`, a: `Да, через эскроу-счёт по сельской (3%), семейной или IT-ипотеке (6%). При взносе 20% на 20 лет платёж по сельской ипотеке — около ${fmt.rub(Math.round(pay / 100) * 100)} в месяц.` }] : []),
+];
+const title = isHouse ? `Модульный дом «${m.name}» ${m.area} м² — цена ${fmt.mln(m.price)} под ключ` : `${m.kind} «${m.name}» ${m.area} м² — цена под ключ`;
+---
+
+<Base
+  title={title}
+  description={`${m.lead} ${m.area} м², ${m.size[0]}×${m.size[1]} м, ${m.bedrooms ? `${m.bedrooms} спальн${m.bedrooms === 1 ? 'я' : 'и'}, ` : ''}цена ${fmt.rub(m.price)} под ключ. Производство ${m.productionDays} дней, монтаж ${days(m.assemblyDays)}.`}
+  schema={[breadcrumbs(crumbs), product(m), faq(qa)]}
+  ogType="product"
+  preload={m.img}
+>
+  <section class="wrap mp">
+    <div class="mp-media media">
+      <Pic name={m.img} alt={`${m.kind} «${m.name}» — визуализация, фасад: ${m.facade.toLowerCase()}`} eager sizes="(max-width: 960px) 100vw, 60vw" w={1200} h={900} />
+      {m.hit && <span class="tag tag--dark mp-tag">Хит продаж</span>}
+    </div>
+    <div class="mp-info card">
+      <Crumbs items={crumbs} />
+      <p class="eyebrow">{m.kind}</p>
+      <h1 class="mp-h">{m.name} <span>· {m.area} м²</span></h1>
+      <p class="muted">{m.lead}</p>
+      <ul class="mp-quick">
+        <li><Icon name="area" /><b>{m.area} м²</b><small>{m.terrace ? `+ терраса ${m.terrace} м²` : 'площадь'}</small></li>
+        <li><Icon name="bed" /><b>{m.bedrooms || '—'}</b><small>спальни</small></li>
+        <li><Icon name="ruler" /><b>{m.size[0]}×{m.size[1]}</b><small>габариты, м</small></li>
+        <li><Icon name="clock" /><b>{m.productionDays + m.assemblyDays} дн.</b><small>до ключей</small></li>
+      </ul>
+      <div class="mp-price">
+        <p class="price">{fmt.rub(m.price)} <small>под ключ</small></p>
+        {isHouse && <p class="small muted">или от <b>{fmt.rub(Math.round(pay / 100) * 100)}/мес</b> по сельской ипотеке 3%</p>}
+      </div>
+      <div class="mp-btns">
+        <button class="btn btn--lg" data-lead={`Модель ${m.name}`} data-lead-title={`Записаться на просмотр: ${m.name}`}>Записаться на просмотр</button>
+        <a class="btn btn--lg btn--ghost" href="#konfigurator">Рассчитать с опциями</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap mp-about">
+    <div class="mp-text">
+      <h2 class="h-sec"><span class="dim">О</span> проекте</h2>
+      {m.text.map((t) => <p class="lead">{t}</p>)}
+      <ul class="mp-feat">{m.features.map((f) => <li><Icon name="check" size={18} />{f}</li>)}</ul>
+    </div>
+    <div class="card card--pad">
+      <h2 class="h-3" style="margin-bottom:12px">Характеристики</h2>
+      <dl class="specs">
+        <dt>Площадь</dt><dd>{m.area} м²{m.terrace && ` + ${m.terrace} м² терраса`}</dd>
+        <dt>Габариты</dt><dd>{m.size[0]} × {m.size[1]} м</dd>
+        <dt>Модулей</dt><dd>{m.modules || 'сборка на месте'}</dd>
+        <dt>Высота в коньке</dt><dd>{String(m.ceiling).replace('.', ',')} м</dd>
+        {isHouse && <><dt>Спальни / санузлы</dt><dd>{m.bedrooms} / {m.baths}</dd></>}
+        <dt>Фасад</dt><dd>{m.facade}</dd>
+        <dt>Стены</dt><dd>каркас 200 + 50 мм</dd>
+        <dt>Фундамент</dt><dd>винтовые сваи</dd>
+        <dt>Производство</dt><dd>{days(m.productionDays)}</dd>
+        <dt>Монтаж</dt><dd>{days(m.assemblyDays)}</dd>
+        <dt>Гарантия</dt><dd>{SITE.promises.guaranteeMonths} месяцев</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="wrap mp-plan">
+    <div class="card card--pad">
+      <div class="sec-head"><h2 class="h-sec"><span class="dim">Плани</span>ровка</h2><p class="lead">Общая площадь {m.area} м². Площади комнат — ориентировочные, по осям перегородок.</p></div>
+      <FloorPlan m={m} />
+    </div>
+    <div class="mp-int media"><Pic name="interior" alt="Пример интерьера модульного дома: деревянный потолок, панорамное окно" sizes="(max-width: 960px) 100vw, 34vw" w={1200} h={1400} /></div>
+  </section>
+
+  <section class="section wrap">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Цены</span> по комплектациям</h2></div>
+    <div class="grid g-3">
+      {PACKAGES.map((p) => (
+        <div class:list={['card card--pad pk', { 'pk-main': p.id === 'turnkey' }]}>
+          <p class="h-3">{p.name}</p>
+          <p class="price">{fmt.rub(Math.round((m.price * p.k) / 1000) * 1000)}</p>
+          <ul>{p.items.map((i) => <li>{i}</li>)}</ul>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="wrap section--tight">
+    <div class="card card--pad">
+      <div class="sec-head"><h2 class="h-sec"><span class="dim">Цена</span> с доставкой</h2><p class="lead">«{m.name}» под ключ с доставкой и краном до вашего города.</p></div>
+      <ul class="dl">
+        {CITIES.map((c) => {
+          const d = deliveryExtra(c.km, m.modules);
+          return <li><a href={cityUrl(c)}>{c.name}</a><span class="muted small">{c.km ? `${c.km} км` : 'у цеха'}</span><b>{fmt.rub(Math.round((m.price + Math.max(0, d)) / 1000) * 1000)}</b></li>;
+        })}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section wrap" id="konfigurator">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Соберите</span> свой {m.name}</h2></div>
+    <Configurator initial={m.slug} />
+  </section>
+
+  <section class="section wrap"><div class="sec-head"><h2 class="h-sec"><span class="dim">Вопросы</span> о модели</h2></div><Faq items={qa} /></section>
+
+  {others.length > 0 && (
+    <section class="section wrap">
+      <div class="sec-head"><h2 class="h-sec"><span class="dim">Похожие</span> проекты</h2><a class="btn btn--ghost" href="/doma/">Весь модельный ряд</a></div>
+      <div class="grid g-3">{others.map((o) => <ModelCard m={o} />)}</div>
+    </section>
+  )}
+
+  <CtaLead source={`Страница модели ${m.name}`} />
+</Base>
+
+<style>
+  .mp { display: grid; grid-template-columns: 1.35fr 1fr; gap: var(--gap); margin-top: var(--gap); }
+  .mp-media { min-height: 520px; }
+  .mp-media :global(img) { position: absolute; inset: 0; }
+  .mp-tag { position: absolute; top: 14px; left: 14px; }
+  .mp-info { padding: clamp(22px, 3vw, 40px); display: grid; gap: 14px; align-content: start; }
+  .mp-h { font-size: clamp(34px, 4vw, 52px); text-transform: uppercase; letter-spacing: -0.02em; }
+  .mp-h span { color: #a7aeab; }
+  .mp-quick { list-style: none; margin: 6px 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .mp-quick li { display: grid; gap: 2px; padding: 12px; border-radius: 12px; background: var(--bg); }
+  .mp-quick :global(svg) { color: var(--green); margin-bottom: 4px; }
+  .mp-quick b { font-size: 17px; }
+  .mp-quick small { font-size: 12px; color: var(--muted); }
+  .mp-price { display: grid; gap: 4px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .mp-price .price { font-size: clamp(30px, 3vw, 38px); }
+  .mp-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mp-about { display: grid; grid-template-columns: 1.2fr 1fr; gap: clamp(24px, 4vw, 56px); align-items: start; }
+  .mp-text { display: grid; gap: 18px; }
+  .mp-feat { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mp-feat li { display: flex; gap: 8px; align-items: flex-start; font-weight: 600; }
+  .mp-feat :global(svg) { color: var(--green); flex: none; margin-top: 3px; }
+  .mp-plan { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--gap); }
+  .mp-int { min-height: 360px; }
+  .mp-int :global(img) { position: absolute; inset: 0; }
+  .pk { display: grid; gap: 12px; align-content: start; }
+  .pk ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); font-size: 15px; }
+  .pk-main { outline: 2px solid var(--green); }
+  .dl { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 40px; }
+  .dl li { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .dl a { font-weight: 600; text-decoration: none; }
+  .dl a:hover { color: var(--green); }
+  @media (max-width: 960px) {
+    .mp, .mp-about, .mp-plan { grid-template-columns: 1fr; }
+    .mp-media { min-height: 0; aspect-ratio: 4/3; }
+    .dl { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) { .mp-quick { grid-template-columns: 1fr 1fr; } .mp-feat { grid-template-columns: 1fr; } }
+</style>

@@ -1,0 +1,4 @@
+<FilesMatch "^(config|config\.example)\.php$">
+  Require all denied
+</FilesMatch>
+RedirectMatch 403 ^/api/leads/

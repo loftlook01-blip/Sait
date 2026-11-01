@@ -1,0 +1,42 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import ModelsGrid from '../../components/ModelsGrid.astro';
+import CtaLead from '../../components/CtaLead.astro';
+import Faq from '../../components/Faq.astro';
+import { HOUSES, MODELS, minHousePrice, PACKAGES } from '../../data/models';
+import { FAQ } from '../../data/content';
+import { fmt } from '../../data/site';
+import { breadcrumbs, itemList, faq } from '../../lib/schema';
+const crumbs = [{ name: 'Главная', url: '/' }, { name: 'Модельный ряд', url: '/doma/' }];
+const qa = FAQ.filter((f) => /стоит|планировк|отличается/i.test(f.q));
+---
+<Base
+  title={`Модульные дома — каталог проектов и цены от ${fmt.mln(minHousePrice)}`}
+  description={`Каталог модульных каркасных домов от 18 до 72 м²: барнхаусы, дома с террасой, бани и хозблоки. Цены под ключ от ${fmt.mln(minHousePrice)} с фундаментом и монтажом. Планировки и комплектации.`}
+  schema={[breadcrumbs(crumbs), itemList(MODELS, 'Каталог модульных домов'), faq(qa)]}
+>
+  <PageHead crumbs={crumbs} dim="Модельный" title="ряд" lead={`${HOUSES.length} модульных домов от 18 до 72 м² и постройки для участка в той же архитектуре. Цена — «под ключ» с винтовыми сваями, доставкой до 40 км и монтажом. Любую планировку можно изменить без доплаты за проект.`} />
+  <section class="section wrap">
+    <ModelsGrid title={false} full />
+  </section>
+  <section class="wrap section--tight">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Три</span> комплектации</h2><p class="lead">Цены в каталоге указаны «под ключ». Можно взять дом в тёплом контуре или под чистовую и закончить отделку самостоятельно.</p></div>
+    <div class="grid g-3">
+      {PACKAGES.map((p) => (
+        <div class="card card--pad pk">
+          <p class="h-3">{p.name}</p>
+          <p class="pk-k">{p.k === 1 ? '100%' : `−${Math.round((1 - p.k) * 100)}%`} <span class="muted small">от цены под ключ</span></p>
+          <ul>{p.items.map((i) => <li>{i}</li>)}</ul>
+        </div>
+      ))}
+    </div>
+  </section>
+  <section class="section wrap"><div class="sec-head"><h2 class="h-sec"><span class="dim">Вопросы</span> о проектах</h2></div><Faq items={qa} /></section>
+  <CtaLead />
+</Base>
+<style>
+  .pk { display: grid; gap: 12px; align-content: start; }
+  .pk-k { font-size: 32px; font-weight: 700; color: var(--green); }
+  .pk ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); font-size: 15px; }
+</style>

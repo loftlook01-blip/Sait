@@ -1,0 +1,85 @@
+---
+/** Гео-посадочная: «модульные дома + город». Уникальный текст, цены с доставкой, местная специфика, FAQ, разметка. */
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import ModelCard from '../../components/ModelCard.astro';
+import Steps from '../../components/Steps.astro';
+import Faq from '../../components/Faq.astro';
+import CtaLead from '../../components/CtaLead.astro';
+import Icon from '../../components/Icon.astro';
+import { CITIES, cityUrl, type City } from '../../data/cities';
+import { HOUSES, EXTRAS, deliveryExtra, minHousePrice } from '../../data/models';
+import { SITE, fmt } from '../../data/site';
+import { breadcrumbs, cityService, faq } from '../../lib/schema';
+export function getStaticPaths() { return CITIES.map((c) => ({ params: { slug: c.slug }, props: { c } })); }
+const { c } = Astro.props as { c: City };
+const crumbs = [{ name: 'Главная', url: '/' }, { name: 'География', url: '/goroda/' }, { name: c.name, url: cityUrl(c) }];
+const extra = (modules: number) => Math.max(0, Math.round(deliveryExtra(c.km, modules) / 1000) * 1000);
+const minWith = minHousePrice + extra(1);
+const d1 = extra(1);
+const qa = [...c.faq, { q: `Сколько стоит модульный дом под ключ ${c.in}?`, a: `От ${fmt.rub(minWith)} за дом 18 м² с доставкой ${c.in}, фундаментом на винтовых сваях и монтажом. Дом 36 м² — от ${fmt.rub(2_990_000 + d1)}.` }];
+const near = CITIES.filter((x) => x.slug !== c.slug).sort((a, b) => Math.abs(a.km - c.km) - Math.abs(b.km - c.km)).slice(0, 4);
+---
+<Base
+  title={`Модульные дома ${c.in} под ключ — цены от ${fmt.mln(minWith)} с доставкой`}
+  description={`Модульные каркасные дома под ключ ${c.in}: от ${fmt.mln(minWith)} с доставкой и монтажом. ${c.km ? `${c.km} км от цеха, ` : ''}фундамент под местные грунты, ипотека 3–6%, гарантия 5 лет.`}
+  city={c}
+  schema={[breadcrumbs(crumbs), cityService(c, minWith), faq(qa)]}
+>
+  <PageHead crumbs={crumbs} dim="Модульные дома" title={`${c.in} под ключ`} lead={c.intro}>
+    <ul class="gc-facts">
+      <li><Icon name="truck" /><span><b>{d1 ? `+${fmt.rub(d1)}` : 'Бесплатно'}</b><small>доставка 1 модуля</small></span></li>
+      <li><Icon name="pin" /><span><b>{c.km ? `${c.km} км` : 'Рядом'}</b><small>от цеха</small></span></li>
+      <li><Icon name="clock" /><span><b>{c.deliveryDays === 1 ? '1 день' : `${c.deliveryDays} дня`}</b><small>в пути и монтаж</small></span></li>
+      <li><Icon name="ruble" /><span><b>от {fmt.mln(minWith)}</b><small>дом под ключ</small></span></li>
+    </ul>
+  </PageHead>
+
+  <section class="section wrap">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Цены</span> с доставкой {c.in}</h2><p class="lead">Стоимость под ключ с фундаментом, доставкой {c.in} и монтажом.</p></div>
+    <div class="grid g-3">{HOUSES.map((m) => <ModelCard m={m} extraPrice={extra(m.modules)} priceNote="с доставкой" />)}</div>
+  </section>
+
+  <section class="wrap section--tight gc-local">
+    <div class="card card--pad"><span class="gc-i"><Icon name="foundation" size={24} /></span><h2 class="h-3">Грунты и фундамент</h2><p>{c.soil}</p></div>
+    <div class="card card--pad"><span class="gc-i"><Icon name="truck" size={24} /></span><h2 class="h-3">Дорога и доставка</h2><p>{c.roads}</p></div>
+    <div class="card card--pad"><span class="gc-i"><Icon name="pin" size={24} /></span><h2 class="h-3">Где строим</h2><ul class="gc-places">{c.places.map((p) => <li>{p}</li>)}</ul></div>
+  </section>
+
+  <section class="section wrap">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Для участка</span> {c.in}</h2><p class="lead">Бани, хозблоки и беседки в той же архитектуре — можно привезти одним рейсом с домом.</p></div>
+    <div class="grid g-3">{EXTRAS.map((m) => <ModelCard m={m} extraPrice={m.modules ? extra(m.modules) : 0} priceNote={m.modules ? 'с доставкой' : 'под ключ'} />)}</div>
+  </section>
+
+  <section class="section wrap">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Как</span> строим {c.in}</h2></div>
+    <Steps />
+  </section>
+
+  <section class="section wrap"><div class="sec-head"><h2 class="h-sec"><span class="dim">Вопросы</span> — {c.name}</h2></div><Faq items={qa} /></section>
+
+  <section class="wrap section--tight">
+    <div class="card card--pad gc-near">
+      <p class="eyebrow">Строим рядом</p>
+      <div class="pills">{near.map((n) => <a class="pill" href={cityUrl(n)} style="display:inline-flex;align-items:center;text-decoration:none">{n.name}</a>)}</div>
+      <p class="small muted">{SITE.brand} · {SITE.factory.address} · {SITE.phone}</p>
+    </div>
+  </section>
+
+  <CtaLead title={`Дом ${c.in}`} text={`Инженер выедет на ваш участок ${c.in}, оценит грунт и подъезд и подготовит смету с доставкой. Выставочный дом можно посмотреть у цеха в Архангельске.`} source={`Гео-страница: ${c.name}`} />
+</Base>
+<style>
+  .gc-facts { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .gc-facts li { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 14px; background: var(--bg); }
+  .gc-facts :global(svg) { color: var(--green); flex: none; }
+  .gc-facts span { display: grid; line-height: 1.25; }
+  .gc-facts small { color: var(--muted); font-size: 12.5px; }
+  .gc-local { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+  .gc-local .card { display: grid; gap: 12px; align-content: start; }
+  .gc-local p { color: var(--ink-2); font-size: 15px; }
+  .gc-i { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: var(--green-soft); color: var(--green); }
+  .gc-places { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+  .gc-places li { padding: 4px 10px; border-radius: 8px; background: var(--bg); font-size: 14px; }
+  .gc-near { display: grid; gap: 14px; }
+  @media (max-width: 900px) { .gc-facts { grid-template-columns: 1fr 1fr; } .gc-local { grid-template-columns: 1fr; } }
+</style>

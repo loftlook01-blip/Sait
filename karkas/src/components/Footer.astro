@@ -1,0 +1,74 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { SITE } from '../data/site';
+import { MODELS } from '../data/models';
+import { CITIES, cityUrl } from '../data/cities';
+const year = new Date().getFullYear();
+---
+<footer class="ftr">
+  <div class="wrap">
+    <div class="ftr-top">
+      <div class="ftr-brand">
+        <Logo light />
+        <p>{SITE.tagline}. Производство, доставка и монтаж по Архангельской области.</p>
+        <div class="ftr-soc">
+          <a href={SITE.telegram} target="_blank" rel="noopener" aria-label="Telegram" data-goal="messenger"><Icon name="tg" /></a>
+          <a href={SITE.whatsapp} target="_blank" rel="noopener" aria-label="WhatsApp" data-goal="messenger"><Icon name="wa" /></a>
+          <a href={SITE.vk} target="_blank" rel="noopener" aria-label="ВКонтакте"><Icon name="vk" /></a>
+        </div>
+      </div>
+      <nav class="ftr-col" aria-label="Модельный ряд">
+        <p class="ftr-h">Модельный ряд</p>
+        {MODELS.map((m) => <a href={`/doma/${m.slug}/`}>{m.name} · {m.area} м²</a>)}
+      </nav>
+      <nav class="ftr-col" aria-label="География">
+        <p class="ftr-h">Строим</p>
+        {CITIES.map((c) => <a href={cityUrl(c)}>{c.in.replace(/^в /, 'В ')}</a>)}
+      </nav>
+      <nav class="ftr-col" aria-label="Компания">
+        <p class="ftr-h">Компания</p>
+        <a href="/tehnologiya/">Технология и производство</a>
+        <a href="/konfigurator/">Конфигуратор и цены</a>
+        <a href="/ipoteka/">Ипотека и эскроу</a>
+        <a href="/voprosy/">Вопросы и ответы</a>
+        <a href="/novosti/">Новости и статьи</a>
+        <a href="/kontakty/">Контакты</a>
+      </nav>
+      <div class="ftr-col ftr-contacts" itemscope itemtype="https://schema.org/PostalAddress">
+        <p class="ftr-h">Контакты</p>
+        <a class="ftr-phone" href={`tel:${SITE.phoneHref}`} data-goal="call">{SITE.phone}</a>
+        <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        <span><Icon name="pin" size={16} /> <span itemprop="streetAddress">{SITE.factory.address}</span></span>
+        <span><Icon name="clock" size={16} /> {SITE.hours.label}</span>
+        <button class="btn btn--white btn--sm" data-lead="Обратный звонок (подвал)" data-lead-title="Перезвоним за 15 минут">Заказать звонок</button>
+      </div>
+    </div>
+    <div class="ftr-bottom">
+      <span>© {year} {SITE.legalName}{SITE.inn && ` · ИНН ${SITE.inn}`}{SITE.ogrn && ` · ОГРН ${SITE.ogrn}`}</span>
+      <span>Изображения домов — архитектурные визуализации проектов. Цены указаны с винтовыми сваями, доставкой до 40 км и монтажом; не являются публичной офертой.</span>
+      <a href="/politika-konfidencialnosti/">Политика конфиденциальности</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .ftr { background: var(--green-2); color: rgb(255 255 255 / 0.72); margin-top: clamp(40px, 6vw, 80px); padding: clamp(48px, 6vw, 72px) 0 calc(28px + env(safe-area-inset-bottom)); font-size: 14px; }
+  .ftr a { text-decoration: none; transition: color 0.2s; }
+  .ftr a:hover { color: #fff; }
+  .ftr-top { display: grid; grid-template-columns: 1.4fr repeat(4, 1fr); gap: 32px; }
+  .ftr-brand p { margin: 18px 0; max-width: 34ch; line-height: 1.6; }
+  .ftr-soc { display: flex; gap: 8px; }
+  .ftr-soc a { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgb(255 255 255 / 0.2); color: #fff; }
+  .ftr-soc a:hover { background: rgb(255 255 255 / 0.1); }
+  .ftr-col { display: grid; gap: 10px; align-content: start; }
+  .ftr-h { color: #fff; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .ftr-contacts span { display: flex; gap: 8px; align-items: flex-start; }
+  .ftr-contacts span :global(svg) { flex: none; margin-top: 2px; }
+  .ftr-phone { color: #fff; font-size: 20px; font-weight: 700; }
+  .ftr-contacts .btn { justify-self: start; margin-top: 6px; }
+  .ftr-bottom { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; margin-top: 48px; padding-top: 24px; border-top: 1px solid rgb(255 255 255 / 0.12); font-size: 12.5px; color: rgb(255 255 255 / 0.5); }
+  .ftr-bottom span:nth-child(2) { max-width: 70ch; }
+  @media (max-width: 1060px) { .ftr-top { grid-template-columns: 1fr 1fr 1fr; } .ftr-brand { grid-column: 1 / -1; } }
+  @media (max-width: 640px) { .ftr-top { grid-template-columns: 1fr 1fr; } .ftr-contacts { grid-column: 1 / -1; } }
+</style>

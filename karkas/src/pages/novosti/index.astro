@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import Pic from '../../components/Pic.astro';
+import CtaLead from '../../components/CtaLead.astro';
+import { ARTICLES } from '../../data/articles';
+import { breadcrumbs } from '../../lib/schema';
+const crumbs = [{ name: 'Главная', url: '/' }, { name: 'Новости и статьи', url: '/novosti/' }];
+const list = [...ARTICLES].sort((a, b) => b.date.localeCompare(a.date));
+const [first, ...rest] = list;
+const d = (s: string) => new Date(s).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<Base title="Новости и статьи о модульных домах" description="Статьи о модульных и каркасных домах: цены, ипотека, фундамент на торфе, утепление для Севера, доставка и монтаж. Новости производства." schema={[breadcrumbs(crumbs)]}>
+  <PageHead crumbs={crumbs} dim="Новости" title="и статьи" lead="Пишем честно о том, сколько стоит дом, как выбрать фундамент на северных грунтах и как не переплатить по ипотеке." />
+  <section class="section wrap">
+    <a class="feat card" href={`/novosti/${first.slug}/`}>
+      <div class="media feat-media"><Pic name={first.img} alt="" sizes="(max-width: 860px) 100vw, 55vw" w={1200} h={900} /></div>
+      <div class="feat-body"><span class="tag">{first.tag}</span><h2>{first.title}</h2><p class="muted">{first.description}</p><span class="small muted">{d(first.date)} · {first.read} мин чтения</span></div>
+    </a>
+    <div class="grid g-3" style="margin-top:var(--gap)">
+      {rest.map((a) => (
+        <a class="art card" href={`/novosti/${a.slug}/`}>
+          <div class="media art-media"><Pic name={a.img} alt="" sizes="(max-width: 620px) 100vw, 33vw" w={1200} h={900} /></div>
+          <div class="art-body"><span class="tag">{a.tag}</span><h3>{a.title}</h3><span class="small muted">{d(a.date)} · {a.read} мин</span></div>
+        </a>
+      ))}
+    </div>
+  </section>
+  <CtaLead />
+</Base>
+<style>
+  .feat { display: grid; grid-template-columns: 1.2fr 1fr; text-decoration: none; overflow: hidden; }
+  .feat-media { min-height: 360px; border-radius: 0; }
+  .feat-media :global(img) { position: absolute; inset: 0; }
+  .feat-body { padding: clamp(22px, 4vw, 48px); display: grid; gap: 14px; align-content: center; justify-items: start; }
+  .feat-body h2 { font-size: clamp(24px, 3vw, 36px); text-transform: uppercase; }
+  .art { text-decoration: none; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s; }
+  .art:hover, .feat:hover { transform: translateY(-3px); }
+  .feat { transition: transform 0.3s; }
+  .art-media { aspect-ratio: 16/10; border-radius: 0; }
+  .art-body { padding: 18px 20px 22px; display: grid; gap: 10px; justify-items: start; }
+  .art-body h3 { font-size: 19px; line-height: 1.25; }
+  @media (max-width: 860px) { .feat { grid-template-columns: 1fr; } .feat-media { min-height: 0; aspect-ratio: 16/10; } }
+</style>

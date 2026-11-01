@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import Faq from '../components/Faq.astro';
+import CtaLead from '../components/CtaLead.astro';
+import { FAQ } from '../data/content';
+import { breadcrumbs, faq } from '../lib/schema';
+const crumbs = [{ name: 'Главная', url: '/' }, { name: 'Вопросы и ответы', url: '/voprosy/' }];
+---
+<Base title="Вопросы о модульных домах: цена, ипотека, зима, гарантия" description="Ответы на частые вопросы о модульных домах: чем отличаются от каркасных, можно ли жить зимой, сколько стоят, как оплачивать, ипотека, разрешения, доставка и гарантия." schema={[breadcrumbs(crumbs), faq(FAQ)]}>
+  <PageHead crumbs={crumbs} dim="Вопросы" title="и ответы" lead="Собрали то, что спрашивают чаще всего. Если ответа нет — позвоните или напишите, инженер ответит в течение 15 минут." />
+  <section class="section wrap"><div class="card card--pad"><Faq /></div></section>
+  <CtaLead />
+</Base>

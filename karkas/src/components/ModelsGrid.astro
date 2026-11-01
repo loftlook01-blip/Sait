@@ -1,0 +1,65 @@
+---
+import ModelCard from './ModelCard.astro';
+import { MODELS, HOUSES, EXTRAS } from '../data/models';
+interface Props { title?: boolean; full?: boolean }
+const { title = true, full = false } = Astro.props;
+---
+<div class="mg-wrap" data-models>
+  <div class="sec-head">
+    {title && <h2 class="h-sec"><span class="dim">Модельный</span> ряд</h2>}
+    <div class="pills" role="group" aria-label="Фильтр проектов">
+      <button class="pill" aria-pressed="true" data-f="house">Модульные дома ({HOUSES.length})</button>
+      <button class="pill" aria-pressed="false" data-f="extra">Бани, хозблоки, беседки ({EXTRAS.length})</button>
+      <button class="pill" aria-pressed="false" data-f="all">Все проекты</button>
+    </div>
+  </div>
+  {full && (
+    <div class="mg-filters card">
+      <label>Площадь <select class="select" data-area><option value="0">любая</option><option value="30">до 30 м²</option><option value="40">до 40 м²</option><option value="999">от 40 м²</option></select></label>
+      <label>Спальни <select class="select" data-bed><option value="-1">любые</option><option value="1">от 1</option><option value="2">от 2</option><option value="3">от 3</option></select></label>
+      <label>Сортировка <select class="select" data-sort><option value="price">сначала дешевле</option><option value="area">по площади</option><option value="-price">сначала дороже</option></select></label>
+    </div>
+  )}
+  <div class="grid g-3 mg-grid" data-grid>
+    {MODELS.map((m) => <ModelCard m={m} />)}
+  </div>
+  <p class="mg-empty muted" data-empty hidden>Под такие условия нет готового проекта — сделаем индивидуальный на базе наших модулей.</p>
+</div>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-models]').forEach((root) => {
+    const grid = root.querySelector<HTMLElement>('[data-grid]')!;
+    const cards = [...grid.children] as HTMLElement[];
+    let f = 'house';
+    const apply = () => {
+      const area = +(root.querySelector<HTMLSelectElement>('[data-area]')?.value ?? 0);
+      const bed = +(root.querySelector<HTMLSelectElement>('[data-bed]')?.value ?? -1);
+      const sort = root.querySelector<HTMLSelectElement>('[data-sort]')?.value ?? '';
+      let shown = 0;
+      cards.forEach((c) => {
+        const a = +c.dataset.area!;
+        const okArea = !area || (area === 999 ? a >= 40 : a <= area);
+        const ok = (f === 'all' || c.dataset.cat === f) && okArea && +c.dataset.bed! >= bed;
+        c.hidden = !ok;
+        if (ok) shown++;
+      });
+      if (sort) {
+        const k = sort.replace('-', '');
+        const dir = sort.startsWith('-') ? -1 : 1;
+        cards.sort((x, y) => (+x.dataset[k]! - +y.dataset[k]!) * dir).forEach((c) => grid.appendChild(c));
+      }
+      root.querySelector<HTMLElement>('[data-empty]')!.hidden = shown > 0;
+    };
+    root.querySelectorAll<HTMLButtonElement>('[data-f]').forEach((b) => b.addEventListener('click', () => {
+      f = b.dataset.f!;
+      root.querySelectorAll('[data-f]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      apply();
+    }));
+    root.addEventListener('change', apply);
+    apply();
+  });
+</script>
+<style>
+  .mg-filters { display: flex; flex-wrap: wrap; gap: 12px; padding: 14px; margin-bottom: var(--gap); }
+  .mg-filters label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); flex: 1 1 180px; }
+  .mg-empty { padding: 24px 0; }
+</style>

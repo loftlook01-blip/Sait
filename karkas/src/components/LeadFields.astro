@@ -1,0 +1,61 @@
+---
+/** Поля формы заявки — общие для модального окна и встроенных форм */
+import { SITE } from '../data/site';
+interface Props { source: string; dark?: boolean; showVisit?: boolean; button?: string; idp?: string }
+const { source, dark = false, showVisit = false, button = 'Отправить заявку', idp = 'f' } = Astro.props;
+const daysAhead = Array.from({ length: 10 }, (_, i) => {
+  const d = new Date(Date.now() + (i + 1) * 864e5);
+  return d;
+}).filter((d) => d.getDay() !== 0).slice(0, 7);
+const fmtDay = (d: Date) => d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' });
+---
+<form class:list={['lf', { dark }]} action={SITE.forms.endpoint} method="post" data-lead-form novalidate>
+  <input type="hidden" name="source" value={source} data-source />
+  <input type="hidden" name="extra" value="" data-extra />
+  <div class="lf-grid">
+    <div class="field"><label for={`${idp}-name`}>Как к вам обращаться</label><input class="input" id={`${idp}-name`} name="name" required autocomplete="name" placeholder="Имя" /></div>
+    <div class="field"><label for={`${idp}-phone`}>Телефон</label><input class="input" id={`${idp}-phone`} name="phone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="+7 (___) ___-__-__" /></div>
+  </div>
+  {showVisit && (
+    <div class="lf-grid" data-visit>
+      <div class="field"><label for={`${idp}-day`}>День просмотра</label>
+        <select class="select" id={`${idp}-day`} name="day">{daysAhead.map((d) => <option>{fmtDay(d)}</option>)}</select>
+      </div>
+      <div class="field"><label for={`${idp}-time`}>Время</label>
+        <select class="select" id={`${idp}-time`} name="time">{['10:00', '12:00', '14:00', '16:00', '18:00'].map((t) => <option>{t}</option>)}</select>
+      </div>
+    </div>
+  )}
+  <div class="field"><label for={`${idp}-msg`}>Комментарий <span class="muted">(необязательно)</span></label><textarea class="textarea" id={`${idp}-msg`} name="message" rows="2" placeholder="Какой дом интересует, где участок"></textarea></div>
+  <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+  <label class="check"><input type="checkbox" name="consent" value="1" required checked /> <span>Соглашаюсь на обработку персональных данных согласно <a href="/politika-konfidencialnosti/" target="_blank">политике</a></span></label>
+  <button class:list={['btn btn--lg btn--block', { 'btn--white': dark }]} type="submit">{button}</button>
+  <p class="lf-status small" data-status role="status" aria-live="polite"></p>
+  <div class="lf-done">
+    <strong>Заявка отправлена!</strong>
+    <p>Перезвоним в течение 15 минут в рабочее время ({SITE.hours.label}).</p>
+  </div>
+  <div class="lf-fallback">
+    <a class="btn btn--ghost btn--sm" href={`tel:${SITE.phoneHref}`}>Позвонить</a>
+    <a class="btn btn--ghost btn--sm" href={SITE.telegram} target="_blank" rel="noopener">Telegram</a>
+    <a class="btn btn--ghost btn--sm" href={SITE.whatsapp} target="_blank" rel="noopener">WhatsApp</a>
+  </div>
+</form>
+
+<style>
+  .lf { display: grid; gap: 14px; position: relative; }
+  .lf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 520px) { .lf-grid { grid-template-columns: 1fr; } }
+  .lf-status:empty { display: none; }
+  .lf-done, .lf-fallback { display: none; }
+  .lf.is-sent > *:not(.lf-done) { display: none; }
+  .lf.is-sent .lf-done { display: grid; gap: 8px; padding: 28px; border-radius: 16px; background: var(--green-soft); color: var(--green-2); text-align: center; }
+  .lf.is-sent .lf-done strong { font-size: 22px; }
+  .lf.is-failed .lf-fallback { display: flex; flex-wrap: wrap; gap: 8px; }
+  .lf.dark .field label, .lf.dark .check, .lf.dark .lf-status { color: rgb(255 255 255 / 0.8); }
+  .lf.dark .input, .lf.dark .select, .lf.dark .textarea { background: rgb(255 255 255 / 0.08); border-color: rgb(255 255 255 / 0.2); color: #fff; }
+  .lf.dark .input::placeholder, .lf.dark .textarea::placeholder { color: rgb(255 255 255 / 0.45); }
+  .lf.dark .select option { color: #000; }
+  .lf.dark .muted { color: rgb(255 255 255 / 0.5); }
+  .lf.dark .lf-fallback .btn { color: #fff; border-color: rgb(255 255 255 / 0.4); }
+</style>

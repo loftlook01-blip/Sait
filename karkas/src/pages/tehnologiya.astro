@@ -1,0 +1,96 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import Wall from '../components/Wall.astro';
+import Steps from '../components/Steps.astro';
+import Pic from '../components/Pic.astro';
+import Icon from '../components/Icon.astro';
+import CtaLead from '../components/CtaLead.astro';
+import Faq from '../components/Faq.astro';
+import { SITE } from '../data/site';
+import { STEPS, COMPARE, FAQ } from '../data/content';
+import { breadcrumbs, howTo, faq } from '../lib/schema';
+const P = SITE.promises;
+const crumbs = [{ name: 'Главная', url: '/' }, { name: 'Наш подход', url: '/tehnologiya/' }];
+const qa = FAQ.filter((f) => /отличается|круглый год|гарантия/i.test(f.q));
+const PRINCIPLES = [
+  { i: 'factory', t: 'Цех вместо стройплощадки', x: `Модули собираются при +18 °C на ровном полу цеха. ${P.factoryReady}% работ выполняются до выезда на участок — дождь, снег и мороз не влияют ни на сроки, ни на качество.` },
+  { i: 'ruble', t: 'Фиксированная смета', x: 'Цена фиксируется в договоре и не растёт по ходу стройки. Все работы и материалы расписаны в смете — без «непредвиденных расходов».' },
+  { i: 'calendar', t: 'Еженедельные отчёты', x: 'Каждую неделю присылаем фото и видео с производства: вы видите, как растёт ваш дом, не выезжая на объект.' },
+  { i: 'shield', t: 'ОТК на каждом этапе', x: 'Мастер контроля качества принимает каркас, утепление, пароизоляцию и инженерию по чек-листу. Готовый модуль проверяем тепловизором.' },
+  { i: 'leaf', t: 'Сухие материалы', x: 'Каркас из строганой доски камерной сушки (влажность до 18%), антисептирование, минеральная вата и мембраны проверенных производителей.' },
+  { i: 'snow', t: 'Расчёт под Север', x: 'Снеговой район IV, ветровой II, температура −45 °C. Сваи подбираем по пробному закручиванию на вашем участке.' },
+];
+const MATERIALS = [
+  ['Каркас', 'Доска камерной сушки 50×200 мм, строганая, антисептированная'],
+  ['Утеплитель', 'Минеральная вата 200 + 50 мм в стенах, 250 мм в полу и кровле'],
+  ['Мембраны', 'Ветрозащита и пароизоляция с проклейкой швов бутиловой лентой'],
+  ['Окна', 'Двухкамерный стеклопакет 44 мм с i-стеклом и аргоном'],
+  ['Кровля', 'Фальц или профлист с полимерным покрытием, вентилируемый пирог'],
+  ['Фундамент', 'Винтовые сваи 108–133 мм с антикоррозийным покрытием'],
+  ['Электрика', 'Медный кабель в негорючих гофрах, щит с УЗО и автоматами'],
+  ['Вентиляция', 'Приточно-вытяжные установки с рекуперацией тепла'],
+];
+---
+<Base
+  title="Технология модульных домов: заводская сборка и тёплый каркас для Севера"
+  description="Как мы строим модульные дома: сборка в тёплом цеху, каркас камерной сушки, утепление 250 мм для −45 °C, контроль качества и тепловизор. Пирог стены, материалы, этапы и гарантия."
+  schema={[breadcrumbs(crumbs), howTo('Как строится модульный дом', STEPS, P.totalDays), faq(qa)]}
+>
+  <PageHead crumbs={crumbs} dim="Наш" title="подход" lead={`Мы переносим стройку с участка в цех. Так дом получается быстрее, качественнее и предсказуемее по бюджету: ${P.productionDays} дней производства, от 1 до ${P.assemblyDays} дней монтажа и гарантия ${P.guaranteeMonths} месяцев.`} />
+
+  <section class="section wrap">
+    <div class="grid g-3">
+      {PRINCIPLES.map((p) => (
+        <div class="card card--pad pr reveal">
+          <span class="pr-i"><Icon name={p.i as any} size={26} /></span>
+          <h2 class="h-3">{p.t}</h2>
+          <p>{p.x}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Пирог</span> стены</h2><p class="lead">Наведите на слой, чтобы увидеть, из чего он состоит и зачем нужен.</p></div>
+    <Wall />
+  </section>
+
+  <section class="wrap section--tight tech-split">
+    <div class="media tech-img"><Pic name="model-duo" alt="Двухмодульный дом Дуо 55 с фасадом из обожжённой доски" sizes="(max-width: 900px) 100vw, 50vw" w={1200} h={900} /></div>
+    <div class="card card--pad">
+      <h2 class="h-3" style="margin-bottom:12px">Материалы</h2>
+      <dl class="specs mat">{MATERIALS.map(([a, b]) => <><dt>{a}</dt><dd>{b}</dd></>)}</dl>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Этапы</span> строительства</h2></div>
+    <Steps />
+  </section>
+
+  <section class="wrap section--tight">
+    <div class="card card--pad">
+      <div class="sec-head"><h2 class="h-sec"><span class="dim">Цех</span> против стройки</h2></div>
+      <div class="cmp">
+        {COMPARE.map((c) => <div class="cmp-r"><span class="muted">{c.p}</span><b>{c.a}</b><span>{c.b}</span></div>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap"><div class="sec-head"><h2 class="h-sec"><span class="dim">Вопросы</span> о технологии</h2></div><Faq items={qa} /></section>
+  <CtaLead title="Посмотреть производство" text="Покажем цех, где собираются модули, и выставочный дом. Вживую видно, как устроен пирог стены и чем заводская сборка отличается от стройки." source="Технология — блок заявки" />
+</Base>
+<style>
+  .pr { display: grid; gap: 12px; align-content: start; }
+  .pr-i { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 14px; background: var(--green-soft); color: var(--green); }
+  .pr p { color: var(--ink-2); font-size: 15px; }
+  .tech-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+  .tech-img { min-height: 380px; }
+  .tech-img :global(img) { position: absolute; inset: 0; }
+  .mat dd { font-weight: 500; max-width: 34ch; }
+  .cmp-r { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .cmp-r b { color: var(--green); }
+  @media (max-width: 900px) { .tech-split { grid-template-columns: 1fr; } .tech-img { aspect-ratio: 4/3; min-height: 0; } }
+  @media (max-width: 560px) { .cmp-r { grid-template-columns: 1fr 1fr; } .cmp-r .muted { grid-column: 1/-1; } }
+</style>

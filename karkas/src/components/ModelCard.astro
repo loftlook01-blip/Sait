@@ -1,0 +1,51 @@
+---
+import Pic from './Pic.astro';
+import Icon from './Icon.astro';
+import { fmt } from '../data/site';
+import type { Model } from '../data/models';
+interface Props { m: Model; priceNote?: string; extraPrice?: number }
+const { m, priceNote = 'под ключ', extraPrice = 0 } = Astro.props;
+---
+<article class="mc card" data-cat={m.category} data-area={m.area} data-bed={m.bedrooms} data-price={m.price}>
+  <a class="mc-media media" href={`/doma/${m.slug}/`} tabindex="-1" aria-hidden="true">
+    <Pic name={m.img} alt="" sizes="(max-width: 620px) 100vw, (max-width: 960px) 50vw, 33vw" w={1200} h={900} />
+    <span class="mc-tags">
+      {m.hit && <span class="tag tag--dark">Хит</span>}
+      <span class="tag tag--dark">{m.productionDays} дн. в цеху</span>
+    </span>
+  </a>
+  <div class="mc-body">
+    <div class="mc-top">
+      <h3 class="mc-name"><a href={`/doma/${m.slug}/`}>{m.name}</a></h3>
+      <span class="muted small">{m.kind}</span>
+    </div>
+    <ul class="mc-specs">
+      <li><Icon name="area" size={16} />{m.area} м²{m.terrace && ` + ${m.terrace}`}</li>
+      {m.bedrooms > 0 && <li><Icon name="bed" size={16} />{m.bedrooms} {m.bedrooms === 1 ? 'спальня' : 'спальни'}</li>}
+      <li><Icon name="ruler" size={16} />{m.size[0]}×{m.size[1]} м</li>
+    </ul>
+    <div class="mc-foot">
+      <p class="price">{fmt.rub(m.price + extraPrice)} <small>{priceNote}</small></p>
+      <a class="icon-btn mc-go" href={`/doma/${m.slug}/`} aria-label={`Подробнее о доме ${m.name}`}><Icon name="arrowUp" size={18} /></a>
+    </div>
+  </div>
+</article>
+<style>
+  .mc { display: flex; flex-direction: column; overflow: hidden; transition: transform 0.4s cubic-bezier(.2,.7,.2,1), box-shadow 0.4s; }
+  .mc:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgb(16 30 26 / 0.12); }
+  .mc:hover .mc-media :global(img) { transform: scale(1.04); }
+  .mc-media { aspect-ratio: 4 / 3; border-radius: var(--r) var(--r) 0 0; }
+  .mc-tags { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; }
+  .mc-body { padding: 18px 20px 20px; display: grid; gap: 14px; flex: 1; align-content: space-between; }
+  .mc-top { display: grid; gap: 2px; }
+  .mc-name { font-size: 22px; text-transform: uppercase; }
+  .mc-name a { text-decoration: none; }
+  .mc-name a::after { content: ''; position: absolute; inset: 0; }
+  .mc { position: relative; }
+  .mc-specs { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0; margin: 0; list-style: none; font-size: 14px; color: var(--ink-2); }
+  .mc-specs li { display: inline-flex; align-items: center; gap: 6px; }
+  .mc-specs :global(svg) { color: var(--green); }
+  .mc-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .mc-go { position: relative; z-index: 1; }
+  .mc:hover .mc-go { background: var(--green); color: #fff; border-color: var(--green); }
+</style>

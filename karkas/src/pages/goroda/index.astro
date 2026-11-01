@@ -1,0 +1,13 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import CitiesBlock from '../../components/CitiesBlock.astro';
+import CtaLead from '../../components/CtaLead.astro';
+import { breadcrumbs } from '../../lib/schema';
+const crumbs = [{ name: 'Главная', url: '/' }, { name: 'География', url: '/goroda/' }];
+---
+<Base title="Доставка модульных домов по Архангельской области — цены по городам" description="Доставка и монтаж модульных домов в Архангельске, Северодвинске, Новодвинске, Приморском округе, Холмогорах, Онеге, Вельске и Котласе. Бесплатно до 40 км, стоимость для каждого города." schema={[breadcrumbs(crumbs)]}>
+  <PageHead crumbs={crumbs} dim="География" title="доставки" lead="Цех и выставочный дом — в Архангельске. Отсюда модули едут на трале по всей области: в радиусе 40 км бесплатно, дальше — по тарифу, зафиксированному в договоре." />
+  <section class="section wrap"><CitiesBlock /></section>
+  <CtaLead title="Не нашли свой город?" text="Доставляем по всему Северо-Западу, на острова — по зимнику или баржей. Оставьте заявку — посчитаем доставку до вашего участка." source="География — блок заявки" />
+</Base>

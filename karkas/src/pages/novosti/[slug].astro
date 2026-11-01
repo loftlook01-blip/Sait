@@ -1,0 +1,83 @@
+---
+import Base from '../../layouts/Base.astro';
+import Crumbs from '../../components/Crumbs.astro';
+import Pic from '../../components/Pic.astro';
+import Icon from '../../components/Icon.astro';
+import ModelCard from '../../components/ModelCard.astro';
+import CtaLead from '../../components/CtaLead.astro';
+import { ARTICLES, type Article } from '../../data/articles';
+import { HOUSES } from '../../data/models';
+import { SITE } from '../../data/site';
+import { breadcrumbs, article } from '../../lib/schema';
+export function getStaticPaths() { return ARTICLES.map((a) => ({ params: { slug: a.slug }, props: { a } })); }
+const { a } = Astro.props as { a: Article };
+const crumbs = [{ name: 'Главная', url: '/' }, { name: 'Новости и статьи', url: '/novosti/' }, { name: a.title, url: `/novosti/${a.slug}/` }];
+const d = (s: string) => new Date(s).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+const toc = [...a.body.matchAll(/<h2>(.*?)<\/h2>/g)].map((m, i) => ({ id: `s${i + 1}`, t: m[1] }));
+let i = 0;
+const body = a.body.replace(/<h2>/g, () => `<h2 id="s${++i}">`).replace(/<table>/g, '<div class="tbl" tabindex="0" role="region" aria-label="Таблица"><table>').replace(/<\/table>/g, '</table></div>');
+const more = ARTICLES.filter((x) => x.slug !== a.slug).slice(0, 2);
+const picks = HOUSES.filter((h) => h.hit).slice(0, 2);
+---
+<Base title={a.title} description={a.description} schema={[breadcrumbs(crumbs), article(a)]} ogType="article" published={a.date} modified={a.updated ?? a.date} ogImage="/og.jpg">
+  <article class="wrap ar">
+    <header class="ar-head card">
+      <Crumbs items={crumbs} />
+      <span class="tag">{a.tag}</span>
+      <h1 class="ar-h">{a.title}</h1>
+      <p class="small muted">
+        <time datetime={a.date}>{d(a.date)}</time>{a.updated && <> · обновлено <time datetime={a.updated}>{d(a.updated)}</time></>} · {a.read} мин чтения · {SITE.brand}
+      </p>
+    </header>
+    <div class="ar-grid">
+      <div class="ar-main card">
+        <div class="media ar-img"><Pic name={a.img} alt={a.title} eager sizes="(max-width: 960px) 100vw, 760px" w={1200} h={900} /></div>
+        <div class="ar-answer"><b>Коротко:</b> {a.answer}</div>
+        <div class="prose" set:html={body} />
+      </div>
+      <aside class="ar-side">
+        {toc.length > 0 && (
+          <nav class="card card--pad ar-toc" aria-label="Содержание">
+            <p class="eyebrow">Содержание</p>
+            <ol>{toc.map((t) => <li><a href={`#${t.id}`}>{t.t}</a></li>)}</ol>
+          </nav>
+        )}
+        <div class="card card--pad card--green ar-cta">
+          <p class="h-3">Посчитать свой дом</p>
+          <p class="small">Конфигуратор покажет цену с доставкой и платёж по ипотеке.</p>
+          <a class="btn btn--white" href="/konfigurator/">Открыть конфигуратор <Icon name="arrow" size={18} /></a>
+        </div>
+      </aside>
+    </div>
+  </article>
+  <section class="section wrap">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Популярные</span> проекты</h2></div>
+    <div class="grid g-2">{picks.map((m) => <ModelCard m={m} />)}</div>
+  </section>
+  <section class="wrap section--tight">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Читайте</span> также</h2></div>
+    <div class="grid g-2">
+      {more.map((x) => <a class="card card--pad more" href={`/novosti/${x.slug}/`}><span class="tag">{x.tag}</span><b>{x.title}</b><span class="small muted">{x.read} мин</span></a>)}
+    </div>
+  </section>
+  <CtaLead />
+</Base>
+<style>
+  .ar { margin-top: var(--gap); display: grid; gap: var(--gap); }
+  .ar-head { padding: clamp(22px, 4vw, 48px); display: grid; gap: 14px; justify-items: start; }
+  .ar-h { font-size: clamp(30px, 4.2vw, 52px); text-transform: uppercase; max-width: 22ch; letter-spacing: -0.02em; }
+  .ar-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--gap); align-items: start; }
+  .ar-main { padding: clamp(14px, 2vw, 20px) clamp(14px, 2vw, 20px) clamp(28px, 4vw, 48px); }
+  .ar-img { aspect-ratio: 16/9; border-radius: 14px; margin-bottom: 24px; }
+  .ar-answer { margin: 0 clamp(4px, 2vw, 28px) 24px; padding: 18px 20px; border-radius: 14px; background: var(--green-soft); color: var(--green-2); font-size: 17px; line-height: 1.55; }
+  .ar-main .prose { padding: 0 clamp(4px, 2vw, 28px); max-width: 760px; }
+  .ar-side { position: sticky; top: 92px; display: grid; gap: var(--gap); }
+  .ar-toc ol { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 8px; font-size: 14px; }
+  .ar-toc a { text-decoration: none; }
+  .ar-toc a:hover { color: var(--green); }
+  .ar-cta { display: grid; gap: 12px; }
+  .ar-cta p.small { color: rgb(255 255 255 / 0.8); }
+  .more { display: grid; gap: 10px; justify-items: start; text-decoration: none; }
+  .more b { font-size: 18px; }
+  @media (max-width: 960px) { .ar-grid { grid-template-columns: 1fr; } .ar-side { position: static; } }
+</style>

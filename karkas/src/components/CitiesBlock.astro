@@ -1,0 +1,61 @@
+---
+/** География доставки: схематичная карта области + список городов со ссылками на гео-страницы */
+import Icon from './Icon.astro';
+import { CITIES, cityUrl } from '../data/cities';
+import { deliveryExtra } from '../data/models';
+import { fmt } from '../data/site';
+const minLat = 60.9, maxLat = 64.8, minLng = 37.6, maxLng = 47.2;
+const pos = (c: { lat: number; lng: number }) => ({ x: ((c.lng - minLng) / (maxLng - minLng)) * 100, y: ((maxLat - c.lat) / (maxLat - minLat)) * 100 });
+---
+<div class="cb">
+  <div class="cb-map card" role="img" aria-label="Схема доставки модульных домов по Архангельской области">
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M2 18 C 12 6, 22 10, 30 4 S 50 8, 60 2 L 98 4 L 96 60 C 90 72, 96 88, 84 98 L 30 98 C 22 86, 10 84, 6 70 S 0 40, 2 18Z" fill="#e3ece9" />
+      <path d="M44 -2 C 42 20, 52 40, 62 58 S 80 86, 90 102" fill="none" stroke="#b9d0d8" stroke-width="1.2" />
+    </svg>
+    {CITIES.map((c) => {
+      const p = pos(c);
+      return (
+        <a class:list={['cb-pin', { main: c.primary }]} href={cityUrl(c)} style={`left:${p.x}%;top:${p.y}%`}>
+          <span class="cb-dot" />
+          {(c.primary || c.km > 50) && <span class="cb-lbl">{c.primary ? 'Архангельск и пригороды' : c.name}</span>}
+          {!c.primary && c.km <= 50 && <span class="sr-only">{c.name}</span>}
+        </a>
+      );
+    })}
+  </div>
+  <ul class="cb-list">
+    {CITIES.map((c) => {
+      const d = deliveryExtra(c.km, 1);
+      return (
+        <li>
+          <a href={cityUrl(c)}>
+            <span><b>{c.name}</b><small>{c.km ? `${c.km} км · ${c.deliveryDays === 1 ? 'в тот же день' : `${c.deliveryDays} дня в пути`}` : 'цех и выставочный дом'}</small></span>
+            <em>{d > 0 ? `+${fmt.rub(Math.round(d / 1000) * 1000)}` : 'бесплатно'}</em>
+            <Icon name="arrow" size={18} />
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+</div>
+<style>
+  .cb { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+  .cb-map { position: relative; min-height: 420px; overflow: hidden; }
+  .cb-map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .cb-pin { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 6px; text-decoration: none; font-size: 12.5px; font-weight: 600; z-index: 1; }
+  .cb-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgb(36 81 74 / 0.18); flex: none; }
+  .cb-pin:not(.main):has(.sr-only) .cb-dot { width: 8px; height: 8px; }
+  .cb-pin.main { z-index: 2; }
+  .cb-pin.main .cb-dot { width: 18px; height: 18px; background: var(--accent); box-shadow: 0 0 0 6px rgb(217 163 95 / 0.25); animation: pulse 2.4s infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 12px rgb(217 163 95 / 0.05); } }
+  .cb-lbl { background: rgb(255 255 255 / 0.9); padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+  .cb-pin:hover .cb-lbl { background: var(--green); color: #fff; }
+  .cb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; align-content: start; }
+  .cb-list a { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 16px; padding: 14px 18px; background: #fff; border-radius: 14px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+  .cb-list a:hover { transform: translateX(4px); box-shadow: var(--shadow); }
+  .cb-list span { display: grid; }
+  .cb-list small { color: var(--muted); font-size: 13px; }
+  .cb-list em { font-style: normal; font-weight: 600; font-size: 14px; color: var(--green); }
+  @media (max-width: 860px) { .cb { grid-template-columns: 1fr; } .cb-map { min-height: 320px; } }
+</style>

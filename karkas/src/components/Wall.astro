@@ -1,0 +1,46 @@
+---
+/** Интерактивный разрез стены: наведение/фокус на слой подсвечивает описание */
+import { WALL_LAYERS } from '../data/content';
+---
+<div class="wall" data-wall>
+  <div class="wall-cut" aria-hidden="true">
+    {WALL_LAYERS.map((l, i) => (
+      <span class="wall-l" data-i={i} style={`flex:${Math.max(l.mm, 8)};background:${l.c}`} />
+    ))}
+    <span class="wall-out">улица −45 °C</span>
+    <span class="wall-in">дом +22 °C</span>
+  </div>
+  <ol class="wall-list">
+    {WALL_LAYERS.map((l, i) => (
+      <li data-i={i} tabindex="0">
+        <span class="wall-dot" style={`background:${l.c}`} />
+        <div><b>{l.t}{l.mm > 1 && <span class="muted"> · {l.mm} мм</span>}</b><p>{l.x}</p></div>
+      </li>
+    ))}
+  </ol>
+</div>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-wall]').forEach((w) => {
+    const set = (i: string | null) => w.querySelectorAll<HTMLElement>('[data-i]').forEach((el) => el.classList.toggle('on', el.dataset.i === i));
+    w.querySelectorAll<HTMLElement>('[data-i]').forEach((el) => {
+      el.addEventListener('mouseenter', () => set(el.dataset.i!));
+      el.addEventListener('focus', () => set(el.dataset.i!));
+    });
+    w.addEventListener('mouseleave', () => set(null));
+  });
+</script>
+<style>
+  .wall { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: clamp(20px, 4vw, 56px); align-items: center; }
+  .wall-cut { position: relative; display: flex; height: clamp(260px, 34vw, 420px); border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow); background: #fff; padding: 36px 0; }
+  .wall-l { position: relative; transition: transform 0.3s, filter 0.3s; border-right: 1px solid rgb(0 0 0 / 0.06); }
+  .wall-l:nth-child(4) { background-image: repeating-linear-gradient(135deg, rgb(255 255 255 / 0.25) 0 6px, transparent 6px 14px) !important; }
+  .wall-l.on { transform: scaleY(1.06); filter: brightness(1.05) saturate(1.2); z-index: 1; box-shadow: 0 0 0 2px var(--green); }
+  .wall-out, .wall-in { position: absolute; top: 8px; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .wall-out { left: 12px; } .wall-in { right: 12px; }
+  .wall-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .wall-list li { display: flex; gap: 14px; padding: 12px 14px; border-radius: 12px; cursor: default; transition: background 0.2s; }
+  .wall-list li.on { background: #fff; box-shadow: var(--shadow); }
+  .wall-list p { font-size: 14px; color: var(--ink-2); margin-top: 2px; }
+  .wall-dot { flex: none; width: 14px; height: 14px; border-radius: 4px; margin-top: 4px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12); }
+  @media (max-width: 860px) { .wall { grid-template-columns: 1fr; } }
+</style>

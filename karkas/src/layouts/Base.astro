@@ -1,0 +1,108 @@
+---
+/**
+ * Базовый шаблон + SEO-модуль: title/description, canonical, Open Graph, гео-метатеги,
+ * JSON-LD (организация, сайт + разметка страницы), верификация вебмастеров, Яндекс Метрика с целями.
+ */
+import '@fontsource-variable/onest';
+import '../styles/global.css';
+import onestCyr from '@fontsource-variable/onest/files/onest-cyrillic-wght-normal.woff2?url';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import LeadModal from '../components/LeadModal.astro';
+import SiteWidgets from '../components/SiteWidgets.astro';
+import { SITE } from '../data/site';
+import { PRIMARY_CITY, type City } from '../data/cities';
+import { organization, website } from '../lib/schema';
+
+interface Props {
+  title: string;
+  description: string;
+  city?: City;
+  schema?: object[];
+  noindex?: boolean;
+  ogImage?: string;
+  ogType?: 'website' | 'article' | 'product';
+  preload?: string; // имя картинки первого экрана
+  published?: string;
+  modified?: string;
+}
+
+const { title, description, city = PRIMARY_CITY, schema = [], noindex = false, ogImage = '/og.jpg', ogType = 'website', preload, published, modified } = Astro.props;
+const canonical = new URL(Astro.url.pathname, SITE.url).href;
+const fullTitle = title.includes(SITE.brand) || title.length > 55 ? title : `${title} | ${SITE.brand}`;
+const ld = [organization(), website(), ...schema];
+const metrika = SITE.analytics.yandexMetrikaId;
+const og = new URL(ogImage, SITE.url).href;
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1'} />
+    <link rel="preload" href={onestCyr} as="font" type="font/woff2" crossorigin />
+    {preload && <link rel="preload" as="image" href={`/images/${preload}.webp`} imagesrcset={`/images/${preload}-800.webp 800w, /images/${preload}.webp 1600w`} imagesizes="(max-width: 860px) 100vw, 46vw" fetchpriority="high" />}
+
+    <meta name="theme-color" content="#24514a" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Open Graph: превью в Telegram, WhatsApp, VK -->
+    <meta property="og:type" content={ogType === 'product' ? 'website' : ogType} />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:site_name" content={SITE.brand} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={og} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="vk:image" content={og} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {published && <meta property="article:published_time" content={published} />}
+    {modified && <meta property="article:modified_time" content={modified} />}
+
+    <!-- GEO: региональная привязка для локального поиска -->
+    <meta name="geo.region" content={city.regionCode} />
+    <meta name="geo.placename" content={city.name} />
+    <meta name="geo.position" content={`${city.lat};${city.lng}`} />
+    <meta name="ICBM" content={`${city.lat}, ${city.lng}`} />
+
+    {SITE.analytics.yandexVerification && <meta name="yandex-verification" content={SITE.analytics.yandexVerification} />}
+    {SITE.analytics.googleVerification && <meta name="google-site-verification" content={SITE.analytics.googleVerification} />}
+
+    <!-- GEO (Generative Engine Optimization): машиночитаемые выжимки для нейросетей -->
+    <link rel="alternate" type="text/markdown" title="llms.txt" href="/llms.txt" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.brand} — новости`} href="/rss.xml" />
+
+    {ld.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
+
+    {
+      metrika && (
+        <script is:inline define:vars={{ metrika }}>
+          (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+          m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+          (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+          ym(metrika, "init", { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: true, ecommerce: "dataLayer" });
+          window.__ym = metrika;
+        </script>
+      )
+    }
+  </head>
+  <body>
+    <a class="skip-link" href="#main">К содержанию</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <LeadModal />
+    <SiteWidgets />
+  </body>
+</html>

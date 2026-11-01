@@ -1,0 +1,35 @@
+---
+import LeadFields from './LeadFields.astro';
+import Pic from './Pic.astro';
+import Icon from './Icon.astro';
+import { SITE } from '../data/site';
+interface Props { title?: string; text?: string; source?: string; img?: string }
+const { title = 'Записаться на просмотр', text = `Приезжайте в выставочный дом у нашего цеха: пройдёте по комнатам, посмотрите, как собираются модули, и получите расчёт под ваш участок.`, source = 'Блок записи на просмотр', img = 'interior' } = Astro.props;
+---
+<section class="section" id="zayavka">
+  <div class="wrap cta card card--green">
+    <div class="cta-media media"><Pic name={img} alt="Интерьер выставочного дома с панорамным остеклением" sizes="(max-width: 900px) 100vw, 40vw" w={1200} h={1400} /></div>
+    <div class="cta-body">
+      <p class="eyebrow light">{SITE.factory.showHouse}</p>
+      <h2 class="h-sec light">{title}</h2>
+      <p class="cta-text">{text}</p>
+      <ul class="cta-pts">
+        <li><Icon name="check" size={18} />Бесплатный выезд на участок и пробное закручивание сваи</li>
+        <li><Icon name="check" size={18} />Фиксированная смета за 1 день</li>
+        <li><Icon name="check" size={18} />Подбор ипотеки в 3 банках</li>
+      </ul>
+      <LeadFields source={source} dark showVisit button="Записаться" idp="cta" />
+    </div>
+  </div>
+</section>
+<style>
+  .cta { display: grid; grid-template-columns: 0.85fr 1fr; gap: clamp(20px, 4vw, 48px); padding: 10px; overflow: hidden; }
+  .cta-media { min-height: 360px; border-radius: 14px; }
+  .cta-body { padding: clamp(16px, 3vw, 36px) clamp(12px, 3vw, 36px) clamp(16px, 3vw, 36px) 0; display: grid; gap: 16px; align-content: center; }
+  .eyebrow.light { color: rgb(255 255 255 / 0.6); }
+  .cta-text { color: rgb(255 255 255 / 0.8); max-width: 54ch; }
+  .cta-pts { list-style: none; padding: 0; margin: 0 0 6px; display: grid; gap: 8px; font-size: 15px; }
+  .cta-pts li { display: flex; gap: 10px; align-items: flex-start; }
+  .cta-pts :global(svg) { flex: none; color: var(--accent); margin-top: 2px; }
+  @media (max-width: 900px) { .cta { grid-template-columns: 1fr; } .cta-media { min-height: 260px; aspect-ratio: 16/10; } .cta-body { padding: 8px 14px 18px; } }
+</style>

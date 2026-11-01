@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import Icon from '../components/Icon.astro';
+import LeadFields from '../components/LeadFields.astro';
+import { SITE } from '../data/site';
+import { breadcrumbs } from '../lib/schema';
+const crumbs = [{ name: 'Главная', url: '/' }, { name: 'Контакты', url: '/kontakty/' }];
+const map = `https://yandex.ru/map-widget/v1/?ll=${SITE.factory.lng},${SITE.factory.lat}&z=14&pt=${SITE.factory.lng},${SITE.factory.lat},pm2gnm`;
+---
+<Base title={`Контакты — цех и выставочный дом в Архангельске`} description={`Контакты ${SITE.brand}: ${SITE.factory.address}, телефон ${SITE.phone}, ${SITE.hours.label}. Выставочный дом и производство модульных домов — по записи.`} schema={[breadcrumbs(crumbs)]}>
+  <PageHead crumbs={crumbs} title="Контакты" lead={`${SITE.factory.showHouse}. Приезжайте посмотреть дом и производство — запишитесь заранее, чтобы инженер был на месте.`} />
+  <section class="section wrap kt">
+    <div class="kt-info card card--pad">
+      <a class="kt-row kt-phone" href={`tel:${SITE.phoneHref}`} data-goal="call"><Icon name="phone" />{SITE.phone}</a>
+      <a class="kt-row" href={`mailto:${SITE.email}`}><Icon name="mail" />{SITE.email}</a>
+      <p class="kt-row"><Icon name="pin" />{SITE.factory.address}</p>
+      <p class="kt-row"><Icon name="clock" />{SITE.hours.label}</p>
+      <div class="kt-btns">
+        <a class="btn btn--ghost" href={SITE.telegram} target="_blank" rel="noopener" data-goal="messenger"><Icon name="tg" />Telegram</a>
+        <a class="btn btn--ghost" href={SITE.whatsapp} target="_blank" rel="noopener" data-goal="messenger"><Icon name="wa" />WhatsApp</a>
+        <a class="btn btn--ghost" href={`https://yandex.ru/maps/?rtext=~${SITE.factory.lat},${SITE.factory.lng}`} target="_blank" rel="noopener"><Icon name="pin" />Маршрут</a>
+      </div>
+      <p class="small muted">{SITE.legalName}{SITE.inn && ` · ИНН ${SITE.inn}`}{SITE.ogrn && ` · ОГРН ${SITE.ogrn}`}</p>
+    </div>
+    <div class="kt-map card">
+      <iframe src={map} title="Карта: цех и выставочный дом" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+    <div class="kt-form card card--pad">
+      <h2 class="h-3">Записаться на просмотр</h2>
+      <LeadFields source="Страница контактов" showVisit idp="kt" button="Записаться" />
+    </div>
+  </section>
+</Base>
+<style>
+  .kt { display: grid; grid-template-columns: 1fr 1.3fr; gap: var(--gap); }
+  .kt-info { display: grid; gap: 16px; align-content: start; }
+  .kt-row { display: flex; gap: 12px; align-items: center; text-decoration: none; font-size: 17px; }
+  .kt-row :global(svg) { color: var(--green); flex: none; }
+  .kt-phone { font-size: 26px; font-weight: 700; }
+  .kt-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kt-map { overflow: hidden; min-height: 380px; }
+  .kt-map iframe { width: 100%; height: 100%; min-height: 380px; border: 0; display: block; }
+  .kt-form { grid-column: 1 / -1; display: grid; gap: 16px; }
+  @media (max-width: 860px) { .kt { grid-template-columns: 1fr; } }
+</style>

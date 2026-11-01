@@ -1,0 +1,52 @@
+---
+import LeadFields from './LeadFields.astro';
+import Icon from './Icon.astro';
+---
+<dialog class="lm" id="lead-modal" aria-labelledby="lm-title">
+  <div class="lm-box">
+    <button class="lm-close icon-btn" type="button" aria-label="Закрыть" data-close><Icon name="close" /></button>
+    <p class="eyebrow">Ответим за 15 минут</p>
+    <h2 class="lm-title" id="lm-title">Записаться на просмотр</h2>
+    <p class="lm-extra small muted" data-extra-view hidden></p>
+    <LeadFields source="Модальное окно" showVisit idp="lm" />
+  </div>
+</dialog>
+
+<script>
+  import { bindForms, goal } from '../lib/lead-client';
+  const dlg = document.getElementById('lead-modal') as HTMLDialogElement | null;
+  bindForms();
+  document.addEventListener('click', (e) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>('[data-lead]');
+    if (t && dlg) {
+      e.preventDefault();
+      const form = dlg.querySelector('form')!;
+      form.classList.remove('is-sent', 'is-failed');
+      (form.querySelector('[data-status]') as HTMLElement).textContent = '';
+      (form.querySelector('[data-source]') as HTMLInputElement).value = t.dataset.lead || 'Сайт';
+      const extra = t.dataset.leadExtra || '';
+      (form.querySelector('[data-extra]') as HTMLInputElement).value = extra;
+      const ev = dlg.querySelector<HTMLElement>('[data-extra-view]')!;
+      ev.hidden = !extra; ev.textContent = extra;
+      dlg.querySelector('#lm-title')!.textContent = t.dataset.leadTitle || 'Оставить заявку';
+      const visit = form.querySelector<HTMLElement>('[data-visit]');
+      if (visit) visit.hidden = !/просмотр/i.test(t.dataset.leadTitle || t.dataset.lead || '');
+      dlg.showModal();
+      goal('lead_open', { source: t.dataset.lead });
+      setTimeout(() => form.querySelector<HTMLInputElement>('input[name=name]')?.focus(), 50);
+    }
+    if ((e.target as HTMLElement).closest('[data-close]')) dlg?.close();
+  });
+  dlg?.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+</script>
+
+<style>
+  .lm { border: 0; padding: 0; background: transparent; width: min(560px, calc(100% - 24px)); max-height: calc(100dvh - 24px); }
+  .lm::backdrop { background: rgb(12 24 21 / 0.55); backdrop-filter: blur(6px); }
+  .lm[open] { animation: lm-in 0.35s cubic-bezier(.2,.8,.2,1); }
+  @keyframes lm-in { from { opacity: 0; transform: translateY(20px) scale(0.98); } }
+  .lm-box { position: relative; background: #fff; border-radius: 24px; padding: clamp(24px, 4vw, 40px); display: grid; gap: 14px; }
+  .lm-title { font-size: clamp(24px, 3vw, 32px); text-transform: uppercase; padding-right: 48px; }
+  .lm-close { position: absolute; top: 16px; right: 16px; }
+  .lm-extra { background: var(--bg); padding: 10px 14px; border-radius: 10px; }
+</style>

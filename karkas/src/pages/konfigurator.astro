@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import Configurator from '../components/Configurator.astro';
+import Faq from '../components/Faq.astro';
+import CtaLead from '../components/CtaLead.astro';
+import { FAQ } from '../data/content';
+import { minHousePrice } from '../data/models';
+import { fmt } from '../data/site';
+import { breadcrumbs, faq } from '../lib/schema';
+const crumbs = [{ name: 'Главная', url: '/' }, { name: 'Конфигуратор', url: '/konfigurator/' }];
+const qa = FAQ.filter((f) => /стоит|оплачивается|кран/i.test(f.q));
+---
+<Base
+  title="Калькулятор стоимости модульного дома — онлайн-конфигуратор"
+  description={`Рассчитайте стоимость модульного дома онлайн: модель, комплектация, фасад, терраса, опции и доставка до вашего участка. Дома под ключ от ${fmt.mln(minHousePrice)}, платёж по ипотеке сразу.`}
+  schema={[breadcrumbs(crumbs), faq(qa)]}
+>
+  <PageHead crumbs={crumbs} dim="Конфигуратор" title="дома" lead="Соберите дом как конструктор: цена обновляется на каждом шаге и включает доставку до вашего города. Ссылкой на расчёт можно поделиться с семьёй — все параметры сохраняются." />
+  <section class="section wrap"><Configurator /></section>
+  <section class="section wrap"><div class="sec-head"><h2 class="h-sec"><span class="dim">Вопросы</span> о цене</h2></div><Faq items={qa} /></section>
+  <CtaLead title="Получить точную смету" text="Инженер выедет на участок, проверит подъезд и грунт, и за один день подготовит смету, которая войдёт в договор без изменений." source="Конфигуратор — блок заявки" />
+</Base>

@@ -1,0 +1,9 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+---
+<Base title="Спасибо за заявку" description="Заявка отправлена" noindex>
+  <section class="section wrap"><div class="card card--pad" style="text-align:center;display:grid;gap:16px;justify-items:center">
+    <h1 class="h-sec">Спасибо!</h1><p class="lead">Перезвоним в течение 15 минут в рабочее время ({SITE.hours.label}).</p><a class="btn btn--lg" href="/doma/">Смотреть проекты</a>
+  </div></section>
+</Base>

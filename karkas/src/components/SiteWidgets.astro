@@ -1,0 +1,31 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../data/site';
+---
+<div class="mbar" aria-label="Быстрая связь">
+  <a href={`tel:${SITE.phoneHref}`} data-goal="call"><Icon name="phone" /><span>Позвонить</span></a>
+  <a href={SITE.telegram} target="_blank" rel="noopener" data-goal="messenger"><Icon name="tg" /><span>Telegram</span></a>
+  <a href={SITE.whatsapp} target="_blank" rel="noopener" data-goal="messenger"><Icon name="wa" /><span>WhatsApp</span></a>
+  <button class="mbar-cta" data-lead="Мобильная панель" data-lead-title="Записаться на просмотр дома"><Icon name="calendar" /><span>Просмотр</span></button>
+</div>
+
+<script>
+  import { goal } from '../lib/lead-client';
+  document.documentElement.classList.add('js');
+  document.addEventListener('click', (e) => {
+    const g = (e.target as HTMLElement).closest<HTMLElement>('[data-goal]');
+    if (g) goal(g.dataset.goal!);
+  });
+  const io = new IntersectionObserver((es) => es.forEach((en) => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }), { rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+</script>
+
+<style>
+  .mbar { display: none; }
+  @media (max-width: 760px) {
+    .mbar { position: fixed; z-index: 40; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px; border-radius: 18px; background: rgb(255 255 255 / 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 10px 40px rgb(0 0 0 / 0.18); }
+    .mbar a, .mbar button { display: grid; justify-items: center; gap: 2px; padding: 8px 4px; border-radius: 12px; font-size: 11px; font-weight: 600; text-decoration: none; color: var(--green); background: none; border: 0; }
+    .mbar .mbar-cta { background: var(--green); color: #fff; }
+    :global(body) { padding-bottom: 84px; }
+  }
+</style>

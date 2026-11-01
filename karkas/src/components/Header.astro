@@ -1,0 +1,92 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { SITE } from '../data/site';
+const NAV = [
+  { href: '/tehnologiya/', t: 'Наш подход' },
+  { href: '/doma/', t: 'Модельный ряд' },
+  { href: '/konfigurator/', t: 'Конфигуратор' },
+  { href: '/ipoteka/', t: 'Ипотека' },
+  { href: '/novosti/', t: 'Новости' },
+  { href: '/kontakty/', t: 'Контакты' },
+];
+const path = Astro.url.pathname;
+---
+<header class="hdr">
+  <div class="wrap hdr-bar card">
+    <Logo />
+    <nav class="hdr-nav" aria-label="Основное меню">
+      {NAV.map((n) => <a href={n.href} aria-current={path.startsWith(n.href) ? 'page' : undefined}>{n.t}</a>)}
+    </nav>
+    <div class="hdr-act">
+      <a class="hdr-phone" href={`tel:${SITE.phoneHref}`} data-goal="call">{SITE.phone}</a>
+      <a class="icon-btn" href={SITE.telegram} target="_blank" rel="noopener" aria-label="Написать в Telegram" data-goal="messenger"><Icon name="tg" size={18} /></a>
+      <a class="icon-btn" href={SITE.whatsapp} target="_blank" rel="noopener" aria-label="Написать в WhatsApp" data-goal="messenger"><Icon name="wa" size={18} /></a>
+      <button class="btn btn--sm hdr-cta" data-lead="Записаться на просмотр (шапка)" data-lead-title="Записаться на просмотр дома">Записаться на просмотр</button>
+      <button class="icon-btn hdr-burger" aria-label="Открыть меню" aria-expanded="false" aria-controls="mnav"><Icon name="menu" /></button>
+    </div>
+  </div>
+  <div class="mnav" id="mnav" hidden>
+    <nav aria-label="Мобильное меню">
+      {NAV.map((n) => <a href={n.href}>{n.t}<Icon name="arrow" size={18} /></a>)}
+    </nav>
+    <a class="mnav-phone" href={`tel:${SITE.phoneHref}`} data-goal="call"><Icon name="phone" />{SITE.phone}</a>
+    <div class="mnav-row">
+      <a class="btn btn--ghost" href={SITE.telegram} target="_blank" rel="noopener" data-goal="messenger"><Icon name="tg" />Telegram</a>
+      <a class="btn btn--ghost" href={SITE.whatsapp} target="_blank" rel="noopener" data-goal="messenger"><Icon name="wa" />WhatsApp</a>
+    </div>
+    <button class="btn btn--lg btn--block" data-lead="Записаться на просмотр (меню)" data-lead-title="Записаться на просмотр дома">Записаться на просмотр</button>
+  </div>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.hdr-burger');
+  const panel = document.getElementById('mnav');
+  const hdr = document.querySelector('.hdr');
+  btn?.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    if (panel) panel.hidden = open;
+    document.documentElement.classList.toggle('menu-open', !open);
+  });
+  panel?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a,button')) {
+      btn?.setAttribute('aria-expanded', 'false');
+      panel.hidden = true;
+      document.documentElement.classList.remove('menu-open');
+    }
+  });
+  let last = 0;
+  addEventListener('scroll', () => {
+    const y = scrollY;
+    hdr?.classList.toggle('scrolled', y > 10);
+    hdr?.classList.toggle('hide', y > 400 && y > last && !document.documentElement.classList.contains('menu-open'));
+    last = y;
+  }, { passive: true });
+</script>
+
+<style>
+  .hdr { position: sticky; top: 0; z-index: 50; padding-top: 10px; transition: transform 0.35s ease; }
+  .hdr.hide { transform: translateY(-110%); }
+  .hdr-bar { display: flex; align-items: center; gap: 20px; min-height: 64px; padding: 8px 10px 8px 20px; border-radius: 16px; }
+  .hdr.scrolled .hdr-bar { box-shadow: 0 10px 40px rgb(16 30 26 / 0.12); }
+  .hdr-nav { display: flex; gap: 2px; margin-inline: auto; white-space: nowrap; }
+  .hdr-nav a { padding: 8px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none; color: var(--ink-2); transition: color 0.2s, background 0.2s; }
+  .hdr-nav a:hover, .hdr-nav a[aria-current='page'] { color: var(--green); background: var(--green-soft); }
+  .hdr-act { display: flex; align-items: center; gap: 8px; }
+  .hdr-phone { font-weight: 700; font-size: 14px; text-decoration: none; margin-right: 6px; white-space: nowrap; }
+  .hdr-burger { display: none; }
+  .mnav { position: fixed; inset: 84px 10px auto; z-index: 49; background: #fff; border-radius: 18px; padding: 12px 16px 16px; box-shadow: 0 30px 60px rgb(0 0 0 / 0.2); display: grid; gap: 14px; max-height: calc(100dvh - 100px); overflow: auto; }
+  .mnav[hidden] { display: none; }
+  .mnav nav { display: grid; }
+  .mnav nav a { display: flex; justify-content: space-between; align-items: center; padding: 14px 4px; border-bottom: 1px solid var(--line); text-decoration: none; font-weight: 600; font-size: 18px; }
+  .mnav-phone { display: flex; gap: 10px; align-items: center; font-weight: 700; font-size: 20px; text-decoration: none; color: var(--green); }
+  .mnav-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 1380px) { .hdr-phone { display: none; } }
+  @media (max-width: 1120px) {
+    .hdr-nav, .hdr-cta { display: none; }
+    .hdr-burger { display: inline-grid; }
+    .hdr-act { margin-left: auto; }
+  }
+  @media (max-width: 420px) { .hdr-act .icon-btn:not(.hdr-burger) { display: none; } }
+</style>

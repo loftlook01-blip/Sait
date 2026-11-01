@@ -1,0 +1,33 @@
+---
+/** План этажа в SVG по прямоугольникам комнат из models.ts (масштаб и подписи считаются автоматически) */
+import type { Model } from '../data/models';
+interface Props { m: Model }
+const { m } = Astro.props;
+const S = 60; // px на метр
+const pad = 30;
+const W = Math.max(...m.plan.map((r) => r.x + r.w));
+const H = Math.max(...m.plan.map((r) => r.y + r.h));
+const fill: Record<string, string> = { live: '#f6efe3', sleep: '#e7efec', wet: '#e3edf3', tech: '#f1f1ef', out: '#fbf7f0' };
+const area = (r: { w: number; h: number }) => (r.w * r.h).toFixed(1).replace('.', ',');
+---
+<figure class="fp">
+  <svg viewBox={`0 0 ${W * S + pad * 2} ${H * S + pad * 2 + 24}`} role="img" aria-label={`Планировка дома ${m.name}: ${m.plan.map((r) => `${r.n} ${area(r)} м²`).join(', ')}`}>
+    <g transform={`translate(${pad} ${pad})`}>
+      {m.plan.map((r) => (
+        <g>
+          <rect x={r.x * S} y={r.y * S} width={r.w * S} height={r.h * S} fill={fill[r.kind ?? 'live']} stroke={r.kind === 'out' ? '#b9a88f' : '#24514a'} stroke-width={r.kind === 'out' ? 2 : 4} stroke-dasharray={r.kind === 'out' ? '8 6' : undefined} />
+          <text x={(r.x + r.w / 2) * S} y={(r.y + r.h / 2) * S - 4} text-anchor="middle" font-size={r.w * S < 110 ? 13 : 16} font-weight="600" fill="#18201e">{r.n}</text>
+          <text x={(r.x + r.w / 2) * S} y={(r.y + r.h / 2) * S + 16} text-anchor="middle" font-size="13" fill="#6f7a77">{area(r)} м²</text>
+        </g>
+      ))}
+      <line x1="0" y1={H * S + 18} x2={W * S} y2={H * S + 18} stroke="#8a9491" stroke-width="1.5" />
+      <line x1="0" y1={H * S + 12} x2="0" y2={H * S + 24} stroke="#8a9491" stroke-width="1.5" />
+      <line x1={W * S} y1={H * S + 12} x2={W * S} y2={H * S + 24} stroke="#8a9491" stroke-width="1.5" />
+      <text x={(W * S) / 2} y={H * S + 38} text-anchor="middle" font-size="14" fill="#6f7a77">{String(W).replace('.', ',')} м</text>
+    </g>
+  </svg>
+  <figcaption class="caption">Планировка {m.name}. Перегородки и окна можно изменить без доплаты за проект.</figcaption>
+</figure>
+<style>
+  .fp svg { width: 100%; height: auto; font-family: var(--font); }
+</style>

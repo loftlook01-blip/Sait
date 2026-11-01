@@ -1,0 +1,114 @@
+---
+/** Ипотечный калькулятор: программа, стоимость дома, взнос, маткапитал, срок → платёж, переплата, доход */
+import { MORTGAGE } from '../data/content';
+import { HOUSES, minHousePrice } from '../data/models';
+interface Props { price?: number }
+const { price = 2_990_000 } = Astro.props;
+---
+<div class="mg card" data-mg>
+  <script type="application/json" data-mg-json set:html={JSON.stringify(MORTGAGE)} />
+  <div class="mg-in">
+    <div class="mg-progs" role="radiogroup" aria-label="Программа">
+      {MORTGAGE.map((p, i) => (
+        <label class="mg-prog"><input type="radio" name="prog" value={p.id} checked={i === 0} /><b>{p.rate}%</b><span>{p.name}</span></label>
+      ))}
+    </div>
+    <p class="small muted" data-mg-note>{MORTGAGE[0].note}</p>
+    <div class="field">
+      <label for="mg-price">Стоимость дома <output data-out="price"></output></label>
+      <input id="mg-price" type="range" name="price" min={Math.round(minHousePrice / 1e5) * 1e5} max="9000000" step="50000" value={price} />
+      <div class="mg-quick">{HOUSES.map((h) => <button type="button" data-price={h.price}>{h.name}</button>)}</div>
+    </div>
+    <div class="field">
+      <label for="mg-down">Первоначальный взнос <output data-out="down"></output></label>
+      <input id="mg-down" type="range" name="down" min="15" max="80" step="1" value="20" />
+    </div>
+    <div class="field">
+      <label for="mg-years">Срок <output data-out="years"></output></label>
+      <input id="mg-years" type="range" name="years" min="3" max="30" step="1" value="20" />
+    </div>
+    <label class="check"><input type="checkbox" name="mat" /> <span>Использую материнский капитал в счёт взноса</span></label>
+  </div>
+  <div class="mg-out">
+    <p class="eyebrow light">Ежемесячный платёж</p>
+    <p class="mg-pay" data-pay>—</p>
+    <dl class="mg-dl">
+      <div><dt>Сумма кредита</dt><dd data-loan>—</dd></div>
+      <div><dt>Переплата за весь срок</dt><dd data-over>—</dd></div>
+      <div><dt>Рекомендуемый доход семьи</dt><dd data-income>—</dd></div>
+    </dl>
+    <p class="small mg-warn" data-warn hidden></p>
+    <button class="btn btn--white btn--lg btn--block" data-lead="Ипотечный калькулятор" data-lead-title="Подобрать ипотеку" data-mg-send>Подобрать ипотеку в 3 банках</button>
+    <p class="small" style="color:rgb(255 255 255/.55)">Расчёт ориентировочный. Ставку и одобрение определяет банк.</p>
+  </div>
+</div>
+
+<script>
+  import { goal } from '../lib/lead-client';
+  const rub = (n: number) => new Intl.NumberFormat('ru-RU').format(Math.round(n)) + ' ₽';
+  const MAT = 728_000; // ⚠️ ориентир размера маткапитала — проверяйте актуальную сумму
+  document.querySelectorAll<HTMLElement>('[data-mg]').forEach((root) => {
+    const progs = JSON.parse(root.querySelector('[data-mg-json]')!.textContent!);
+    const $ = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    let touched = false;
+    function calc() {
+      const p = progs.find((x: any) => x.id === ($<HTMLInputElement>('[name=prog]:checked')).value);
+      const price = +$<HTMLInputElement>('[name=price]').value;
+      const dInput = $<HTMLInputElement>('[name=down]');
+      dInput.min = String(p.down);
+      if (+dInput.value < p.down) dInput.value = String(p.down);
+      const downPct = +dInput.value;
+      const years = +$<HTMLInputElement>('[name=years]').value;
+      const mat = $<HTMLInputElement>('[name=mat]').checked;
+      let down = price * downPct / 100;
+      const loanRaw = price - down - (mat ? MAT : 0);
+      const loan = Math.max(0, Math.min(loanRaw, p.max));
+      const r = p.rate / 100 / 12, n = years * 12;
+      const pay = loan ? (loan * r) / (1 - Math.pow(1 + r, -n)) : 0;
+      $('[data-out=price]').textContent = rub(price);
+      $('[data-out=down]').textContent = `${downPct}% · ${rub(down)}`;
+      $('[data-out=years]').textContent = `${years} лет`;
+      $('[data-mg-note]').textContent = p.note;
+      $('[data-pay]').textContent = rub(pay);
+      $('[data-loan]').textContent = rub(loan);
+      $('[data-over]').textContent = rub(pay * n - loan);
+      $('[data-income]').textContent = `от ${rub(pay / 0.5)}`;
+      const w = $('[data-warn]');
+      w.hidden = loanRaw <= p.max;
+      w.textContent = `Лимит программы — ${rub(p.max)}. Остаток ${rub(loanRaw - p.max)} нужно внести дополнительно или взять по рыночной ставке.`;
+      $('[data-mg-send]').dataset.leadExtra = `${p.name} ${p.rate}%: дом ${rub(price)}, взнос ${downPct}%, ${years} лет${mat ? ', маткапитал' : ''} → ${rub(pay)}/мес`;
+      if (touched) goal('mortgage');
+    }
+    root.addEventListener('input', () => { touched = true; calc(); });
+    root.querySelectorAll<HTMLButtonElement>('[data-price]').forEach((b) => b.addEventListener('click', () => { $<HTMLInputElement>('[name=price]').value = b.dataset.price!; touched = true; calc(); }));
+    calc();
+  });
+</script>
+
+<style>
+  .mg { display: grid; grid-template-columns: 1.3fr 1fr; overflow: hidden; }
+  .mg-in { padding: clamp(20px, 3vw, 36px); display: grid; gap: 18px; }
+  .mg-progs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .mg-prog { position: relative; display: grid; gap: 2px; padding: 12px; border: 2px solid var(--line); border-radius: 14px; cursor: pointer; }
+  .mg-prog input { position: absolute; opacity: 0; }
+  .mg-prog b { font-size: 24px; }
+  .mg-prog span { font-size: 12.5px; color: var(--muted); line-height: 1.25; }
+  .mg-prog:has(input:checked) { border-color: var(--green); background: var(--green-soft); }
+  .mg-prog:has(input:focus-visible) { outline: 2px solid var(--green-3); }
+  .mg .field label { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+  .mg output { font-weight: 700; color: var(--ink); }
+  .mg input[type=range] { width: 100%; accent-color: var(--green); }
+  .mg-quick { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mg-quick button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 4px 10px; font-size: 12.5px; cursor: pointer; }
+  .mg-quick button:hover { border-color: var(--green); color: var(--green); }
+  .mg-out { background: var(--green); color: #fff; padding: clamp(20px, 3vw, 36px); display: grid; gap: 16px; align-content: start; }
+  .mg-pay { font-size: clamp(36px, 5vw, 52px); font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .mg-dl { margin: 0; display: grid; gap: 10px; }
+  .mg-dl div { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid rgb(255 255 255 / 0.15); font-size: 14px; }
+  .mg-dl dt { color: rgb(255 255 255 / 0.7); }
+  .mg-dl dd { margin: 0; font-weight: 600; }
+  .mg-warn { background: rgb(255 255 255 / 0.12); padding: 10px 12px; border-radius: 10px; }
+  .eyebrow.light { color: rgb(255 255 255 / 0.6); }
+  @media (max-width: 900px) { .mg { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) { .mg-progs { grid-template-columns: 1fr 1fr; } }
+</style>

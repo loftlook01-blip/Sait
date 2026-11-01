@@ -1,0 +1,72 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import MortgageCalc from '../components/MortgageCalc.astro';
+import Faq from '../components/Faq.astro';
+import CtaLead from '../components/CtaLead.astro';
+import Icon from '../components/Icon.astro';
+import { MORTGAGE } from '../data/content';
+import { SITE, fmt } from '../data/site';
+import { breadcrumbs, faq } from '../lib/schema';
+const crumbs = [{ name: 'Главная', url: '/' }, { name: 'Ипотека', url: '/ipoteka/' }];
+const qa = [
+  { q: 'Можно ли взять ипотеку на модульный дом?', a: `Да. Модульный дом строится по договору подряда на вашем участке и регистрируется как жилой дом (ИЖС). Мы аккредитованы в ${SITE.banks.join(', ')}.` },
+  { q: 'Что такое эскроу-счёт при строительстве дома?', a: 'Это специальный счёт в банке, где хранятся деньги на строительство. Подрядчик получает их только после того, как дом построен и зарегистрирован. Если обязательства не выполнены — деньги возвращаются вам.' },
+  { q: 'Можно ли использовать материнский капитал?', a: 'Да — на первоначальный взнос или погашение ипотеки, если дом жилой и участок у вас в собственности.' },
+  { q: 'Нужен ли участок в собственности?', a: 'Для ипотеки на строительство — да, или участок можно купить в ту же ипотеку (некоторые банки дают кредит на участок и дом одновременно).' },
+  { q: 'Сколько времени занимает одобрение?', a: 'Подаём заявку в 2–3 банка одновременно, предварительное одобрение — 1–3 рабочих дня. Проект дома банки проверяют ещё 3–5 дней.' },
+  { q: 'Где действует сельская ипотека в Архангельской области?', a: 'В сельских населённых пунктах и малых городах до 30 тыс. жителей — это большая часть Приморского, Холмогорского, Вельского и других округов. Проверим ваш адрес бесплатно.' },
+];
+---
+<Base
+  title="Ипотека на модульный дом: 3% сельская, 6% семейная — калькулятор"
+  description="Ипотека на модульный каркасный дом в Архангельской области: сельская 3%, семейная и IT 6%, эскроу-счёт, материнский капитал. Онлайн-калькулятор платежа и подбор банка бесплатно."
+  schema={[breadcrumbs(crumbs), faq(qa)]}
+>
+  <PageHead crumbs={crumbs} dim="Ипотека" title="на модульный дом" lead={`Мы аккредитованы в ${SITE.banks.join(', ')}. Подберём программу, соберём документы и подадим заявку в несколько банков — бесплатно.`}>
+    <div class="ip-progs">
+      {MORTGAGE.slice(0, 3).map((p) => (
+        <div class="ip-prog"><b>{p.rate}%</b><span>{p.name}</span><small>до {fmt.mln(p.max)}, взнос от {p.down}%</small></div>
+      ))}
+    </div>
+  </PageHead>
+  <section class="section wrap"><MortgageCalc /></section>
+  <section class="wrap section--tight">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Как</span> проходит сделка</h2></div>
+    <ol class="ip-steps">
+      {[
+        ['Выбор проекта', 'Фиксируем смету и комплектацию — она нужна банку для оценки.'],
+        ['Одобрение', 'Подаём заявку в 2–3 банка, одобрение за 1–3 дня.'],
+        ['Договор и эскроу', 'Подписываете договор подряда и кредитный договор, банк открывает эскроу-счёт.'],
+        ['Строительство', 'Производим и монтируем дом за 45 дней, отчитываемся фото и видео.'],
+        ['Регистрация', 'Помогаем поставить дом на кадастровый учёт и зарегистрировать право.'],
+        ['Раскрытие эскроу', 'Банк перечисляет оплату нам, вы живёте в своём доме.'],
+      ].map(([t, x], i) => <li class="card"><span>{i + 1}</span><b>{t}</b><p>{x}</p></li>)}
+    </ol>
+  </section>
+  <section class="section wrap">
+    <div class="ip-safe card card--green">
+      <Icon name="shield" size={44} />
+      <div><h2 class="h-3">Деньги защищены эскроу-счётом</h2><p>По закону 186-ФЗ при строительстве ИЖС в ипотеку подрядчик получает деньги только после передачи и регистрации дома. До этого они хранятся в банке.</p></div>
+    </div>
+  </section>
+  <section class="section wrap"><div class="sec-head"><h2 class="h-sec"><span class="dim">Вопросы</span> об ипотеке</h2></div><Faq items={qa} /></section>
+  <CtaLead title="Подобрать ипотеку" text="Ипотечный менеджер проверит, подходит ли ваш участок под сельскую ипотеку, и подаст заявку в несколько банков одновременно." source="Ипотека — блок заявки" />
+</Base>
+<style>
+  .ip-progs { display: grid; grid-template-columns: repeat(3, minmax(0, 220px)); gap: 10px; margin-top: 8px; }
+  .ip-prog { display: grid; padding: 16px; border-radius: 14px; background: var(--green-soft); }
+  .ip-prog b { font-size: 36px; color: var(--green); line-height: 1; }
+  .ip-prog span { font-weight: 700; margin-top: 6px; }
+  .ip-prog small { color: var(--muted); }
+  .ip-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+  .ip-steps li { padding: 22px; display: grid; gap: 8px; align-content: start; }
+  .ip-steps span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: #fff; font-weight: 700; }
+  .ip-steps b { text-transform: uppercase; }
+  .ip-steps p { font-size: 15px; color: var(--ink-2); }
+  .ip-safe { display: flex; gap: 24px; align-items: center; padding: clamp(24px, 4vw, 44px); }
+  .ip-safe :global(svg) { flex: none; color: var(--accent); }
+  .ip-safe p { color: rgb(255 255 255 / 0.8); margin-top: 8px; max-width: 70ch; }
+  @media (max-width: 860px) { .ip-progs, .ip-steps { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px) { .ip-progs, .ip-steps { grid-template-columns: 1fr; } .ip-safe { flex-direction: column; align-items: flex-start; } }
+</style>
