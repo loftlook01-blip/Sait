@@ -162,7 +162,8 @@ def mat_foliage(name, c1, c2, scale=3.0, holes=120.0, cutoff=0.47):
     """Хвоя/листва: шумовой цвет + рваные края (прозрачность по шуму) — пушистый силуэт без текстур."""
     m = mat_noise(name, c1, c2, scale=scale, rough=0.7, bump=0.3)
     nt, n, l, b = _nodes(m)
-    b.inputs['Sheen Weight'].default_value = 0.4
+    b.inputs['Sheen Weight'].default_value = 0.0
+    b.inputs['Roughness'].default_value = 0.85
     out = n['Material Output']
     tc = n.new('ShaderNodeTexCoord')
     nz = n.new('ShaderNodeTexNoise')
@@ -328,44 +329,87 @@ def _join(objs, name):
     return o
 
 
-def spruce_proto(seed, h=1.0):
-    """Ель: ярусы конусов с шумом. Единичная высота, масштабируется при расстановке."""
-    rnd = random.Random(seed)
-    bark = mat_noise('bark_spruce', '#3b2e24', '#5a4635', scale=30, rough=0.9, bump=0.4)
-    needles = mat_foliage('needles', '#16241a', '#2a3f2c', scale=6, holes=220, cutoff=0.44)
-    parts = [cyl('trunk', 0.016, 0.8, (0, 0, 0), bark, verts=12)]
-    tiers = 11
-    for i in range(tiers):
-        t = i / tiers
-        z0 = 0.08 + t * 0.82
-        r = 0.2 * (1 - t) ** 1.05 + 0.025
-        hh = 0.17 * (1 - t * 0.4)
-        c = cyl(f'tier{i}', r, hh, (rnd.uniform(-0.008, 0.008), rnd.uniform(-0.008, 0.008), z0), needles, verts=16, r2=0.004)
-        _displace(c, scale=0.035, strength=0.05, levels=3, seed=seed * 10 + i)
-        parts.append(c)
-        core = cyl(f'core{i}', r * 0.82, hh * 0.85, (0, 0, z0 + hh * 0.05), mat('needle_core', '#101a12', rough=0.9), verts=12, r2=0.003)
-        _displace(core, scale=0.035, strength=0.04, levels=2, seed=seed * 10 + i + 5)
-        parts.append(core)
-    for p in parts:
-        _apply_mods(p)
-    o = _join(parts, f'spruce{seed}')
+def _branch(name, L, w, base, yaw, pitch, m, seed):
+    """Ветка-«лапа»: сплюснутый вытянутый эллипсоид с шумом, внутренний конец — у ствола."""
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1, location=(0, 0, 0))
+    o = bpy.context.active_object
+    o.name = name
+    o.scale = (L / 2, w / 2, L * 0.2)
+    bpy.ops.object.transform_apply(scale=True)
+    for v in o.data.vertices:  # смещаем, чтобы основание было в начале координат, и даём кончику изгиб вверх
+        v.co.x += L / 2
+        t = v.co.x / L
+        v.co.z += (t * t) * L * 0.18 - t * L * 0.05
+        v.co.y *= 0.55 + 0.45 * math.sin(min(1.0, t * 1.3) * math.pi * 0.9)
+    o.rotation_euler = (0, pitch, yaw)
+    o.location = base
+    o.data.materials.append(m)
+    _displace(o, scale=L * 0.12, strength=L * 0.3, levels=2, seed=seed)
     return o
 
 
-def pine_proto(seed):
-    """Сосна: высокий рыжий ствол, крона облаками наверху."""
+def spruce_proto(seed, h=1.0):
+    """Ель из отдельных опущенных «лап» по мутовкам + тёмное ядро кроны. Единичная высота."""
     rnd = random.Random(seed)
-    bark = mat_noise('bark_pine', '#6e3f22', '#a8653a', scale=24, rough=0.85, bump=0.4)
-    needles = mat_foliage('pine_needles', '#1d301e', '#36502d', scale=5, holes=200, cutoff=0.44)
-    parts = [cyl('trunk', 0.016, 0.92, (0, 0, 0), bark, verts=12, r2=0.008)]
-    for i in range(12):
-        a = rnd.random() * math.tau
-        rr = rnd.uniform(0.0, 0.09)
-        z = rnd.uniform(0.62, 0.92)
-        s = sphere(f'cl{i}', rnd.uniform(0.045, 0.075), (math.cos(a) * rr, math.sin(a) * rr, z), needles, scale=(1, 1, 0.5))
-        _displace(s, scale=0.05, strength=0.05, levels=2, seed=seed * 20 + i)
-        parts.append(s)
-        parts.append(sphere(f'core{i}', s.dimensions.x * 0.42, s.location, mat('needle_core', '#0b130d', rough=0.9), scale=(1, 1, 0.5)))
+    bark = mat_noise('bark_spruce', '#3b2e24', '#5a4635', scale=30, rough=0.9, bump=0.4)
+    needles = bpy.data.materials.get('needles2') or mat_foliage('needles2', '#122019', '#2d432f', scale=40, holes=300, cutoff=0.43)
+    core_m = mat_noise('needle_core2', '#0b120d', '#152117', scale=60, rough=0.9, bump=0.2)
+    parts = [cyl('trunk', 0.014, 0.97, (0, 0, 0), bark, verts=10, r2=0.002)]
+    levels = 30
+    for i in range(levels):
+        t = i / levels
+        z = 0.07 + t * 0.9
+        L = (0.21 * (1 - t) ** 1.08 + 0.018) * rnd.uniform(0.85, 1.12)
+        n = 7 if t < 0.85 else 5
+        off = rnd.random() * math.tau
+        for k in range(n):
+            yaw = off + k * math.tau / n + rnd.uniform(-0.25, 0.25)
+            pitch = math.radians(rnd.uniform(12, 30) * (1.25 - t * 0.5))  # pitch>0 — опускаем ветку
+            parts.append(_branch(f'b{i}_{k}', L * rnd.uniform(0.8, 1.1), L * 0.7, (0, 0, z), yaw, pitch, needles, seed * 1000 + i * 10 + k))
+    # тёмное ядро, чтобы в просветах не было неба
+    parts.append(cyl('core', 0.1, 0.82, (0, 0, 0.1), core_m, verts=16, r2=0.008))
+    parts.append(cyl('spire', 0.012, 0.08, (0, 0, 0.95), needles, verts=8, r2=0.0))
+    for p in parts:
+        _apply_mods(p)
+    return _join(parts, f'spruce{seed}')
+
+
+def pine_proto(seed):
+    """Сосна: высокий рыжий ствол, наверху несколько ярусов горизонтальных ветвей с пучками хвои."""
+    rnd = random.Random(seed)
+    bark = mat_noise('bark_pine', '#6e3f22', '#b0703f', scale=24, rough=0.85, bump=0.4)
+    bark_lo = mat_noise('bark_pine_lo', '#3d2a1e', '#6a4a33', scale=18, rough=0.95, bump=0.6)
+    needles = bpy.data.materials.get('pine_needles2') or mat_foliage('pine_needles2', '#1a2c1b', '#3b5630', scale=40, holes=300, cutoff=0.43)
+    core_m = mat_noise('pine_core2', '#0e170f', '#1a2a1a', scale=60, rough=0.9, bump=0.2)
+    parts = [cyl('trunk_lo', 0.017, 0.35, (0, 0, 0), bark_lo, verts=10, r2=0.014),
+             cyl('trunk', 0.014, 0.62, (0, 0, 0.35), bark, verts=10, r2=0.005)]
+    for i in range(20):
+        z = rnd.uniform(0.58, 0.93)
+        t = (z - 0.6) / 0.33
+        yaw = rnd.random() * math.tau
+        L = (0.16 * (1 - t * 0.6)) * rnd.uniform(0.7, 1.1)
+        # сук
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.004, depth=L * 0.8, vertices=6, location=(0, 0, 0))
+        st = bpy.context.active_object
+        for v in st.data.vertices:
+            v.co.z += L * 0.4
+        st.rotation_euler = (0, math.radians(rnd.uniform(65, 95)), yaw)
+        st.location = (0, 0, z)
+        st.data.materials.append(bark)
+        parts.append(st)
+        # пучки хвои вдоль и на конце ветви
+        for j in range(5):
+            f = 0.3 + j * 0.18
+            px = math.cos(yaw) * L * 0.8 * f
+            py = math.sin(yaw) * L * 0.8 * f
+            pz = z + rnd.uniform(-0.005, 0.02)
+            cl = sphere(f'cl{i}_{j}', 1, (px, py, pz + rnd.uniform(-0.01, 0.015)), needles, scale=(L * rnd.uniform(0.25, 0.36), L * rnd.uniform(0.25, 0.36), L * 0.16))
+            _displace(cl, scale=L * 0.08, strength=L * 0.18, levels=2, seed=seed * 100 + i * 5 + j)
+            parts.append(cl)
+            parts.append(sphere(f'cc{i}_{j}', 1, (px, py, pz), core_m, scale=(L * 0.16, L * 0.16, L * 0.07)))
+    cl = sphere('top', 1, (0, 0, 0.94), needles, scale=(0.05, 0.05, 0.04))
+    _displace(cl, scale=0.03, strength=0.02, levels=2, seed=seed)
+    parts.append(cl)
     for p in parts:
         _apply_mods(p)
     return _join(parts, f'pine{seed}')
@@ -390,8 +434,8 @@ def birch_proto(seed):
 
 def protos():
     if not _proto:
-        _proto['spruce'] = [spruce_proto(s) for s in (1, 2)]
-        _proto['pine'] = [pine_proto(s) for s in (3, 4)]
+        _proto['spruce'] = [spruce_proto(s) for s in (1, 2, 3)]
+        _proto['pine'] = [pine_proto(s) for s in (4, 5, 6)]
         _proto['birch'] = [birch_proto(s) for s in (5,)]
         for lst in _proto.values():
             for o in lst:
@@ -413,7 +457,7 @@ def tree(kind, x, y, h, rnd):
     return o
 
 
-def forest(keepout, seed=1, ring=(11, 75), n=900, mix=(0.52, 0.48, 0.0), hmin=17, hmax=28, keep=None):
+def forest(keepout, seed=1, ring=(11, 75), n=900, mix=(0.72, 0.28, 0.0), hmin=17, hmax=28, keep=None):
     """Лес вокруг точки (0,0). keepout(x,y) → True, если дерево ставить нельзя (поляна, кадр)."""
     rnd = random.Random(seed)
     placed = 0
@@ -583,7 +627,13 @@ def modhouse(L=9.0, W=4.2, H=2.9, R=2.3, F=0.6, clad='black', portal=True, porta
         window(wx, -W / 2 + 0.08, F + 0.25, ww, wh, axis='X')
         if warm:
             point((wx, -W / 2 + 1.0, F + 1.6), 220 * warm, '#ffcf96', 0.3)
-    # кровля
+    if warm >= 1.5:  # вечер: бра на фасаде и подсветка террасы
+        sconce = mat_emit('sconce', '#ffd29a', 25)
+        for (wx, ww, wh) in lw[:2]:
+            sx = wx + ww / 2 + 0.35
+            box('sconce', (0.1, 0.06, 0.18), (sx, -W / 2 - 0.03, F + 2.1), sconce)
+            point((sx, -W / 2 - 0.25, F + 2.05), 25 * warm, '#ffbe78', 0.05)
+        point((0, -W / 2 - 1.2, F + 0.2), 8 * warm, '#ffbe78', 0.3)
     ang = math.atan2(R, W / 2)
     over = 0.35
     slope = math.hypot(W / 2, R) + over
@@ -694,15 +744,19 @@ def dof(cam, target, fstop=4.0):
     cam.data.dof.aperture_fstop = fstop
 
 
-def ext_setup(sun_elev=22, sun_rot=210, mist=0.3, sun_strength=4.5):
+def ext_setup(sun_elev=22, sun_rot=210, mist=0.3, sun_strength=4.5, eve=False):
     sc = bpy.context.scene
     sc.view_settings.look = 'AgX - Medium High Contrast'
     sc.cycles.max_bounces = 6
     sc.cycles.diffuse_bounces = 2
     sc.cycles.glossy_bounces = 2
     sc.cycles.transparent_max_bounces = 8
-    sky(sun_elev=sun_elev, sun_rot=sun_rot, sun_strength=sun_strength)
-    mist_comp(amount=mist)
+    if eve:  # сумерки: солнце у горизонта, тёплый закат, синеватая дымка
+        sky(sun_elev=1.0, sun_rot=sun_rot, strength=0.3, sun_strength=0.8, sun_color='#ff9a55')
+        mist_comp(color='#5d6f80', amount=0.35)
+    else:
+        sky(sun_elev=sun_elev, sun_rot=sun_rot, sun_strength=sun_strength)
+        mist_comp(amount=mist)
     ground()
 
 
@@ -729,8 +783,11 @@ def clearing(cx=0, cy=0, rx=12, ry=10, cam=None, cone=None):
 
 def _scene_house(cam_loc, look, house_kw, lens=35, seed=1, sun=(34, 210), fstop=5.6,
                  trees=900, grass_size=(34, 28), grass_center=(0, -4), mist=0.3, extra=None, gaz=None,
-                 clear=(13, 10), exposure=0.0, ring=(11, 75)):
-    ext_setup(sun_elev=sun[0], sun_rot=sun[1], mist=mist)
+                 clear=(13, 10), exposure=0.0, ring=(11, 75), eve=False):
+    ext_setup(sun_elev=sun[0], sun_rot=sun[1], mist=mist, eve=eve)
+    if eve:
+        house_kw = dict(house_kw, warm=max(house_kw.get('warm', 1.0), 0.6) * 3.0)
+        exposure += 1.1
     modhouse(**house_kw)
     if gaz:
         gazebo(**gaz)
@@ -762,7 +819,8 @@ def cozy(**kw):
                         lens=30, seed=13, sun=(34, 140), fstop=4.5, mist=0.3, grass_size=(46, 30), clear=(16, 11), exposure=0.2)
 
 
-def model(variant='nord', **kw):
+def model(variant='nord', shot='a', **kw):
+    """shot: a — основной ракурс 3/4, b — фронтальный с другой стороны, eve — основной ракурс в сумерках."""
     v = variant
     presets = {
         # small single module
@@ -776,24 +834,31 @@ def model(variant='nord', **kw):
         'hozblok': dict(house=dict(L=4.0, W=2.6, H=2.3, R=1.1, F=0.3, clad='charred', portal=False, long_windows=[(-0.6, 0.6, 0.6)], deck=False, warm=0.0), cam=(7.5, -7, 1.6), look=(0.2, 0, 1.3), sun=(34, 120), lens=36),
     }
     if v == 'gazebo':
-        ext_setup(sun_elev=24, sun_rot=130)
+        ext_setup(sun_elev=24, sun_rot=130, eve=shot == 'eve')
         gazebo()
+        if shot == 'eve':
+            for xx in (-1.0, 1.0):
+                point((xx, 0, 2.5), 60, '#ffc884', 0.1)
         grass(center=(0, -3), size=(24, 20), seed=21)
         cam_loc, look = (7, -7, 1.7), (0, 0, 1.5)
         c = camera(cam_loc, look, lens=34)
         dof(c, look, 5.6)
         forest(clearing(0, 0, 10, 8, cam=cam_loc, cone=0.9), seed=21, n=320, ring=(10, 80))
-        return dict(exposure=0.15)
+        return dict(exposure=1.2 if shot == 'eve' else 0.15)
     p = presets[v]
-    return _scene_house(p['cam'], p['look'], p['house'], lens=p['lens'], seed=hash(v) % 97, sun=p['sun'], fstop=3.5, exposure=0.15)
+    cam = p['cam']
+    look = p['look']
+    if shot == 'b':
+        dx, dy = cam[0] - look[0], cam[1] - look[1]
+        d = math.hypot(dx, dy) * 0.95
+        ang = math.radians(-102 if cam[0] > 0 else -78)
+        cam = (look[0] + math.cos(ang) * d, look[1] + math.sin(ang) * d, cam[2] - 0.2)
+    seed = sum(map(ord, v)) % 97 + (5 if shot == 'b' else 0)
+    return _scene_house(cam, look, p['house'], lens=p['lens'], seed=seed, sun=p['sun'], fstop=3.5, exposure=0.15, eve=shot == 'eve')
 
 
-def interior(**kw):
-    """Интерьер барнхауса: скатный потолок в дереве, панорамное остекление торца, печь."""
-    W, H, R, L = 4.4, 2.9, 2.5, 7.0
-    sc = bpy.context.scene
-    sky(sun_elev=18, sun_rot=60, strength=1.0, sun_strength=3.0)
-    ground()
+def _shell(W, H, R, L):
+    """Комната-барнхаус: обшитая деревом оболочка, остеклённый торец в x=0, дощатый пол."""
     wood = mat_boards('lining', '#ead9bd', '#d4b994', pitch=0.12, axis='Z', rough=0.6, grain='X')
     wood_c = mat_boards('lining_c', '#e2c49a', '#c49f72', pitch=0.12, axis='Y', rough=0.6)
     # оболочка: пятиугольная призма, вывернутая внутрь (нормали — внутрь)
@@ -811,18 +876,14 @@ def interior(**kw):
     bpy.ops.object.modifier_apply(modifier='solid')
     cut(shell, inner)
     tglass = mat('glass_int', '#e8f0f0', rough=0.0, transmission=1.0, ior=1.45, spec=0.5)
-    pent_mesh('gable_glass', W - 0.3, H - 0.15, R - 0.15, -0.02, 0.0, tglass, z0=0.08)
     fm = mat('wframe#1a1a1a', '#1a1a1a', rough=0.4, metal=0.3)
     for yy in (-W / 2 + 0.15 + (W - 0.3) * k / 3 for k in range(1, 3)):
         box('mul_v', (0.05, 0.05, H - 0.15), (-0.03, yy, 0.08), fm)
     box('mul_h', (0.05, W - 0.3, 0.05), (-0.03, 0, H - 0.1), fm)
     # пол
-    from lib import plank_floor
     floor = mat_plank('ifloor', '#b98c5e', '#86603b')
     floor.node_tree.nodes['Mapping'].inputs['Scale'].default_value = (1.2, 38, 38)
     box('subfloor', (L, W, 0.02), (-L / 2, 0, -0.02), mat('sub', '#3a2a1e'))
-    for o in []:
-        pass
     # доски вдоль X
     rnd = random.Random(2)
     y = -W / 2
@@ -834,6 +895,15 @@ def interior(**kw):
             box('plank', (x1 - x - 0.002, 0.178, 0.012), ((x + x1) / 2, y + 0.09, 0), floor, bevel=0.0015)
             x = x1
         y += 0.18
+
+
+def interior(view='living', **kw):
+    """Интерьер барнхауса: скатный потолок в дереве, панорамное остекление торца, печь."""
+    W, H, R, L = 4.4, 2.9, 2.5, 7.0
+    sc = bpy.context.scene
+    sky(sun_elev=18, sun_rot=60, strength=1.0, sun_strength=3.0)
+    ground()
+    _shell(W, H, R, L)
     # конёк-балка и стяжки
     beam = mat_wood('beam', '#a8794c', '#7a5432', scale=2)
     box('ridge', (L, 0.16, 0.22), (-L / 2, 0, H + R - 0.32), beam)
@@ -867,6 +937,27 @@ def interior(**kw):
             box('chair', (0.42, 0.42, 0.04), (xx, yy, 0.45), mat('chair', '#7a4a32', rough=0.6), bevel=0.01)
             box('chair_leg', (0.04, 0.04, 0.45), (xx, yy, 0), black)
     plant(-0.4, W / 2 - 0.5, 1.3)
+    # кухня у глухого торца: нижние шкафы, столешница, открытые полки
+    green = mat('kitchen_front', '#2c4a42', rough=0.45)
+    box('k_base', (0.6, W - 0.5, 0.86), (-L + 0.32, 0, 0), green, bevel=0.004)
+    box('k_top', (0.64, W - 0.46, 0.04), (-L + 0.34, 0, 0.86), oak, bevel=0.003)
+    for k in range(5):
+        box('k_seam', (0.005, 0.005, 0.8), (-L + 0.62, -W / 2 + 0.25 + (W - 0.5) * (k + 1) / 6, 0.03), mat('seam_k', '#1d322d'))
+    box('k_hob', (0.4, 0.55, 0.01), (-L + 0.34, -0.6, 0.9), mat('hob', '#0d0d0d', rough=0.15))
+    box('k_sink', (0.4, 0.5, 0.01), (-L + 0.34, 0.8, 0.9), mat('sink', '#9a9a98', rough=0.25, metal=0.9))
+    cyl('k_tap', 0.012, 0.3, (-L + 0.15, 0.8, 0.9), black)
+    for zz in (1.45, 1.85):
+        box('k_shelf', (0.28, W - 0.6, 0.035), (-L + 0.16, 0, zz), oak)
+    import random as _r
+    rr = _r.Random(5)
+    for zz in (1.485, 1.885):
+        for k in range(7):
+            yy = -W / 2 + 0.5 + k * 0.5 + rr.uniform(-0.05, 0.05)
+            if rr.random() < 0.6:
+                cyl('jar', 0.05 + rr.random() * 0.03, 0.12 + rr.random() * 0.12, (-L + 0.16, yy, zz), mat('ceram' + str(k % 3), ['#e9e3d7', '#c9b9a2', '#2c4a42'][k % 3], rough=0.5))
+    box('k_tile', (0.01, W - 0.5, 0.5), (-L + 0.01, 0, 0.9), mat_noise('ktile', '#e9e6df', '#dcd7cd', scale=40, rough=0.3, bump=0.05))
+    pendant(-L + 0.6, -0.8, H + R - 0.4, drop=1.9, r=0.16, power=8)
+    pendant(-L + 0.6, 0.8, H + R - 0.4, drop=1.9, r=0.16, power=8)
     pendant(-0.9, -0.6, H + R - 0.4, drop=1.6, r=0.22, power=10)
     # лес за окном
     grass(center=(10, 0), size=(18, 18), seed=31, count=6000)
@@ -877,6 +968,61 @@ def interior(**kw):
     a.visible_transmission = False
     area((-3.5, 0, H + R - 0.6), (0, 0, 0), 2.0, 120, '#fff0dc', size_y=1.5).visible_camera = False
     point((-4.5, -1.2, 2.2), 60, '#ffcf96', 0.3)
-    c = camera((-6.5, -1.4, 1.35), (0, 0.4, 1.7), lens=20)
+    if view == 'kitchen':
+        point((-L + 1.2, 0, 2.4), 120, '#ffe2bd', 0.5)
+        c = camera((-0.9, 1.3, 1.45), (-L, -0.6, 1.15), lens=20)
+    else:
+        c = camera((-6.5, -1.4, 1.35), (0, 0.4, 1.7), lens=20)
     sc.cycles.max_bounces = 8
+    return dict(exposure=0.15)
+
+
+def bedroom(**kw):
+    """Спальня под скатным потолком с панорамным окном в лес."""
+    W, H, R, L = 4.0, 2.8, 2.2, 3.8
+    sc = bpy.context.scene
+    sky(sun_elev=14, sun_rot=60, strength=1.0, sun_strength=3.0)
+    ground()
+    _shell(W, H, R, L)
+    beam = mat_wood('beam', '#a8794c', '#7a5432', scale=2)
+    box('ridge', (L, 0.16, 0.22), (-L / 2, 0, H + R - 0.32), beam)
+    oak = mat_wood('oak', '#c79c71', '#94683f', scale=3)
+    linen = mat_noise('linen', '#efebe3', '#e2dccf', scale=120, rough=0.95, bump=0.15)
+    throw = mat_noise('throw', '#2c4a42', '#36574e', scale=90, rough=0.95, bump=0.2)
+    # кровать: изголовье у глухой стены, изножье к окну
+    box('bed_base', (2.1, 1.7, 0.32), (-L + 1.15, 0, 0), oak, bevel=0.01)
+    soft(box('mattress', (2.0, 1.62, 0.24), (-L + 1.15, 0, 0.32), linen, bevel=0.05), 1)
+    soft(box('duvet', (1.5, 1.7, 0.1), (-L + 1.45, 0, 0.52), linen, bevel=0.04), 2)
+    soft(box('throw', (0.55, 1.75, 0.06), (-L + 1.95, 0, 0.6), throw, bevel=0.025), 1)
+    for yy in (-0.42, 0.42):
+        soft(box('pillow', (0.38, 0.62, 0.18), (-L + 0.4, yy, 0.56), linen, bevel=0.07), 2)
+    box('headboard', (0.08, 2.4, 1.1), (-L + 0.06, 0, 0), mat_boards('hb', '#b98c5e', '#93693f', pitch=0.1, axis='Y', rough=0.6), bevel=0.005)
+    black = mat('blk', '#161616', rough=0.4, metal=0.5)
+    for yy in (-1.3, 1.3):
+        box('night', (0.4, 0.4, 0.5), (-L + 0.3, yy, 0), oak, bevel=0.005)
+        cyl('lamp_b', 0.06, 0.25, (-L + 0.3, yy, 0.5), mat('ceram', '#e9e3d7', rough=0.5))
+        sphere('lamp_s', 0.11, (-L + 0.3, yy, 0.86), mat_emit('lampglow', '#ffe6c2', 6))
+        point((-L + 0.32, yy, 0.86), 15, '#ffcf96', 0.1)
+    rug(-L + 1.6, 0, 3.0, 2.4, color='#cbbda8')
+    plant(-0.5, W / 2 - 0.45, 1.2)
+    box('bench', (0.45, 1.2, 0.42), (-L + 2.6, 0, 0), oak, bevel=0.01)
+    grass(center=(10, 0), size=(18, 18), seed=41, count=6000)
+    forest(lambda x, y: x < 4 or (x < 9 and abs(y) < 3), seed=41, n=260, ring=(6, 70))
+    a = area((-0.15, 0, 2.0), (0, -90, 0), 3.6, 300, '#eef3f6', size_y=4.0)
+    a.visible_camera = False
+    a.visible_transmission = False
+    c = camera((-0.5, -1.35, 1.35), (-L + 0.3, 0.35, 0.8), lens=20)
+    sc.cycles.max_bounces = 8
+    return dict(exposure=0.2)
+
+
+def treetest(**kw):
+    """Проверка деревьев крупным планом."""
+    ext_setup(sun_elev=34, sun_rot=125)
+    rnd = random.Random(3)
+    for i, (k, x, y) in enumerate([('spruce', -6, 8), ('pine', 1, 12), ('spruce', 7, 6), ('spruce', -1, 20), ('pine', 9, 18), ('spruce', -10, 16)]):
+        tree(k, x, y, 18 if k == 'spruce' else 22, rnd)
+    grass(center=(0, 4), size=(30, 24), seed=3)
+    forest(lambda x, y: y < 22, seed=3, n=400, ring=(22, 80))
+    camera((0, -14, 1.8), (0, 10, 8), lens=26)
     return dict(exposure=0.15)

@@ -5,7 +5,7 @@
 import { SITE } from '../data/site';
 import { CITIES, PRIMARY_CITY, cityUrl, type City } from '../data/cities';
 import { FAQ } from '../data/content';
-import type { Model } from '../data/models';
+import { gallery, type Model } from '../data/models';
 import type { Article } from '../data/articles';
 
 export const abs = (path: string) => new URL(path, SITE.url).href;
@@ -96,7 +96,7 @@ export function product(m: Model) {
     '@id': `${url}#product`,
     name: `Модульный дом «${m.name}» — ${m.area} м²`,
     description: m.lead,
-    image: [abs(`/images/${m.img}.webp`)],
+    image: gallery(m).map((g) => abs(`/images/${g.img}.webp`)),
     url,
     sku: m.slug,
     brand: { '@type': 'Brand', name: SITE.brand },

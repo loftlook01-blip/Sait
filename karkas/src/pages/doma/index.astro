@@ -21,6 +21,28 @@ const qa = FAQ.filter((f) => /стоит|планировк|отличается
     <ModelsGrid title={false} full />
   </section>
   <section class="wrap section--tight">
+    <div class="sec-head"><h2 class="h-sec"><span class="dim">Сравнение</span> моделей</h2></div>
+    <div class="cmpt card" tabindex="0" role="region" aria-label="Таблица сравнения моделей">
+      <table>
+        <thead><tr><th>Модель</th><th>Площадь</th><th>Спальни</th><th>Габариты</th><th>Модулей</th><th>Потолок</th><th>Срок</th><th>Под ключ</th></tr></thead>
+        <tbody>
+          {HOUSES.map((m) => (
+            <tr>
+              <th scope="row"><a href={`/doma/${m.slug}/`}><img src={`/images/${m.img}-800.webp`} alt="" width="64" height="48" loading="lazy" />{m.name}</a></th>
+              <td>{m.area} м²{m.terrace && ` + ${m.terrace}`}</td>
+              <td>{m.bedrooms}</td>
+              <td>{String(m.size[0]).replace('.', ',')}×{String(m.size[1]).replace('.', ',')} м</td>
+              <td>{m.modules}</td>
+              <td>{String(m.ceiling).replace('.', ',')} м</td>
+              <td>{m.productionDays + m.assemblyDays} дн.</td>
+              <td><b>{fmt.rub(m.price)}</b></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="wrap section--tight">
     <div class="sec-head"><h2 class="h-sec"><span class="dim">Три</span> комплектации</h2><p class="lead">Цены в каталоге указаны «под ключ». Можно взять дом в тёплом контуре или под чистовую и закончить отделку самостоятельно.</p></div>
     <div class="grid g-3">
       {PACKAGES.map((p) => (
@@ -36,6 +58,14 @@ const qa = FAQ.filter((f) => /стоит|планировк|отличается
   <CtaLead />
 </Base>
 <style>
+  .cmpt { overflow-x: auto; padding: 8px 12px; }
+  .cmpt table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 15px; }
+  .cmpt th, .cmpt td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .cmpt thead th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .cmpt tbody tr:last-child > * { border-bottom: 0; }
+  .cmpt tbody th a { display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 700; text-transform: uppercase; }
+  .cmpt tbody th img { width: 64px; height: 48px; object-fit: cover; border-radius: 8px; }
+  .cmpt tbody tr:hover { background: var(--bg); }
   .pk { display: grid; gap: 12px; align-content: start; }
   .pk-k { font-size: 32px; font-weight: 700; color: var(--green); }
   .pk ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); font-size: 15px; }

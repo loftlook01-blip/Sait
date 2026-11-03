@@ -4,11 +4,11 @@ import Pic from './Pic.astro';
 import Icon from './Icon.astro';
 import { SITE } from '../data/site';
 interface Props { title?: string; text?: string; source?: string; img?: string }
-const { title = 'Записаться на просмотр', text = `Приезжайте в выставочный дом у нашего цеха: пройдёте по комнатам, посмотрите, как собираются модули, и получите расчёт под ваш участок.`, source = 'Блок записи на просмотр', img = 'interior' } = Astro.props;
+const { title = 'Записаться на просмотр', text = `Приезжайте в выставочный дом у нашего цеха: пройдёте по комнатам, посмотрите, как собираются модули, и получите расчёт под ваш участок.`, source = 'Блок записи на просмотр', img = 'model-barn-eve' } = Astro.props;
 ---
 <section class="section" id="zayavka">
   <div class="wrap cta card card--green">
-    <div class="cta-media media"><Pic name={img} alt="Интерьер выставочного дома с панорамным остеклением" sizes="(max-width: 900px) 100vw, 40vw" w={1200} h={1400} /></div>
+    <div class="cta-media media"><Pic name={img} alt="Выставочный дом «Барн 36» вечером: тёплый свет в панорамных окнах" sizes="(max-width: 900px) 100vw, 40vw" w={1200} h={1400} /></div>
     <div class="cta-body">
       <p class="eyebrow light">{SITE.factory.showHouse}</p>
       <h2 class="h-sec light">{title}</h2>

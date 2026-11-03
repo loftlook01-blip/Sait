@@ -347,3 +347,17 @@ export const KM_RATE = 90;
 export function deliveryExtra(km: number, modules: number) {
   return Math.max(1, modules) * Math.max(0, km - FREE_KM) * 2 * KM_RATE;
 }
+
+/** Галерея модели: экстерьер днём, второй ракурс, вечер, интерьеры */
+export type Shot = { img: string; cap: string };
+export function gallery(m: Model): Shot[] {
+  const out: Shot[] = [{ img: m.img, cap: `${m.name}: фасад, ${m.facade.toLowerCase()}` }];
+  if (m.category === 'house') out.push({ img: `${m.img}-b`, cap: `${m.name}: вид со стороны входа и террасы` });
+  out.push({ img: `${m.img}-eve`, cap: `${m.name} вечером: тёплый свет в окнах и подсветка фасада` });
+  if (m.category === 'house') {
+    out.push({ img: 'interior', cap: 'Кухня-гостиная: скатный потолок, печь-камин, панорамное окно' });
+    out.push({ img: 'kitchen', cap: 'Кухня у глухого торца: фасады, открытые полки, подвесные светильники' });
+    out.push({ img: 'bedroom', cap: 'Спальня под скатным потолком' });
+  }
+  return out;
+}

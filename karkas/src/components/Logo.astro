@@ -4,7 +4,7 @@ interface Props { light?: boolean }
 const { light = false } = Astro.props;
 ---
 <a href="/" class:list={['logo', { light }]} aria-label={`${SITE.brand} — на главную`}>
-  <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 28V13L16 4l12 9v15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M11 28V18h10v10" fill="none" stroke="currentColor" stroke-width="2.6"/></svg>
+  <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 29V13L16 3l13 10v16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M16 9.5 11.5 15h2.7L10.5 20h3.2L10 25h12l-3.7-5h3.2L17.8 15h2.7Z" fill="currentColor"/><path d="M16 25v4" stroke="currentColor" stroke-width="2.4"/></svg>
   <span class="logo-text"><b>{SITE.brand}</b><small>{SITE.brandSub}</small></span>
 </a>
 <style>

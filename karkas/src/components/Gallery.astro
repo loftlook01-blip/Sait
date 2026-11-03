@@ -1,0 +1,91 @@
+---
+/** Галерея: большое фото + миниатюры, по клику — полноэкранный просмотр с листанием (стрелки, свайп, Esc) */
+import Icon from './Icon.astro';
+import type { Shot } from '../data/models';
+interface Props { shots: Shot[]; alt: string; badge?: string }
+const { shots, alt, badge } = Astro.props;
+const first = shots[0];
+---
+<div class="gal" data-gal>
+  <script type="application/json" data-gal-json set:html={JSON.stringify(shots)} />
+  <button class="gal-main media" type="button" data-gal-open aria-label="Открыть фото на весь экран">
+    <img data-gal-img src={`/images/${first.img}.webp`} srcset={`/images/${first.img}-800.webp 800w, /images/${first.img}.webp 1600w`} sizes="(max-width: 960px) 100vw, 60vw" alt={`${alt}. ${first.cap}`} width="1200" height="900" fetchpriority="high" />
+    {badge && <span class="tag tag--dark gal-badge">{badge}</span>}
+    <span class="gal-zoom"><Icon name="plus" size={18} /> {shots.length} фото</span>
+  </button>
+  {shots.length > 1 && (
+    <div class="gal-thumbs" role="list">
+      {shots.map((s, i) => (
+        <button type="button" role="listitem" class="gal-th" data-i={i} aria-label={s.cap} aria-current={i === 0 ? 'true' : undefined}>
+          <img src={`/images/${s.img}-800.webp`} alt="" width="160" height="120" loading="lazy" />
+        </button>
+      ))}
+    </div>
+  )}
+  <dialog class="gal-lb" data-gal-lb aria-label="Просмотр фото">
+    <figure>
+      <img data-lb-img alt="" />
+      <figcaption data-lb-cap></figcaption>
+    </figure>
+    <button class="gal-nav prev" type="button" data-lb-prev aria-label="Предыдущее фото"><Icon name="arrow" size={22} /></button>
+    <button class="gal-nav next" type="button" data-lb-next aria-label="Следующее фото"><Icon name="arrow" size={22} /></button>
+    <button class="gal-x" type="button" data-lb-close aria-label="Закрыть"><Icon name="close" size={22} /></button>
+    <span class="gal-count" data-lb-count></span>
+  </dialog>
+</div>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-gal]').forEach((root) => {
+    const shots: { img: string; cap: string }[] = JSON.parse(root.querySelector('[data-gal-json]')!.textContent!);
+    const main = root.querySelector<HTMLImageElement>('[data-gal-img]')!;
+    const base = main.alt.split('. ')[0];
+    const lb = root.querySelector<HTMLDialogElement>('[data-gal-lb]')!;
+    const lbImg = lb.querySelector<HTMLImageElement>('[data-lb-img]')!;
+    let cur = 0;
+    const show = (i: number) => {
+      cur = (i + shots.length) % shots.length;
+      const s = shots[cur];
+      main.srcset = `/images/${s.img}-800.webp 800w, /images/${s.img}.webp 1600w`;
+      main.src = `/images/${s.img}.webp`;
+      main.alt = `${base}. ${s.cap}`;
+      root.querySelectorAll('.gal-th').forEach((t, k) => t.toggleAttribute('aria-current', k === cur));
+      lbImg.src = `/images/${s.img}.webp`;
+      lbImg.alt = s.cap;
+      lb.querySelector('[data-lb-cap]')!.textContent = s.cap;
+      lb.querySelector('[data-lb-count]')!.textContent = `${cur + 1} / ${shots.length}`;
+    };
+    root.querySelectorAll<HTMLElement>('.gal-th').forEach((t) => t.addEventListener('click', () => show(+t.dataset.i!)));
+    root.querySelector('[data-gal-open]')!.addEventListener('click', () => { show(cur); lb.showModal(); });
+    lb.querySelector('[data-lb-prev]')!.addEventListener('click', () => show(cur - 1));
+    lb.querySelector('[data-lb-next]')!.addEventListener('click', () => show(cur + 1));
+    lb.querySelector('[data-lb-close]')!.addEventListener('click', () => lb.close());
+    lb.addEventListener('click', (e) => { if (e.target === lb) lb.close(); });
+    lb.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') show(cur - 1); if (e.key === 'ArrowRight') show(cur + 1); });
+    let x0 = 0;
+    lb.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener('touchend', (e) => { const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) show(cur + (dx < 0 ? 1 : -1)); });
+  });
+</script>
+<style>
+  .gal { display: grid; gap: 8px; min-width: 0; }
+  .gal-main { position: relative; display: block; width: 100%; padding: 0; border: 0; cursor: zoom-in; aspect-ratio: 4 / 3; }
+  .gal-main img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .gal-badge { position: absolute; top: 14px; left: 14px; }
+  .gal-zoom { position: absolute; right: 14px; bottom: 14px; display: inline-flex; gap: 6px; align-items: center; padding: 8px 12px; border-radius: 10px; background: rgb(0 0 0 / 0.55); color: #fff; font-size: 13px; font-weight: 600; backdrop-filter: blur(6px); }
+  .gal-thumbs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .gal-th { padding: 0; border: 2px solid transparent; border-radius: 12px; overflow: hidden; cursor: pointer; background: none; opacity: 0.7; transition: opacity 0.2s, border-color 0.2s; }
+  .gal-th img { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+  .gal-th:hover, .gal-th[aria-current] { opacity: 1; border-color: var(--green); }
+  .gal-lb { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgb(8 14 12 / 0.94); color: #fff; }
+  .gal-lb[open] { display: grid; place-items: center; }
+  .gal-lb figure { margin: 0; display: grid; gap: 12px; justify-items: center; padding: 56px 16px; }
+  .gal-lb img { max-width: min(1600px, 100%); max-height: calc(100dvh - 140px); object-fit: contain; border-radius: 12px; }
+  .gal-lb figcaption { font-size: 14px; color: rgb(255 255 255 / 0.75); text-align: center; }
+  .gal-nav, .gal-x { position: fixed; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgb(255 255 255 / 0.25); background: rgb(255 255 255 / 0.08); color: #fff; cursor: pointer; }
+  .gal-nav:hover, .gal-x:hover { background: rgb(255 255 255 / 0.2); }
+  .gal-nav { top: 50%; transform: translateY(-50%); }
+  .gal-nav.prev { left: 16px; } .gal-nav.prev :global(svg) { transform: rotate(180deg); }
+  .gal-nav.next { right: 16px; }
+  .gal-x { top: 16px; right: 16px; }
+  .gal-count { position: fixed; top: 28px; left: 24px; font-size: 14px; color: rgb(255 255 255 / 0.7); }
+  @media (max-width: 620px) { .gal-thumbs { grid-template-columns: repeat(3, 1fr); } .gal-nav { top: auto; bottom: 16px; transform: none; } }
+</style>

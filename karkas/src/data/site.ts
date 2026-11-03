@@ -6,23 +6,23 @@
  */
 export const SITE = {
   /** TODO: финальный домен (без слеша в конце) */
-  url: 'https://karkas-dom.ru',
-  brand: 'КАРКАС',
+  url: 'https://hvoya-dom.ru',
+  brand: 'ХВОЯ',
   brandSub: 'модульные дома',
-  legalName: 'ООО «Каркас»', // TODO
+  legalName: 'ООО «Хвоя»', // TODO: точное юрлицо
   inn: '', // TODO: ИНН — появится в подвале и разметке, когда заполнен
   ogrn: '', // TODO
   tagline: 'Модульные каркасные дома под ключ с заводской сборкой',
   description:
     'Модульные каркасные дома под ключ в Архангельске и области: 85% дома собирается в цеху за 30 дней, монтаж на участке от 1 дня. Фиксированная смета, ипотека 3–6%, гарантия 5 лет.',
 
-  phone: '+7 (8182) 00-00-00', // TODO
-  phoneHref: '+78182000000', // TODO
-  email: 'hello@karkas-dom.ru', // TODO
-  telegram: 'https://t.me/karkas_dom', // TODO
-  whatsapp: 'https://wa.me/78182000000', // TODO
+  phone: '+7 (960) 001-08-96',
+  phoneHref: '+79600010896',
+  email: 'hello@hvoya-dom.ru', // TODO: рабочая почта
+  telegram: 'https://t.me/+79600010896', // TODO: можно заменить на @username
+  whatsapp: 'https://wa.me/79600010896',
   max: '', // TODO: ссылка на мессенджер MAX
-  vk: 'https://vk.com/karkas_dom', // TODO
+  vk: 'https://vk.com/hvoya_dom', // TODO
 
   hours: { label: 'Пн–Сб 9:00–19:00', schema: ['Mo-Sa 09:00-19:00'] },
 

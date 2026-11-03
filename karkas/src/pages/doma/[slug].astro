@@ -4,11 +4,12 @@ import Crumbs from '../../components/Crumbs.astro';
 import Pic from '../../components/Pic.astro';
 import Icon from '../../components/Icon.astro';
 import FloorPlan from '../../components/FloorPlan.astro';
+import Gallery from '../../components/Gallery.astro';
 import Configurator from '../../components/Configurator.astro';
 import ModelCard from '../../components/ModelCard.astro';
 import CtaLead from '../../components/CtaLead.astro';
 import Faq from '../../components/Faq.astro';
-import { MODELS, PACKAGES, deliveryExtra, type Model } from '../../data/models';
+import { MODELS, PACKAGES, deliveryExtra, gallery, type Model } from '../../data/models';
 import { CITIES, cityUrl } from '../../data/cities';
 import { SITE, fmt, monthly, days } from '../../data/site';
 import { breadcrumbs, product, faq } from '../../lib/schema';
@@ -36,12 +37,9 @@ const title = isHouse ? `Модульный дом «${m.name}» ${m.area} м² 
   schema={[breadcrumbs(crumbs), product(m), faq(qa)]}
   ogType="product"
   preload={m.img}
->
+  >
   <section class="wrap mp">
-    <div class="mp-media media">
-      <Pic name={m.img} alt={`${m.kind} «${m.name}» — визуализация, фасад: ${m.facade.toLowerCase()}`} eager sizes="(max-width: 960px) 100vw, 60vw" w={1200} h={900} />
-      {m.hit && <span class="tag tag--dark mp-tag">Хит продаж</span>}
-    </div>
+    <Gallery shots={gallery(m)} alt={`${m.kind} «${m.name}» — визуализация`} badge={m.hit ? 'Хит продаж' : undefined} />
     <div class="mp-info card">
       <Crumbs items={crumbs} />
       <p class="eyebrow">{m.kind}</p>
@@ -93,7 +91,7 @@ const title = isHouse ? `Модульный дом «${m.name}» ${m.area} м² 
       <div class="sec-head"><h2 class="h-sec"><span class="dim">Плани</span>ровка</h2><p class="lead">Общая площадь {m.area} м². Площади комнат — ориентировочные, по осям перегородок.</p></div>
       <FloorPlan m={m} />
     </div>
-    <div class="mp-int media"><Pic name="interior" alt="Пример интерьера модульного дома: деревянный потолок, панорамное окно" sizes="(max-width: 960px) 100vw, 34vw" w={1200} h={1400} /></div>
+    <div class="mp-int media"><Pic name={isHouse ? 'bedroom' : `${m.img}-eve`} alt={isHouse ? 'Спальня в модульном доме под скатным потолком' : `${m.name} вечером`} sizes="(max-width: 960px) 100vw, 34vw" w={1200} h={1400} /></div>
   </section>
 
   <section class="section wrap">
@@ -139,7 +137,7 @@ const title = isHouse ? `Модульный дом «${m.name}» ${m.area} м² 
 </Base>
 
 <style>
-  .mp { display: grid; grid-template-columns: 1.35fr 1fr; gap: var(--gap); margin-top: var(--gap); }
+  .mp { display: grid; grid-template-columns: 1.35fr 1fr; gap: var(--gap); margin-top: var(--gap); align-items: start; }
   .mp-media { min-height: 520px; }
   .mp-media :global(img) { position: absolute; inset: 0; }
   .mp-tag { position: absolute; top: 14px; left: 14px; }

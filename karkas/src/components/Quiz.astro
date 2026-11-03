@@ -1,0 +1,128 @@
+---
+/** Квиз «Подбор дома за 4 вопроса»: рекомендует модель и передаёт ответы в заявку */
+import Icon from './Icon.astro';
+import { HOUSES } from '../data/models';
+const data = HOUSES.map((m) => ({ slug: m.slug, name: m.name, area: m.area, price: m.price, img: m.img, bed: m.bedrooms, terrace: !!m.terrace, lead: m.lead }));
+const Q = [
+  { id: 'who', t: 'Сколько человек будет жить в доме?', a: [['1-2', '1–2 человека'], ['3', '3 человека'], ['4', '4–5 человек']] },
+  { id: 'use', t: 'Как будете пользоваться домом?', a: [['year', 'Жить круглый год'], ['dacha', 'Дача и выходные'], ['rent', 'Сдавать: турбаза, глэмпинг']] },
+  { id: 'budget', t: 'На какой бюджет ориентируетесь?', a: [['2.5', 'До 2,5 млн ₽'], ['4', '2,5–4 млн ₽'], ['99', 'Больше 4 млн ₽'], ['mort', 'В ипотеку — подберите']] },
+  { id: 'terrace', t: 'Нужна ли терраса?', a: [['roof', 'Да, крытая'], ['deck', 'Хватит настила со ступенями'], ['any', 'Не важно']] },
+];
+---
+<div class="qz card" data-quiz>
+  <script type="application/json" data-qz-json set:html={JSON.stringify(data)} />
+  <div class="qz-side">
+    <p class="eyebrow light">Подбор за 1 минуту</p>
+    <h2 class="h-sec light">Какой дом подойдёт вам?</h2>
+    <p class="qz-sub">Ответьте на 4 вопроса — покажем подходящую модель и цену. Без регистрации.</p>
+    <div class="qz-bar" aria-hidden="true"><span data-qz-progress></span></div>
+    <p class="small" data-qz-step style="color:rgb(255 255 255/.6)">Вопрос 1 из {Q.length}</p>
+  </div>
+  <div class="qz-main">
+    {Q.map((q, i) => (
+      <fieldset class="qz-q" data-q={i} hidden={i !== 0}>
+        <legend class="qz-t">{q.t}</legend>
+        <div class="qz-opts">
+          {q.a.map(([v, t]) => <label class="qz-opt"><input type="radio" name={q.id} value={v} /><span>{t}</span><Icon name="arrow" size={18} /></label>)}
+        </div>
+        {i > 0 && <button type="button" class="qz-back" data-qz-back>← Назад</button>}
+      </fieldset>
+    ))}
+    <div class="qz-res" data-qz-res hidden>
+      <p class="eyebrow">Вам подойдёт</p>
+      <a class="qz-card" data-qz-link href="#">
+        <img data-qz-img src="" alt="" width="800" height="600" loading="lazy" />
+        <span><b data-qz-name></b><small data-qz-lead></small><em data-qz-price></em></span>
+      </a>
+      <p class="small muted" data-qz-alt></p>
+      <div class="qz-btns">
+        <button class="btn btn--lg" data-lead="Квиз: подбор дома" data-lead-title="Получить расчёт по подобранному дому" data-qz-send>Получить точный расчёт</button>
+        <button type="button" class="btn btn--lg btn--ghost" data-qz-reset>Пройти заново</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  import { goal } from '../lib/lead-client';
+  const rub = (n: number) => new Intl.NumberFormat('ru-RU').format(n) + ' ₽';
+  document.querySelectorAll<HTMLElement>('[data-quiz]').forEach((root) => {
+    const models = JSON.parse(root.querySelector('[data-qz-json]')!.textContent!);
+    const qs = [...root.querySelectorAll<HTMLElement>('[data-q]')];
+    const res = root.querySelector<HTMLElement>('[data-qz-res]')!;
+    const prog = root.querySelector<HTMLElement>('[data-qz-progress]')!;
+    const step = root.querySelector<HTMLElement>('[data-qz-step]')!;
+    let cur = 0;
+    const go = (i: number) => {
+      cur = i;
+      qs.forEach((q, k) => (q.hidden = k !== i));
+      res.hidden = i < qs.length;
+      prog.style.width = `${(Math.min(i, qs.length) / qs.length) * 100}%`;
+      step.textContent = i < qs.length ? `Вопрос ${i + 1} из ${qs.length}` : 'Готово!';
+      if (i >= qs.length) result();
+    };
+    const val = (n: string) => root.querySelector<HTMLInputElement>(`[name="${n}"]:checked`)?.value ?? '';
+    function result() {
+      const who = val('who'), use = val('use'), budget = val('budget'), terr = val('terrace');
+      const max = budget === 'mort' ? 99e6 : +budget * 1e6;
+      const score = (m: any) => {
+        let s = 0;
+        const need = who === '1-2' ? 0.6 : who === '3' ? 2 : 3; // нужное число спален
+        s -= Math.abs(m.bed - need) * 3;
+        if (use === 'rent') s += m.area <= 36 ? 3 : -2;
+        if (use === 'year' && m.area < 25) s -= 3;
+        if (use === 'dacha' && m.area <= 36) s += 1;
+        if (terr === 'roof') s += m.terrace ? 3 : 0;
+        if (m.price > max) s -= 10;
+        return s;
+      };
+      const ranked = [...models].sort((a, b) => score(b) - score(a) || a.price - b.price);
+      const m = ranked[0], alt = ranked[1];
+      root.querySelector<HTMLAnchorElement>('[data-qz-link]')!.href = `/doma/${m.slug}/`;
+      root.querySelector<HTMLImageElement>('[data-qz-img]')!.src = `/images/${m.img}-800.webp`;
+      root.querySelector('[data-qz-name]')!.textContent = `${m.name} · ${m.area} м²`;
+      root.querySelector('[data-qz-lead]')!.textContent = m.lead;
+      root.querySelector('[data-qz-price]')!.textContent = `${rub(m.price)} под ключ`;
+      root.querySelector('[data-qz-alt]')!.innerHTML = alt ? `Также посмотрите <a href="/doma/${alt.slug}/">${alt.name}</a> — ${rub(alt.price)}` : '';
+      const answers = qs.map((q) => `${q.querySelector('legend')!.textContent} — ${q.querySelector<HTMLInputElement>('input:checked + span')?.textContent ?? q.querySelector('input:checked')?.nextElementSibling?.textContent ?? ''}`);
+      root.querySelector<HTMLElement>('[data-qz-send]')!.dataset.leadExtra = `Квиз → ${m.name}. ${answers.join('; ')}`;
+      goal('quiz_done', { model: m.slug });
+    }
+    root.addEventListener('change', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.type === 'radio') setTimeout(() => go(cur + 1), 180);
+    });
+    root.querySelectorAll('[data-qz-back]').forEach((b) => b.addEventListener('click', () => go(cur - 1)));
+    root.querySelector('[data-qz-reset]')!.addEventListener('click', () => { root.querySelectorAll<HTMLInputElement>('input').forEach((i) => (i.checked = false)); go(0); });
+  });
+</script>
+<style>
+  .qz { display: grid; grid-template-columns: 0.9fr 1.1fr; overflow: hidden; }
+  .qz-side { background: var(--green); color: #fff; padding: clamp(24px, 4vw, 48px); display: grid; gap: 16px; align-content: start; }
+  .eyebrow.light { color: rgb(255 255 255 / 0.6); }
+  .qz-sub { color: rgb(255 255 255 / 0.8); }
+  .qz-bar { height: 6px; border-radius: 6px; background: rgb(255 255 255 / 0.18); overflow: hidden; margin-top: 12px; }
+  .qz-bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.4s; }
+  .qz-main { padding: clamp(24px, 4vw, 48px); min-height: 380px; display: grid; align-content: center; }
+  .qz-q { border: 0; padding: 0; margin: 0; display: grid; gap: 16px; animation: qzin 0.35s ease; }
+  @keyframes qzin { from { opacity: 0; transform: translateX(12px); } }
+  .qz-t { font-size: clamp(20px, 2.2vw, 26px); font-weight: 700; margin-bottom: 8px; padding: 0; }
+  .qz-opts { display: grid; gap: 8px; }
+  .qz-opt { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; cursor: pointer; font-weight: 600; transition: border-color 0.2s, background 0.2s; }
+  .qz-opt:hover, .qz-opt:has(input:checked) { border-color: var(--green); background: var(--green-soft); }
+  .qz-opt:has(input:focus-visible) { outline: 2px solid var(--green-3); }
+  .qz-opt input { position: absolute; opacity: 0; }
+  .qz-opt :global(svg) { color: var(--green); }
+  .qz-back { justify-self: start; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 4px 0; }
+  .qz-res { display: grid; gap: 14px; animation: qzin 0.35s ease; }
+  .qz-card { display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: center; text-decoration: none; padding: 10px; border-radius: 16px; background: var(--bg); }
+  .qz-card img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; }
+  .qz-card span { display: grid; gap: 6px; }
+  .qz-card b { font-size: 22px; text-transform: uppercase; }
+  .qz-card small { color: var(--ink-2); font-size: 14px; }
+  .qz-card em { font-style: normal; font-weight: 700; font-size: 20px; color: var(--green); }
+  .qz-res .small a { color: var(--green); font-weight: 600; }
+  .qz-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  @media (max-width: 860px) { .qz { grid-template-columns: 1fr; } .qz-main { min-height: 0; } }
+  @media (max-width: 520px) { .qz-card { grid-template-columns: 1fr; } }
+</style>

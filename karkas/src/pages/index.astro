@@ -4,6 +4,7 @@ import Pic from '../components/Pic.astro';
 import Icon from '../components/Icon.astro';
 import ModelsGrid from '../components/ModelsGrid.astro';
 import Configurator from '../components/Configurator.astro';
+import Quiz from '../components/Quiz.astro';
 import Steps from '../components/Steps.astro';
 import Wall from '../components/Wall.astro';
 import CitiesBlock from '../components/CitiesBlock.astro';
@@ -125,11 +126,27 @@ const schema = [faq(FAQ), itemList(HOUSES, 'Модельный ряд модул
     </div>
   </section>
 
+  <!-- ───── Интерьеры ───── -->
+  <section class="section wrap">
+    <div class="sec-head">
+      <h2 class="h-sec"><span class="dim">Внутри</span> тепло и светло</h2>
+      <p class="lead">Скатный потолок до 4 метров, дерево в отделке и панорамные окна в лес. Так выглядят дома в комплектации «под ключ».</p>
+    </div>
+    <div class="ints">
+      <figure class="ints-a reveal"><div class="media"><Pic name="interior" alt="Кухня-гостиная модульного дома: печь-камин, обеденный стол у панорамного окна" sizes="(max-width: 860px) 100vw, 45vw" w={1200} h={1400} /></div><figcaption class="caption">Гостиная с печью-камином и панорамным торцом</figcaption></figure>
+      <figure class="ints-b reveal"><div class="media"><Pic name="kitchen" alt="Кухня в модульном доме: зелёные фасады, дубовая столешница, открытые полки" sizes="(max-width: 860px) 100vw, 45vw" w={1200} h={1000} /></div><figcaption class="caption">Кухня у глухого торца</figcaption></figure>
+      <figure class="ints-c reveal"><div class="media"><Pic name="bedroom" alt="Спальня под скатным деревянным потолком" sizes="(max-width: 860px) 100vw, 45vw" w={1200} h={900} /></div><figcaption class="caption">Спальня под коньком</figcaption></figure>
+    </div>
+  </section>
+
   <!-- ───── Модельный ряд ───── -->
   <section class="section wrap" id="modeli">
     <ModelsGrid />
     <div class="center"><a class="btn btn--ghost btn--lg" href="/doma/">Весь модельный ряд и фильтры <Icon name="arrow" size={18} /></a></div>
   </section>
+
+  <!-- ───── Квиз ───── -->
+  <section class="wrap section--tight" id="podbor"><Quiz /></section>
 
   <!-- ───── Сравнение ───── -->
   <section class="wrap section--tight">
@@ -332,6 +349,15 @@ const schema = [faq(FAQ), itemList(HOUSES, 'Модельный ряд модул
   @media (max-width: 760px) { .cozy-tabs { grid-template-columns: 1fr 1fr; } .cozy-tab { min-height: 92px; gap: 14px; } }
 
   .center { display: flex; justify-content: center; margin-top: 28px; }
+
+  /* Интерьеры */
+  .ints { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: var(--gap); }
+  .ints figure { margin: 0; display: grid; grid-template-rows: 1fr auto; }
+  .ints .media { height: 100%; min-height: 240px; }
+  .ints .media :global(img) { position: absolute; inset: 0; }
+  .ints-a { grid-row: span 2; }
+  .ints-a .media { min-height: 560px; }
+  @media (max-width: 860px) { .ints { grid-template-columns: 1fr; } .ints-a { grid-row: auto; } .ints-a .media { min-height: 0; aspect-ratio: 4/4.4; } .ints .media { aspect-ratio: 4/3; } }
 
   /* Сравнение */
   .cmp { padding: clamp(20px, 4vw, 48px); display: grid; grid-template-columns: 0.8fr 1.2fr; gap: clamp(20px, 4vw, 56px); }
