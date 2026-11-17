@@ -1,0 +1,11 @@
+.env
+# персональные данные клиентов и сырые выгрузки — не в git
+data/leads.csv
+data/replies.jsonl
+data/drafts/replies.md
+data/reports/raw-*.json
+data/research/*.csv
+data/photos/*
+!data/photos/INDEX.md
+__pycache__/
+node_modules/

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  /* Фирменные токены — те же, что на сайте (src/styles) */
+  :root {
+    --paper: #f4f1ec; --card: #fbf9f6; --ink: #15130f; --graphite: #1f1d19; --muted: #675f56;
+    --accent: #a3653b; --accent-soft: #e9d5c3; --pine: #2f4a43;
+    --sans: 'Manrope', system-ui, 'Segoe UI', Roboto, sans-serif; --serif: 'Playfair Display', Georgia, serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1350px; background: var(--paper); }
+  .slide { position: relative; width: 1080px; height: 1350px; overflow: hidden; font-family: var(--sans); color: var(--ink);
+           background: var(--paper); padding: 96px 88px 120px; display: flex; flex-direction: column; }
+  .slide.dark { background: var(--graphite); color: var(--paper); }
+  .slide.pine { background: var(--pine); color: var(--paper); }
+  .slide.photo { color: #fff; padding: 88px 88px 150px; justify-content: flex-end; }
+  .bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
+  .photo .bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(0 0 0 / 0) 35%, rgb(0 0 0 / .78) 100%); }
+  .photo > h1, .photo > h2, .photo > p, .photo > .kicker, .photo > .swipe { position: relative; }
+  .photo .footer { color: #fff; }
+  .kicker { font-size: 30px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 36px; }
+  .dark .kicker, .pine .kicker, .photo .kicker { color: var(--accent-soft); }
+  h1 { font-family: var(--serif); font-weight: 700; font-size: 104px; line-height: 1.02; letter-spacing: -.01em; }
+  h2 { font-family: var(--serif); font-weight: 700; font-size: 84px; line-height: 1.06; margin-bottom: 44px; }
+  .lead { font-size: 46px; line-height: 1.35; margin-top: 40px; max-width: 880px; opacity: .9; }
+  .body { font-size: 46px; line-height: 1.4; max-width: 900px; }
+  .body b { color: var(--accent); }
+  .dark .body b, .pine .body b, .photo .body b { color: var(--accent-soft); }
+  ul.list { list-style: none; display: grid; gap: 40px; font-size: 48px; line-height: 1.28; }
+  ul.list li { display: grid; grid-template-columns: 84px 1fr; align-items: start; }
+  ul.list li::before { content: counter(i, decimal-leading-zero); counter-increment: i; font-weight: 800; color: var(--accent); font-size: 34px; padding-top: 4px; }
+  ul.list { counter-reset: i; }
+  .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 8px; }
+  .cmp .col { background: var(--card); border-radius: 28px; padding: 40px; }
+  .dark .cmp .col { background: rgb(255 255 255 / .07); }
+  .cmp h3 { font-size: 52px; font-weight: 800; margin-bottom: 22px; }
+  .cmp p { font-size: 38px; line-height: 1.35; margin-bottom: 22px; padding-left: 26px; position: relative; }
+  .cmp p::before { content: ''; position: absolute; left: 0; top: .55em; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  .cmp .col { padding: 48px 40px; }
+  .big { font-family: var(--serif); font-size: 230px; line-height: .9; color: var(--accent); font-weight: 700; }
+  .img { margin-top: auto; height: 560px; border-radius: 28px; background-size: cover; background-position: center; }
+  .grow { flex: 1; }
+  .cta { margin-top: auto; display: inline-flex; align-self: flex-start; background: var(--accent); color: #fff; font-weight: 800;
+         font-size: 40px; padding: 30px 48px; border-radius: 999px; }
+  .footer { position: absolute; left: 88px; right: 88px; bottom: 48px; display: flex; justify-content: space-between; align-items: center;
+            font-size: 26px; font-weight: 600; opacity: .62; }
+  .dots { display: flex; gap: 10px; } .dots i { width: 12px; height: 12px; border-radius: 50%; background: currentColor; opacity: .3; }
+  .dots i.on { opacity: 1; width: 36px; border-radius: 6px; }
+  .note { position: absolute; top: 40px; right: 48px; font-size: 22px; font-weight: 600; padding: 10px 18px; border-radius: 999px;
+          background: rgb(0 0 0 / .45); color: #fff; }
+  .swipe { font-size: 30px; font-weight: 700; margin-top: 48px; opacity: .7; }
+</style>
+</head>
+<body><div id="root"></div></body>
+</html>
